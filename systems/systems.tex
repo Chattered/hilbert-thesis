@@ -1,0 +1,348 @@
+\chapter{System Description}
+\section{Proof Assistants}\label{ProofAssistants}
+The proof assistants we can use vary in a number of ways, including their support for declarative and procedural style proofs, their underlying logic, their level of automation and their support for user extensions. We give an overview of the relevant systems:
+
+\subsection{Mizar}\label{Mizar}
+The Mizar system's library is the largest body of mechanized mathematics anywhere, with articles published in a dedicated \emph{Journal of Formalized Mathematics} \cite{MizarSoftTypes}\footnote{The journal can be found at \url{http://www.cs.ualberta.ca/~piotr/Mizar/mirror/http/JFM/}}. While the logic of the system is a formal untyped first-order set theory similar to ZFC, Mizar articles are instead expressed in the form of a \emph{Mathematical Vernacular} \cite{MizarMathematicalVernacular}. The goal of this vernacular is to imitate the language and reasoning of real mathematics while still being completely formal. As such, the language is purely declarative. 
+
+From the perspective of other theorem provers such as Isabelle, Mizar's language is interesting in its notion of adjectives. These can be understood as a powerful type system supporting subtyping and dependent typing. However, they are not part of the underlying semantics, which is still first-order set theory. Unlike most other systems, Mizar does not support user extensions and the source code is available only to members of the \emph{Association of Mizar Users}.
+
+\subsection{PVS}
+PVS is a system designed to integrate a set of powerful decision procedures, such as procedures for type-checking, reasoning about arrays and linear arithmetic, as well as user defined procedures implemented as \emph{strategies}, programmed using the full power of the host language (Common Lisp). The user of the system is able to guide the use of the procedures interactively, but automation is seen as the driving force of the proof rather than cleverly crafted proof scripts. The core system is the same higher-order logic of Isabelle's HOL but with built-in support for recursive and record types. 
+
+Similar to Mizar, PVS supports dependent types and subtypes defined in terms of the base logic using \emph{predicate sets}. PVS also supports a module system in terms of \emph{parametric theories}, where an abstract axiomatic theory can be developed and then later interpreted by instantiating the type, function and predicate parameters. Together, these often allow for more natural mechanisations of mathematics. Indeed, real mathematics often features abstract axiomatic theories such as those of abstract algebra, while subtyping allows for the definition of partial functions common in mathematics, and allows variables to be restricted to range over a variety of sets arranged in a type hierarchy. 
+
+While PVS theories are mostly focused on formal verifications of software and hardware, there have been significant projects mechanising mathematics \cite{IntegralCalculusPVS}.
+
+\subsection{HOL-based Assistants}
+Higher-order logic (hereafter just \emph{HOL}) is a version of Church's simple theory of types with support for ML-style polymorphism \cite{ChurchTheoryOfTypes}. While the underlying type-system of HOL is the weakest of those considered here, it has the advantage of supporting decidable type-inference, so when we formalise in HOL we do not need to annotate any terms with their types. Moreover, it is possible to simulate the more powerful type systems in HOL using predicate sets. For instance, Kamm\"{u}ller has shown how to simulate dependent typing in HOL by implementing the types directly in terms of an underlying set-theoretic semantics \cite{KammullerDependent}, and Hurd has used a similar approach to achieve a limited form of subtyping \cite{HurdSubtyping}\label{predicatesubtyping}. It is an approach which Wiedijk has also used to analyse the dependent types and subtypes of Mizar \cite{MizarSoftTypes}.
+
+We discuss three systems based on HOL: the HOL System, Isabelle/HOL and HOL Light.
+
+\subsubsection{HOL System}
+Mike Gordon's HOL System was developed along the lines of Milner's Edinburgh LCF \cite{LCF, LCFtoHOL}. In an LCF prover, a statically typed functional language is used to define an abstract datatype of theorems whose signature defines a trusted kernel of primitive inference rules for some logic (in this case, HOL). The objects which inhabit this type are then the theorems of the logic, so proof verification reduces to type-checking. Moreover, with the full power of the underlying programming language, the user can easily define functions to create new \emph{derived} rules and proof procedures. 
+
+While this use of functions as inference rules suggests a traditional forward style deduction system, LCF systems tend to favour a procedural style by defining goal datatypes and tactic functions. Powerful and extensible \emph{tactic languages} are written on top of this as a collection of higher-order functions, such as functions which map theorems to tactics and functions, called \emph{tacticals}, which map tactics to tactics. 
+
+While the HOL system is largely procedural, there have been attempts to integrate declarative languages too, such as the work of Zammit \cite{ZammitDeclarative}. His language is customisable: the parsing functions and automated proof tools can be replaced as the user develops the theory. The system is distinguished by supporting a database of facts which can be extended during a proof, and which the automated tools are designed to query to discharge trivial inferences. Note, however, that this sort of style, where some of the facts used in an inference step are elided, is sometimes felt to go against the declarative style of proof\label{ZammitNotDeclarative}.
+
+\subsubsection{Isabelle/HOL}
+Isabelle is an LCF style prover for a weak logic based on polymorphic type-theory with higher-order unification \cite{Isabelle, IsabelleTypeClasses}. This is used as a formal metalevel in which object logics such as HOL and ZF are defined. One of the advantages of using a metalevel is that it is possible to distinguish schematic variables from object-level variables, so a user can easily apply proven theorems as new inference rules. 
+
+Like PVS, Isabelle supports modular proof development with \emph{Locales}, which allow users to prove theorems relative to an abstract context of axioms. These can then be instantiated in a concrete theory \cite{IsabelleLocales}. Unlike PVS, locales merely provide a convenient syntax to write abstract theories: all theorems that result from a theory interpretation are still typed as theorems of the kernel's object logic. 
+
+Isabelle/HOL has been used extensively for computer verification and formalised mathematics, with theory files for abstract algebra, topology, number theory and analysis\footnote{See \url{http://afp.sourceforge.net/}}.
+
+\subsubsection{HOL Light}
+Harrison reimplemented the LCF style HOL system in Ocaml \cite{HOLLight}. This time, the theorem data type corresponds to an extremely elegant foundation of HOL. Nearly all of the existing proofs in this system are written at the Ocaml level, where there is a powerful tactic language allowing for a very dense but succinct proof style. 
+
+This proof style can be difficult to read, since the combinators are not generally applied in the linear fashion of Isabelle. However, Harrison designed a Mizar inspired declarative language for HOL Light \cite{MizarHOL} which was later adapted by Wiedijk \cite{MizarLight}. 
+
+Wiedijk attempted to analyse the difference between procedural tactic based languages and the declarative languages. Following some of Harrison's observations, he realised that a declarative language could be implemented in just 41 lines of ML as a set of ordinary procedural tactics. By marrying procedural tactics with declarative proof, he created a system which seamlessly integrates the two approaches. 
+
+There is already a great deal of formalised mathematics in HOL Light, including a proof of the Jordan Curve Theorem, and as of writing, it is the preferred proof assistant for the largest mechanisation effort so far, the Flyspeck Project \cite{flyspeck}\footnote{See \url{http://code.google.com/p/flyspeck/wiki/FormalText}}. 
+
+\subsection{Coq}
+Coq is based around a powerful dependent type theory supporting type operators and polymorphism \cite{Coq}. This yields an intuitionistic higher-order logic according to the Howard-Curry Isomorphism which identifies propositions with types inhabited by their proofs \cite{CalculusOfConstructions}. The system supports user definable tactics, and a module system for writing abstract theories and theory interpretation. It also supports a new extensible declarative language interface (\emph{C-zar}) as part of the official distribution.
+
+The idea of terms as proofs leads to programs as proofs, making Coq ideal for program \emph{extraction}. For instance, given the proof that Gr\"{o}ber bases exist, Buchberger's algorithm can be automatically extracted \cite{CoqGrobner}. Coq can therefore be seen as an environment for writing computer programs that have been verified against a specification given as a type. 
+
+But Coq is also a vehicle for mechanised mathematics, and the infamous Four Colour Theorem recently saw its first formal verification in this system \cite{GonthierFCT}. In fact, the first two groups of Hilbert's axioms from \emph{Foundations of Geometry} have been mechanised in this system by Dehlinger et al, but they focused on an intuitionistic interpretation of the text \cite{DehlingerFOG}. 
+
+However, the naturalness of Coq for formalised mathematics is hindered by the fact that Coq's equality is \emph{intensional}: the claim that two terms are equal is a proof that they rewrite to the same normal form. This is not the equality semantics used in classical mathematics, which is what we are concerned with here.
+NOT CORRECT: You can add extensionality to Coq just as you can add excluded middle.
+
+\subsection{Logical Framework}
+One of the first proof systems, De Bruijn's AUTOMATH, was based on the principle that a formal language for mathematics should abstract away from a particular choice of logical foundation \cite{AUTOMATHPTS}. In turn, this led to the principle of proofs as terms in a dependent type theory, a technique which was taken up with the Edinburgh Logical Framework and incorporated into the Twelf system \cite{Twelf}. These systems are largely concerned with software verification and programming language semantics, but the original AUTOMATH was one of the earliest systems to realise a project of mechanised mathematics, including a translation of Landau's \emph{Foundations of Analysis} \cite{LandauGrundlagen, LandauAUTOMATH}. 
+
+\section{Proof System}
+We have settled on the HOL~Light~\cite{HOLLight} theorem prover and its declarative proof language for our formalisation. In this section, we motivate and describe various extensions we have made to the basic proof language and to the automation mechanisms available in HOL~Light. 
+
+\subsection{Declarative Proof}
+Proof assistants accept formal texts in broadly two types: declarative and procedural. The difference is analogous to that between declarative and procedural programming languages. In the procedural approach, the user uses a \emph{tactic} language to compose automated tools in order to verify formalised theorems. While different tactic languages have their own styles and idioms, they tend to support both \emph{forward} reasoning from the premises of a theorem to its conclusion, and \emph{backward} reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural \emph{transformations} rather than logical formulas, which can be entirely absent from procedural proof scripts.
+
+Declarative proof assistants on the other hand, beginning with \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The proof scripts express inferential relations between intermediate results that connect the premises of a theorem to its conclusion. More precisely, a declarative proof script defines a directed graph whose vertices are formulas, sources are premises, and sinks are conclusions, such that any formula is a logical consequence of its predecessors. The flow of the script always moves \emph{forward} from assumptions to goal, with the focus on \emph{what} the logical relations between formulas are, rather than \emph{how} the proof state is transformed to represent such relations. This latter detail is left to the internal operation of the proof assistant, which tries to use automated proof tools to bridge the inferential gaps.
+
+As we explained in our proposal~\cite{ScottPhdProposal}, we wish to analyse Hilbert's text and its deep structure as formalised in higher-order logic, comparing the prose and its formalisation, looking for logical gaps, redundancies, and hopefully enriching our understanding of the informal prose. This, we have concluded, means formalising the proofs in a structure preserving way, leaving the details of inference paths intact. This strategy is most emphasised and idiomatic in the declarative style, and so we have opted to use a proof assistant which supports that style.
+
+\subsection{HOL Light}
+The proof assistant \emph{HOL~Light}~\cite{HOLLight} belongs to the LCF tradition~\cite{LCFtoHOL}. Following that tradition, the assistant encodes the syntax and inference rules of a logic as abstract algebraic data types in a functional language. In particular, the simply-typed lambda calculus~\cite{ChurchTheoryOfTypes} is encoded in Ocaml~\cite{Ocaml}. Each primitive inference rule becomes a function over the type of theorems, which are encapsulated so that simple type checking guarantees that each sequent obtained has been derived from the primitive inference rules.
+
+With this approach, derived rules and embedded proof languages can be implemented as ordinary Ocaml functions. The user is encouraged to work at the Ocaml toplevel, exploiting the open design of the theorem prover to add new derived rules and tactics, or to make more ambitious modifications with entirely new proof tools and embedded languages.
+
+The powerful tactic system, for instance, is implemented as a library of ML combinators which transform a data-structure representing the \emph{goal stack}. Each goal in the stack consists in a goal-formula together with associated hypotheses, which once solved will be turned into a justification function. A theorem is proven by solving all goals in the stack, and assembling the justifications into a final forward proof of the theorem.
+
+We should mention that HOL~Light has particularly simple foundations. Its primitive syntax supports just one function, equality, as well as lambda-abstraction and application. These are governed by just ten simple inference rules and two axioms.
+
+These meet the needs of our proposal. We seek to modify an existing declarative proof language and heavily augment its automated tools beyond the abilities of the tactic system alone. Furthermore, we suggested ways to embed a soft type system for modular theories directly in higher-order logic, disguised under a conservative implementation of the basic inference rules. The flexibility of HOL~Light and its foundational simplicity made it an excellent choice.
+
+\subsection{Mizar~Light}\label{sec:MizarLight}
+Mizar~Light~\cite{MizarLight}, developed by Wiedijk, is a declarative style proof language embedded in HOL~Light as a set of ML combinators, inspired by the primitives of the declarative proof assistant, Mizar~\cite{MizarMathematicalVernacular}. We give an overview of its primitives in Figure \ref{fig:MizarLight}. With the exception of \texttt{\bfseries using}, we have emphasised a declarative semantics: rather than describing \emph{how} each primitive affects the state of the prover, we describe \emph{what} each primitive asserts at a given point in a script.
+
+\begin{figure}
+  \begin{tabular}{|l|l|}
+    \hline
+    Primitive & Meaning \\
+    \hline\hline
+    \texttt{\bfseries theorem} $term$ & Begins a proof of $term$. \\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries proof} $proof$ & Asserts $proof$ as a justification\\&for the current step. \\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries assume} $term$ & Asserts $term$ as a justified \\&assumption at this point. \\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries so} & Refers to the previous step as\\& justifying the current step.\\
+    \hline
+    \texttt{\bfseries have} $term$ & Asserts $term$ as derivable at this point. \\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries thus} $term$ & Asserts $term$ as derivable at which\\&point the (sub)theorem is justified. \\
+    \hline
+    \texttt{\bfseries hence} $term$ & As \texttt{{\bfseries so thus} $term$} \\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries take} $var$ & Identifies $var$ as the witness for the \\&(sub)theorem. \\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries fix} $vars$ & Establishes $vars$ as fixed but \\&arbitrary variables.\\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries consider} $vars$ \texttt{\bfseries st} $term$ & Introduces $vars$ witnessing \\& $term$. \\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries from} $steps$ & Refers to proof steps $steps$ as \\&justifications for the current step.\\
+    \hline
+    \multirow{3}{*}\texttt{\bfseries by} $thms$ & Refers to previously established theorems \\&$thms$ as justifications for the current\\&step. \\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries using} $tactics$ & Augments the justification of this step\\&with $tactics$.\\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries per cases} $cases$ & Begins a case-split into $cases$ with their\\&proofs.\\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries suppose} $term$ & Syntactic sugar to identify the\\&supposition of each $case$. \\
+    \hline
+    \multirow{3}{*}\texttt{\bfseries otherwise} $proof$ & Indicates that the (sub)theorem $thm$ can\\&be established by $proof$, which derives\\&a contradiction from $\neg thm$. \\
+    \hline
+    \texttt{\bfseries set} $bindings$ & Introduces local variable bindings.\\
+    \hline
+    \multirow{2}{*}\texttt{\bfseries qed} & Asserts that the (sub)theorem is justified\\&at this point.\\
+    \hline
+  \end{tabular}\\
+  \caption{An overview of Mizar Light}
+  \label{fig:MizarLight}
+\end{figure}
+
+As noticed by Harrison~\cite{MizarHOL}, the operational semantics of these proof steps can be given in terms of the existing tactic language. The goal stack becomes the state of the proof system. The goal formula becomes the (sub)theorem we wish to prove and the hypotheses become the intermediate facts derived at each step in the proof. Each declarative proof step is translated into a tactic which is applied to the goal to drive the proof \emph{forward}. For instance, 
+
+\begin{center}
+\texttt{{\bfseries consider}} $P$ \texttt{\bfseries st} $\neg$on\_line P a  \texttt{\bfseries by} construct\_triangle
+\end{center}
+
+\noindent becomes a tactic which produces the new subgoal \texttt{$\exists$P. $\neg$on\_line P a}. This goal is immediately solved using the step's justification. By default, steps are justified by HOL~Light's generic MESON tactic \cite{HarrisonMESON}, but some of the other step combinators augment the justification. Here, the \texttt{by} step is used to pass \texttt{construct\_triangle} as an additional argument to MESON. The solved goal produces an existential theorem which is fed to an existential elimination tactic, which adds \texttt{$\neg$on\_line P a} is a hypothesis to the main goal.
+
+Wiedijk later realised that, just as with the tactics, these primitives could be implemented as ordinary ML functions. He used this observation to create the Mizar~Light combinator language. Inspired by HOL~Light's design, he made sure the data structures used by this language are public, making the Mizar~Light system highly customisable: adding a new primitive is often as simple as defining a new function, and we discuss some of our own additions in Section \ref{sec:NewPrimitives}.
+
+\subsection{Declarative Interactivity}
+Wiedijk's basic combinators are based on the original Mizar system, a batch prover, and so his Mizar~Light proof scripts are written in their entirety and then evaluated in one. We find this undesirable, firstly, because the error reporting is not rich enough to show where errors occur in the case of a failed proof. Secondly, we have chosen to implement the algorithm described in \S\ref{sec:DiscoveryImplementation} to run concurrently with the proof system, where it works best by exploiting the user's idle time during \emph{interactive} rather than \emph{batch} proof.
+
+To illustrate the problem, here are the original combinators at work in an extract of one of Wiedijk's example proofs (the details of which are not important):
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \texttt{...}
+
+  \texttt{have "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+
+  \texttt{proof}
+
+  \texttt{\enspace [fix ["p1:Point"; "p2:Point"];}
+
+  \texttt{\quad per cases}
+
+  \texttt{\quad\enspace[[suppose "p1 = p2";}
+
+  \texttt{\qquad\enspace qed from [0] by [LEMMA1]];}
+
+  \texttt{\qquad [suppose "$\neg$(p1 = p2)";}
+
+  \texttt{\qquad\enspace qed from [1]]]];}
+
+  \texttt{...}
+\end{minipage}
+\vspace{0.5cm}
+
+Notice firstly that this is a subproof within a larger proof. Notice secondly that it contains two nested subproofs, case-splitting on the propositions \texttt{p1 = p2} and \texttt{$\neg$(p1 = p2)}. Now the steps of each subproof are collected in lists, which makes for a neatly structured proof document, where the proof tree is reflected by Ocaml data-structures. However, the steps of an interactive proof are supposed to be applied \emph{linearly}, one-by-one, traversing the implicit proof tree. Here is what we prefer to write at the top-level (\texttt{>} marks the ML prompt):
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize  
+  \texttt{> have "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+
+  \texttt{> proof}
+
+  \texttt{> fix ["p1:Point"; "p2:Point"]}
+
+  \texttt{> per cases}
+
+  \texttt{> suppose "p1 = p2"}
+
+  \texttt{> qed from [0] by [LEMMA1]}
+
+  \texttt{> suppose "$\neg$(p1 = p2)"}
+
+  \texttt{> qed from [1]}
+\end{minipage}
+\vspace{0.5cm}
+
+The linearisation of this structure could be achieved by rewriting Wiedijk's proof system in a continuation-passing style. However, the development of HOL~Light has emphasised backward-compatibility, and so wherever possible, we wish to build on existing implementation.
+
+\subsubsection{Interactive Subproofs}\label{sec:NewPrimitives}
+ We needed an interactive version of the \texttt{proof} step combinator. To that end, we wrote the \texttt{lemma} function, which takes a term to prove and introduces a new subgoal. Our function is not as powerful as the \texttt{proof} \emph{combinator}, which can augment an arbitrary step by asserting a subproof as its justification. For instance, it is possible to write:
+
+\vspace{0.5cm}
+\begin{minipage}{10cm}
+  \texttt{consider P st $\neg$on\_line P a}
+
+  \texttt{proof}
+
+  \texttt{[ otherwise have "$\forall$b P. on\_line P b"}
+
+  \texttt{\enspace\enspace\enspace hence contradiction by two\_dimensions ]}
+\end{minipage}
+\vspace{0.5cm}
+
+Here, a subproof is being used to justify the existential subgoal which is created by the \texttt{\bfseries{consider}} step. Our \texttt{lemma} function does not allow this, and becomes a standalone step in its own right. It must therefore take the lemma to be proven as argument. In this way, it replaces the combination:
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \texttt{have "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+
+  \texttt{proof}
+
+  \texttt{\enspace \ldots}
+\end{minipage}
+\vspace{0.5cm}
+
+\noindent with
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \texttt{> lemma "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+
+  \texttt{> \enspace \ldots}
+\end{minipage}
+\vspace{0.5cm}
+
+\subsubsection{Interactive Case-splits}
+Case splits are ultimately justified by proving a disjunction of all considered cases. However, in the Mizar-style of proof and as is common in ordinary mathematical proof, the particular disjunction is never stated explicitly. Consider again the extract of Mizar Light code:
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \texttt{\quad per cases}
+
+  \texttt{\quad\enspace[[suppose "p1 = p2";}
+
+  \texttt{\qquad\enspace qed from [0] by [LEMMA1]];}
+
+  \texttt{\qquad [suppose "$\neg$(p1 = p2)";}
+
+  \texttt{\qquad\enspace qed from [1]]]];}
+\end{minipage}
+\vspace{0.5cm}
+
+{\samepage Here, there are two cases being considered \texttt{p1 = p2} and \texttt{$\neg$(p1 = p2)}. The disjunction which justifies them as exhaustive
+\begin{center}\texttt{p1 = p2 $\vee$ $\neg$(p1 = p2)}\end{center}}
+
+\noindent does not appear in the proof text. Instead, it is assembled by the \texttt{per} combinator from the first element of each subproof. The step then folds a case-splitting tactic over the list of cases, incorporating the tactics generated by their respective subproofs.
+
+The important point here is that the implicit disjunction must be determined before any of the subproof tactics are applied. This is possible, because \texttt{per cases} takes the full list of cases, from which the disjunction can be assembled. But this strategy will not work if we are to linearise the subproofs and apply each step interactively, since the full disjunction will not be known until all cases are interactively solved.
+
+Harrison's original Mizar mode for HOL Light had better support for interactive case-splitting~\cite{MizarHOL}. In his system, the disjunction is assembled at the very end of the proof, when all goals have been solved and a forward proof reconstituted from the tactic justification. The drawback is that the user is only made aware of an unsuccessful case-split at the very end of the proof.
+
+To overcome this drawback, we have implemented two functions \texttt{case} and \texttt{end}. The \texttt{case} function is used to introduce a new case term $\phi$. It then generates two subgoals, the first with $\phi$ as hypothesis, and the second with $\neg\phi$ as hypothesis. The \texttt{case} step, therefore, has performed a case-split on $\phi\vee\neg\phi$, and then invites the user to prove the goal on the hypothesis of $\phi$. Once the goal is solved, the one remaining goal will have $\neg\phi$ as its hypothesis. 
+
+The user now proceeds by introducing the \emph{next} case, using the \texttt{case} function again with a new term, say $\psi$. Two subgoals are again generated, one with $\psi$ and the other with $\neg\psi$ as hypothesis.
+
+By the time the user has considered and proven all cases, the one remaining subgoal will have the negations of every considered case in its hypotheses. If the cases are exhaustive, these will entail a contradiction\footnote{We assume we are only interested in \emph{classical} proofs. Otherwise, this does not necessarily follow.}. This is where the \texttt{end} step is used. It will automatically take all the negated cases, identifying them by a case-label \texttt{C} in the goal-stack, and use them as a justification for $\bot$.
+
+Suppose, for example, that we have a theorem $\phi \longrightarrow P \vee Q \vee R$ and suppose that each of $P$, $Q$ and $R$ can solve a goal $G$ using the implicit automation built into Mizar~Light. Then we can write the proof:
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \texttt{> theorem "$G$"}
+
+  \texttt{> case "$P$" }
+
+  \texttt{>\quad qed}
+
+  \texttt{> case "$Q$"}
+
+  \texttt{>\quad qed}
+
+  \texttt{> case "$R$"}
+
+  \texttt{> end by $\phi$}
+\end{minipage}
+\vspace{0.5cm} 
+
+The resulting tree of goal-stacks is depicted in the following figure.
+
+% \vspace{0.5cm}
+%   \Tree{
+%     & \sgoal{$G$}{}{}
+%     \Bk{-0.5}{2.5}{dl}_{\texttt{case}} \Bk{-0.5}{2.5}{dr}& & &\\
+%     \sgoal{$G$}{}{$P$}\Bk{-0.5}{2.5}{d} & & \sgoal{$G$}{C}{$\neg P$} 
+%     \Bk{-0.5}{4.5}{dl}_{\texttt{case}} \Bk{-0.5}{4.5}{dr}& &\\
+%     {\texttt{qed}}&\sgoaltwo{$G$}{C}{$\neg P$}{}{$Q$}\Bk{-2.5}{2.5}{d}& &
+%     \sgoaltwo{$G$}{C}{$\neg P$}{C}{$\neg Q$}
+%     \Bk{-2.5}{6.5}{dl}_{\texttt{case}} \Bk{-2.5}{6.5}{dr} &\\
+%     &{\texttt{qed}}&\sgoalthree{$G$}{C}{$\neg P$}{C}{$\neg Q$}{}{$R$}\Bk{-4.5}{2.5}{d}&&
+%     \sgoalthree{$G$}{C}{$\neg P$}{C}{$\neg Q$}{C}{$\neg R$}\Bk{-4.5}{2.5}{d}\\
+%     &&{\texttt{qed}}&&{\texttt{end}}}
+% \vspace{0.5cm}
+
+The final \texttt{end} step is justified since 
+
+\begin{displaymath} 
+P \vee Q \vee R, \neg P, \neg Q, \neg R \vdash \bot
+\end{displaymath}
+
+This approach does not have the drawback of Harrison's solution. Whenever the case splitting is not exhaustive, the \texttt{end} step will fail at the point at which it is evaluated, rather than at the very end of the proof when the final justification is assembled. 
+
+For the sake of completeness, we return to our example proof. Our functions \texttt{case} and \texttt{end} allow us to write
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \texttt{> lemma "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+
+  \texttt{>\quad fix ["p1:Point"; "p2:Point"]}
+
+  \texttt{>\quad case "p1 = p2" }
+
+  \texttt{>\qquad qed from [0] by [LEMMA\_1] }
+
+  \texttt{>\quad case "$\neg$(p1 = p2)" }
+
+  \texttt{>\qquad qed from [1]}
+
+  \texttt{>\quad end}
+\end{minipage}
+\vspace{0.5cm}
+
+for the the proof tree:
+
+% \vspace{0.5cm}
+% \Tree{
+% & \goal{$\forall$p1 p2.$\exists$l.p1 ON}{\quad$\wedge$ p2 ON l}{$\vdots$}{$\vdots$}
+%   \Bk{-3.5}{5.5}{d}^{\texttt{fix}} & & \\
+% & \goal{$\exists$l.p1 ON l}{$\wedge$ p2 ON l}{$\vdots$}{$\vdots$}
+%   \Bk{-3.5}{7.5}{dl}_{\texttt{case}} \Bk{-3.5}{7.5}{dr} & &\\
+%   \goaltwo{$\exists$l.p1 ON l}{$\wedge$ p2 ON l}{}{p1 = p2}{}{$\vdots$}
+%   \Bk{-5.5}{0}{d} & &
+%   \goaltwo{$\exists$l.p1 ON l}{$\wedge$ p2 ON l}{C}{$\neg$p1 = p2}{}{$\vdots$}
+%   \Bk{-5.5}{9.5}{dl}_{\texttt{case}} \Bk{-5.5}{9.5}{dr}& \\
+%   {\text{$\vdots$}}\Bk{-2.0}{2.0}{d} & 
+%   \goalthree{$\exists$l.p1 ON l}{$\wedge$ p2 ON l}{C}{$\neg$p1 = p2}{}{$\neg$p1 = p2}{}{$\vdots$}
+%   \Bk{-7.5}{0}{d}
+%   & & 
+%   \goalthree{$\exists$l.p1 ON l}{$\wedge$ p2 ON l}{C}{$\neg$p1 = p2}{C}{$\neg\neg$p1 = p2}{}{$\vdots$}\Bk{-7.5}{0}{d}\\
+%   {\texttt{qed}} & {\text{$\vdots$}}\Bk{-2.0}{2.0}{d} & & {\texttt{end}}\\
+%   & {\texttt{qed}} & &}
+% \vspace{0.5cm}

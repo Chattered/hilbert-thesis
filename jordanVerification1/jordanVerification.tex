@@ -1,0 +1,1509 @@
+\chapter{The Formalisation of the Jordan Curve Theorem for Polygons}\label{chapter:JordanFormalisation}\label{chapter:JordanVerification}
+% In this chapter, we will analyse our HOL~Light~\cite{HOLLight} verification of the Jordan Curve Theorem for Polygons. This theorem appears as Theorem~9 in the 10th edition of Hilbert's \emph{Foundations of Geometry}. The verification might stand on its own: the theorem's formulation does not appeal to earlier definitions or theorems, and of all the proofs we have considered, its verification is the most complicated by an order of magnitude. But the theorem also serves as a useful case-study for the tools that we have developed up to this point: the linear reasoning tactic from Chapter~\ref{chapter:LinearOrder} was used pervasively in verifying the theorem, becoming the crucial work-horse for solving and exploring complex linear ordering problems. We leveraged the theory of Half-Planes from Chapter~\ref{chapter:HalfPlanes} as the basis for key lemmas on two-dimensional ordering. Lastly, the discovery algebra described in Chapter~\ref{chapter:Automation} was needed throughout to verify incidence problems and to identify case-splits and suggest proof strategies based on discovered facts. 
+
+In this chapter, we will introduce our HOL~Light~\cite{HOLLight} formalisation of the Jordan Curve Theorem for Polygons. This theorem appears as Theorem~9 in the 10th edition of Hilbert's \emph{Foundations of Geometry}. The verification might stand on its own: the theorem's formulation does not appeal to earlier definitions or theorems, and of all the proofs we have considered, its verification is the most complicated by an order of magnitude. But the theorem also serves as a useful case-study for the tools that we have developed up to this point: the linear reasoning tactic from Chapter~\ref{chapter:LinearOrder} was used pervasively in verifying the theorem, becoming the crucial work-horse for solving and exploring complex linear ordering problems. We leveraged the theory of Half-Planes from Chapter~\ref{chapter:HalfPlanes} as the basis for key lemmas on two-dimensional ordering. Lastly, the discovery algebra described in Chapter~\ref{chapter:Automation} was needed throughout to verify incidence problems and to identify case-splits and suggest proof strategies based on discovered facts. 
+
+\section{Organisation}
+The verification is divided neatly into two parts, corresponding to the verification of two theorems:
+\begin{enumerate}
+  \item Given two points in the plane of a simple polygon, any polygonal path between them must cross the simple polygon.
+  \item Given three points in the plane of a simple polygon, there is a polygonal path between two of them.
+\end{enumerate}
+
+The formulation of these two lemmas is discussed in \S\ref{sec:JordanFormulation}. This section, together with Appendix~\ref{app:JordanVerification}, covers everything one needs to know about \emph{what} we have verified, and can be read independently. The rest of the chapter covers the auxiliary concepts and associated lemmas which are needed for the actual verification.
+
+When we discuss the verifications, we will cover the same general topics. First, we shall give an overview of the proof structure, effectively amounting to a sketch proof of the theorem. From these, we shall explain how we have formalised the key concepts needed in the proofs. In the case of the first part of the Polygonal Jordan Theorem, these are the notions of triangle interiors and exteriors and the notion of a ``crossing'' of a triangle by a polygonal path. For the second part of the theorem, we have the notion of ``lines-of-sight'' and polygon rotations. 
+
+These notions are supported by a suite of lemmas. Consistent with the synthetic style of geometric proof, these lemmas generally break down into one of two forms. On the one hand, we have lemmas which introduce points and other objects in a geometrical configuration. On the other hand, we have lemmas which allow us to infer properties of these configurations. The two sorts of lemmas are used in tandem. We build up complex figures using the ``introduction'' rules, and then use the other rules to satisfy the hypotheses of yet more ``introduction'' rules, and so on. Many of these lemmas are interesting in their own right, and we shall pick a few for a closer examination.
+
+Next, we shall present extracts of what we hope are interesting proofs, ones which highlight the benefits and drawbacks of our representations in terms of the resulting proof mechanics. We also hope to use these extracts to convince the reader that we have stayed faithful to the synthetic style of proof, even as they grow significantly in complexity. This, we suggest, is no mean feat. Consider that the proofs from Chapter~\ref{chapter:Group2}, when verified, only take a dozen or so steps. The proofs in this chapter frequently run to hundreds, and we suspect this really is due to the complexity of the synthetic reasoning involved. It was expected, then, that we would have to tailor the declarative proof mode of Mizar~Light to help us through difficult spots. We shall discuss a few customisations in later sections.
+
+In this chapter, we will use the word ``formulate'' to refer to the translating of intuitive ideas into a mathematically precise form. We will reserve the word ``formalise'' for the translation of a mathematically precise statement into the language of higher-order logic.
+
+\section{Previous Work}
+The Jordan Curve Theorem has some notoriety within the formal verification community, and has long been regarded as a major milestone, one which could demonstrate the feasibility of formal verification on non-trivial mathematic problems. The MIZAR~\cite{MizarMathematicalVernacular} community first began the verification in 1991, and completed the special case for polygons in 1996. The full proof was completed in 2005. In the same year, Hales completed the proof in HOL~Light~\cite{HalesJordanCurve}. 
+
+Both proofs use the special case for polygons as a lemma, though in a restricted form: in the case of the MIZAR proof, only polygons with edges parallel to axes are considered. In Hales' proof, the polygon is restricted to lie on a grid. Moreover, the formulations are algebraic rather than synthetic, and so are outside the scope of Hilbert's and Veblen's formulations.
+
+In 2009, Dufourd~\cite{DufourdJordanCurve} formally verified a constructive proof of the Discrete Jordan Curve Theorem. This theorem characterises Jordan curves in terms of a ``ring'' of faces in a subdivision of a plane or sphere. This is a more practical achievement, since we can expect this sort of characterisation to be more useful to computer scientists trying to express and reason about topological properties computationally. However, our interest here is in Hilbert's formulation and a synthetic proof of the Jordan Curve Theorem in ordered geometry.
+
+%\section{Foundational Issues}
+% The proof that there are at most two follows from Veblen's second lemma. With this lemma, we can take three points $P$, $Q$ and $R$ and draw paths so that the points $P'$, $Q'$ and $R'$ meet around any chosen segment such as $AB$ in Figure~\ref{fig:meetingPoints}. We can prove that a point can only be one of two sides of $AB$, and therefore that two of three points can be connected, and thus lie on the same region.
+
+% \begin{figure}
+% \centering\includegraphics[scale=0.5]{navigate.pdf}
+% \caption{Meeting Points}
+% \label{fig:meetingPoints}
+% \end{figure}
+
+% Many of Hilbert's definitions and theorems are first-order logic, and indeed, much of our formalisation makes no essential use of higher-order or number theoretical notions. But as with Hilbert`s Theorem~6 which we discussed in \S\ref{sec:Theorem6}, things are not so clear for Hilbert's definition of polygons.
+
+% It seems easy to excuse Hilbert's lack of clarity on these matters, since he was working before symbolic first-order logic had been invented. But then, when we consider the reviews by Veblen and Poincar\'{e}~\cite{VeblenHilbertReview,PoincareReview}, we realise that the community was certainly interested in the mechanisation of logic. Both reviews anticipate the mechanical verification of Hilbert's geometry, and both mention the work of Peano, whose formulations of logic and mathematics were higher-order, and even admitted recursive definitions. Peano's ideas would later be developed in Russell's \emph{Principles of Mathematics}~\cite{PrinciplesOfMathematics}, which led directly to Russell and Whitehead's \emph{Principia Mathematica}.
+
+% We realise there is some controversy about how strong the logic should   , we have not been shy about using 
+
+% \begin{quote}[The axioms] presuppose only the validity of the operations of logic and counting (ordinal number).\end{quote}
+
+% As with Hilbert's Theorem~6 \S\ref{sec:Theorem6}, a formulation of polygon and polygonal path raises a number of questions relating to our logical foundations. As we have previously stated, Hilbert's work predates the systematic development of first-order logic, and 
+
+\section{Formulation}\label{sec:JordanFormulation}
+
+% \begin{quote}
+%   DEFINITION. A set of segments $AB$, $BC$, $CD$, $\ldots$, $KL$ is called a \emph{polygonal path} that connects the points $A$ and $L$. Such a polygonal path will also be briefly denoted by $ABCD\ldots KL$. The points inside the segments $AB$, $BC$, $CD$, $\ldots$, $KL$ as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ are collectively called the \emph{points of the polygonal path}. 
+% \end{quote}
+
+%In addition, for a polygonal path $A$, $B$, $C$, $\ldots$, $L$, we shall call the segments $AB$, $BC$, $CD$, $\dots$, $KL$ the \emph{edges} of the polygonal path.
+
+% Contrary to his conventions~\S\ref{sec:HilbertConvention}, Hilbert does not insist that the points involved here are distinct. Indeed, he adds an explicit distinctness clause when he defines polygons (see below).
+
+% The definition leaves much to be desired when it comes to formalisation. Hilbert has previously defined segments (\S\ref{sec:SegmentDefinition}) as unordered pairs, and it is trivial to define a set of such segments. But as with Theorem~6 (see \S\ref{sec:Theorem6}), the informal notation is doing heavy lifting on the constraints. If we are to take Hilbert at his word and formalise a polygonal path as a set, we will need to insist that all but at most two elements of this set share their endpoints with at least two other segments. The remaining element(s) must share exactly one of their endpoints with another segment.
+
+% This is fairly typical of prose mathematics, where the notation itself because the means to establish constraints and the mechanism of reasoning. Consider again, Veblen's proof from the last chapter, to see how mathematical proofs can involve complicated arguments, not about the mathematical objects of the theory, but the \emph{symbols} used to denote them:
+
+% \begin{quote}Let this segment be one segment of a broken line $Q_kQ_{k+1}\cdots Q_{j-1}Q_j$ of segments of $q$ not meeting $P_1P_3$ but such that $Q_{k-1}Q_k$ and $Q_jQ_{j+1}$ do each have a point or endpoint in common with $P_1P_3$ ($1 \leq k < j \leq m$; if $k = 1$, $Q_{k-1} = Q_m$; if $j = m$, $Q_{j+1} = Q_1$). If $O_j$ is the point common to $P_1P_3$ and $Q_jQ_{j+1}$ or $Q_{j+1}$, and $O_k$ is the point common to $P_1P_3$ and $Q_{k-1}Q_k$ or $Q_{k-1}$, the broken line $O_kQ_kQ_{k+1}\cdots Q_{j-1}Q_jO_j$, has a point inside and also a point outside the triangle $P_1P_2P_3$ and cuts the broken line $P_1P_2P_3$ only once.\end{quote}
+
+% As we described Hilbert's Theorem~6 (see \S\ref{sec:Theorem6}) as a metatheorem, we would describe Veblen's argument here as a \emph{metaproof}. The use of such metatheoretical arguments in axiomatic geometry probably goes back to Euclid, who 
+
+% These are complicated constraints, the consequences of which are likely to leave us laboured with complex proofs about the existence of shared endpoints and tedious case-splits. 
+
+% We decided that if Hilbert is going to let his notation do heavy lifting, then we should work to formalise the notation directly. As such, we opted to represent polygonal paths as their finite sequence of points, from which the original polygonal paths can be recovered. With this definition, all the constraints are implicit. We also generalise the definition in order to later recover an equivalence relation (as we did for rays \S\ref{sec:Rays}). In particular, we allow the sequence to contain zero or one point. Finally, we represent finite sequences using lists, in the hope that the heavy lifting in the notation can be carried out as computations on concrete list instances.
+
+TODO: Discuss or refer to an earlier discussion about using lists to handle ``metalevel'' definitions, and why lists are somewhat justified by the fact that all infinite structures are now abstractions over geometric objects since we have derived the axiom of infinity.
+
+The list library in HOL Light is fairly impoverished (compared with, say, that of Isabelle/HOL), and so our verification had to take a detour as we added new function definitions and theorems for lists. For instance, in order to recover the edges of a polygonal path, we must take adjacent pairs of the points in its vertex list. We can do this by following a standard pattern in functional programming, shown in Figure~\ref{fig:AdjacentSpec}, which zips all but the last element of a list with its tail. However, it is generally easier and requires much less unfolding to compute directly with the recursive specification of the function. All the definitions of auxiliary functions, such as the list indexing function $\code{el}$ are given in Appendix~\ref{app:JordanVerification}.
+
+\begin{boxedfigure}
+\begin{align*}
+  &\code{adjacent}\; : \; [\alpha] \rightarrow [(\alpha,\alpha)]\\
+  &\code{adjacent}\ [P_0,P_1,P_2,\ldots,P_n]\\
+  &\quad=\code{zip}\ (\code{butlast}\ [P_0,P_1,P_2,\ldots,P_n])\ (\code{tail}\ [P_0,P_1,P_,2,\ldots,P_n])\\
+  &\quad= \code{zip}\ \begin{array}[t]{rcccccl}\lbrack & P_0,&P_1,&P_2,&\ldots,&P_{n-1}&\rbrack\\
+    \lbrack & P_1,&P_2,&P_3,&\ldots,&P_n&\rbrack
+  \end{array}\\
+  &\quad= [(P_0,P_1),(P_1,P_2),(P_2,P_3),\ldots,(P_{n-1},P_n)]\\\\
+  &\code{adjacent}\ [] = []\\
+  &\code{adjacent}\ (\cons{x}{xs}) = []\\
+  &\code{adjacent}\ (\cons{x}{\cons{y}{xs}}) = \cons{(x,y)}{\code{adjacent}\ (\cons{y}{xs})}.
+\end{align*}
+\caption{Specifications for $\code{adjacent}$}
+\label{fig:AdjacentSpec}
+\end{boxedfigure}
+
+With this function, we can define the points of a polygonal path. As per Hilbert's definition, these are the points of the vertex list and the points inside each individual segment $(x,y)$. We can test for each using the list-membership predicate $\code{mem}$.
+\begin{equation}\label{eq:OnPolyPath}
+  \begin{split}
+    &\code{on\_polypath}\,:\,[\code{point}] \rightarrow \code{point} \rightarrow \code{bool}\\
+    &\code{on\_polypath}\ Ps\ P \iff \\
+    &\quad\code{mem}\ P\ Ps\vee\,\exists x\ y.\; \code{mem}\ (x,y)\ (\code{adjacent}\ Ps) \wedge \between{x}{P}{y}.
+  \end{split}
+\end{equation}
+
+Next, we need to formalise the notion of region as used in the Polygonal Jordan Curve Theorem. We shall follow our approach when formalising the notions of \emph{half-plane} and \emph{rays} (see \S\ref{sec:HalfPlanesFormulation}), and understand these regions as equivalence classes under a suitable relation, namely one which requires there to be a polygonal path between two given points. We shall call this relation ``path-connectedness'' and we shall say that two points satisying it are ``path-connected.''
+\begin{align*}
+  &\code{path\_connected}\,:\,\code{plane}\rightarrow(\code{point} \rightarrow \code{bool}) \rightarrow    \code{point} \rightarrow \code{point}\\
+  &\code{path\_connected}\ \alpha\ figure\ P\ Q \iff\\
+  &\quad\exists path.\; path \neq []\\
+  &\qquad\wedge\,(\forall R.\ \code{mem}\ R\ path \implies \onplane{R}{\alpha})\\
+  &\qquad\wedge\,\code{head}\ path = P \wedge \code{last}\ path = Q\\
+  &\qquad\wedge\,\code{disjoint}\ (\code{on\_polypath}\ path)\ figure.
+\end{align*}
+
+Note that, when formalised, this relation is defined on the set of all points in space, parameterised on a plane $\alpha$ and a $figure$. Instead of a plane parameter, we could have added constraints to the figure and path, such as requiring that they all lie in exactly one plane. The tradeoffs are in the number of constraints in the definition compared with the number of constraints on later theorems. Here, we have opted for the simpler definition.
+
+A figure here is represented by a predicate-set of all the points on the figure. Thus, the relation on points in the plane $\alpha$ which are path-connected with respect to a polygonal path $Ps$ can be cleanly expressed by $\code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)$. This is obviously an equivalence relation.
+
+\subsection{Verifying Equivalence}\label{sec:segConnectEquivalence}
+The proof that we have an equivalence relation boils down entirely to properties of lists. To prove reflexivity, we use the one-element polygonal path (excluded in Hilbert's definitions). Our witness for symmetry is obtained by reversing the supplied polygonal path. Our witness for transitivity is obtained by appending the two supplied polygonal paths. To reason about these objects, we first proved some extra simplification rules for our list functions:
+\begin{align*}
+  &xs \neq [] \wedge ys \neq []\\ 
+  &\quad\implies\code{adjacent}(\append{xs}{ys})\\
+  &\qquad\qquad = \append{\append{\code{adjacent}\ xs}{(\code{last}\ xs,\ \code{hd}\ ys)}}{\code{adjacent}\ ys}\\
+  &n + 1 < \code{length}\ xs\\
+  &\quad\implies \el{n}{(\code{adjacent}\ xs)} = (\el{n}{xs}, \el{(n+1)}{xs})\\
+  &\code{length}\ xs = \code{length}\ ys\\
+  &\quad\implies\code{reverse}\ (\code{zip}\ xs\ ys) = \code{zip}\ (\code{reverse}\ xs)\ (\code{reverse}\ ys)\\
+  &\code{butlast}\ (\code{reverse}\ xs) = \code{reverse}\ (\code{tail}\ xs)\\
+  &\code{tail}\ (\code{reverse}\ xs) = \code{reverse}\ (\code{butlast}\ xs).
+\end{align*}
+
+With these, we can prove that path-connectedness defines an equivalence relation on points in the plane which are not points of the figure. The constraint appears as an assumption on reflexivity. 
+
+Obviously, we will need these three theorems \emph{somewhere} in our later verification, though it turns out that they are not used very often. They can be seen, at least, as a sanity check on our notion of path-connectedness.
+\begin{align*}
+  \;&\code{on\_plane}\ P\ \alpha \wedge \neg(figure\ P) \implies \code{path\_connected}\ \alpha\ figure\ P\ P\\
+  \;&\code{path\_connected}\ \alpha\ figure\ P\ Q \implies \code{path\_connected}\ \alpha\ figure\ Q\ P\\
+  \;&\code{path\_connected}\ \alpha\ figure\ P\ Q \wedge \code{path\_connected}\ \alpha\ figure\ Q\ R\\
+  &\qquad\implies \code{path\_connected}\ \alpha\ figure\ P\ R.
+\end{align*}
+
+Note that for the rest of the chapter, we shall elide all terms involving $\code{on\_plane}$, and thus present this verification as if from planar rather than spatial axioms. This is merely for clarity. Our actual verification is conditional on information about planes, and we have restored the conditions in Appendix~\ref{app:JordanVerification}, where it is clear they only serve to relativise all other objects to the same plane $\alpha$. Had we been working from planar axioms, all of these terms would be absent (see \S\ref{sec:RelativisingPlane} for some discussion).
+
+\subsection{Polygons}\label{sec:polygonFormalisation}
+Hilbert continues his definitions as follows:
+\begin{quote}
+  If the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ all lie in a plane and the point $A$ coincides with the point $L$ then the polygonal path is called a \emph{polygon} and is denoted as the polygon $ABCD\ldots K$. The segments $AB$, $BC$, $CD$, \ldots, $KA$ are also called the \emph{sides of the polygon}. The points $A$, $B$, $C$, $D$, $\ldots$, $K$ are called the \emph{vertices of the polygon.} Polygons of $3$, $4$, $\ldots$, $n$ \emph{vertices} are called \emph{triangles}, \emph{quadrilaterals}, $\ldots$, \emph{n-gons}.
+\end{quote}
+
+The term ``side'' is ambiguous between the segments of a polygon and the half-planes of a given line. As such, we shall refer to the segments defining both a polygonal path and a polygon as ``edges'', and reserve ``side'' for half-planes. These definitions will help us orientate ourselves within the familiar world of geometry, but we do not believe they correspond to any useful abstractions on the formalisation side. As such, we shall only use them informally to explain parts of the verification. The important definition for the formalisation is the one for \emph{simple polygons}:
+\begin{quote}
+  DEFINITION. If the vertices of a polygon are all distinct, none of them falls on [an edge] and no two of its nonadjacent [edges] have a point in common, the polygon is called \emph{simple}.
+\end{quote}
+
+Combining this with the definition of polygon gives us the following formalisation:
+\begin{equation}\label{eq:SimplePolygonDef}
+  \begin{split}
+    &\code{simple\_polygon}\ \alpha\ Ps \iff \\
+    &\qquad 3 \leq \code{length}\ Ps\\
+    &\qquad\wedge \code{head}\ ps = \code{last}\ Ps\\
+    &\qquad\wedge (\forall P.\;\code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha)\\
+    &\qquad\wedge \code{pairwise}\ (\neq)\ (\code{butlast}\ Ps)\\
+    &\qquad\wedge \neg(\exists P\;Q\;X.\; \code{mem}\;X\;Ps\wedge\code{mem}\;(P,Q)\;(\code{adjacent}\;Ps)\wedge\between{P}{X}{Q})\\
+    &\qquad\wedge \code{pairwise}\ (\lambda(P,Q)\;(P',Q').\;\neg(\exists X. \between{P}{X}{P'} \wedge \between{Q}{X}{Q'}).
+  \end{split}
+\end{equation}
+
+In this definition, we have introduced the polygon's plane as a parameter, but we are aware of that this could be more elegantly refactored. Any simple polygon uniquely determines the plane on which it lies, and so it might have been more elegant to hide the plane witness by an existential in the body of the definition. A function could be then be defined to extract the unique witness from the list $Ps$ when $Ps$ is known to be a simple polygon. 
+
+The definition would still be rather unweildly. First, we have a ``magic'' number 3,\footnote{The number $4$ would do just as well.} which is needed to rule out the degenerate case of a point polygon $[P,P]$ which slips past Hilbert's constraints. The next two clauses are straightforward, and define $Ps$ to be a polygon according to Hilbert's definitions. The real complexity is in the last three clauses which define the polygon as \emph{simple}. 
+
+Given the unweildiness of this formalisation, we must be wary of subtle mistakes. These could lead either to some figures being classed as simple polygons when they should not be, or some figures not being classed as simple polygons when they should. The first sort of error must show up in the verification. The second sort of error is more insidious, since it will only cause our verification to become all too easy. In the worst case, the definition will be unsatisfiable and all theorems of simple polygons will become trivial. This might happen if, say, we had removed the use of \code{butlast} above (in fact, it almost \emph{did}).
+
+Because of these concerns, we must pay attention to the behaviour of the function $\code{pairwise}$. One might think that $\code{pairwise}\, R$ would check whether the relation $R$ holds across all pairs of elements drawn from its argument list, which would be the case if $\code{pairwise}$ were equivalent to $\code{all} \circ \code{lift2}\ R$ for the usual list monad. If this were the case, the definition would be unsatisfiable, since it is always possible to draw some pair $(P,P)$ from a non-empty list, and this pair cannot satisfy $(\neq)$. But in fact, \code{pairwise} only checks half the pairs, and so can be satisfied even when the supplied relation is irreflexive (such as $(\neq)$ above) and even anti-symmetric. Consider the evaluation of $\code{pairwise}\ (<)\ [1,2,3,4]$:
+\begin{align*}
+  \code{pairwise}\ (<)\ [1,2,3,4,5] &= 1 < 2 < 3 < 4 \\
+  &\quad\wedge\; 2 < 3 < 4 \\
+  &\quad\wedge\; 3 < 4\\
+  & = \top.
+\end{align*}
+
+For now, inspection is the best way to inspire confidence in the definition, but there are two other small reassurances. Firstly, we have verifed a quick sanity check for triangles. Secondly, the definition does not appear until the final hurdles of our formal verification. Our verification of Veblen's first lemma, for instance, makes no reference to simple polygons. Thus, there is plenty of verified theory which can be understood independently of the above definition.
+\begin{equation*}
+  \begin{split}
+    \; \Triangle{a}{A}{B}{C} \\
+    \implies \code{simple\_polygon}\ [A,B,C,A].
+  \end{split}
+\end{equation*}
+
+\subsection{Goal Theorems}
+In \S\ref{sec:segConnectEquivalence}, we said that we would understand the regions defined by the polygonal Jordan Curve Theorem as equivalence classes under path-connectedness. If we were to follow the style of Chapter~\ref{chapter:HalfPlanes}, we would quotient an appropriate data-type under this relation and talk of regions as abstract objects.
+ 
+We shall not, however. We are not planning as of now to build on the Polygonal Jordan Curve Theorem, and so the abstraction can wait. We hope, though, that some of the example proofs in this chapter show that there \emph{was} a substantial pay-off when talking abstractly of \emph{half-planes}, while there was no need to talk abstractly of rays. This gives us some perspective on both Hilbert and Veblen's remarks that the the Polygonal Jordan Curve Theorem is principally founded on the theory of half-planes.
+
+Abstractly, then, we would express the Polygonal Jordan Curve Theorem by saying that a simple polygon separates the plane into exactly two regions. Talking instead in terms of the underlying representation and path-connectedness, we say firstly that there are at least two points in the plane and not on the polygon which are not path-connected. Secondly, we say that of any three points in the plane and not on the polygon, at least two of them can be path-connected.
+
+There is a final claim: one of the regions is unbounded. This theorem does not appear in Veblen's thesis, and we have left its verification to future work. Hilbert formulates the claim by saying that exactly one of the regions contains straight lines. Since we are avoiding talk of regions directly, we shall generalise and formulate it as follows:
+\begin{itemize}
+\item there exists a line in the plane of a polygonal path which does not intersect the polygonal path;
+\item given two lines $a$ and $b$ in the plane of a polygonal path which does not intersect the polygonal path, all points of $A$ and all points of $B$ are path-connected with respect to the polygonal path.
+\end{itemize}
+
+In the first part, the rough idea is that there is at least one region containing a straight line, while in the second, that there is at most one region containing a straight line. The formulation needs some discussion. 
+
+We have dropped the unnecessary condition that the polygonal path is a simple polygon from both parts. We have also dropped any mention of path-connectedness and path-connected regions from the first part. This condition appears in the second part, and can be obtained for the line $a$ simply by setting $a=b$.
+
+With the breakdown considered, we turn to the formalisation. Again, we must pay careful attention to the details. Our later verification demonstrates that these formalisations are provable, but we have left the matter of whether they are ``too easily provable'' to inspection.
+\begin{equation}\label{eq:jordanFormal1}
+  \begin{split}
+    &\code{simple\_polygon}\ \alpha\ Ps\\
+    &\implies \exists P\ Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
+    &\qquad\wedge \neg\code{on\_polypath}\ Ps\ P \wedge \neg\code{on\_polypath}\ Ps\ Q\\
+    &\qquad\wedge \neg\code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q.
+  \end{split}
+\end{equation}
+
+\begin{equation}\label{eq:jordanFormal2}
+  \begin{split}
+  &\code{simple\_polygon}\ \alpha\ Ps\\
+  &\wedge \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha \wedge \code{on\_plane}\ R\ \alpha\\
+  &\wedge \neg\code{on\_polypath}\ Ps\ P\wedge \neg\code{on\_polypath}\ Ps\ Q\wedge \neg\code{on\_polypath}\ Ps\ R\\
+  &\implies \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q\\
+  &\qquad\quad\vee \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ R\\
+  &\qquad\quad\vee \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ Q\ R.
+     \end{split}
+\end{equation}
+
+\begin{equation}
+  \begin{split}\label{eq:jordanFormal3}
+  &(\forall P. \code{on\_polypath}\ Ps\ P \implies \code{on\_plane}\ P\ \alpha)\\
+  &\implies \exists a.\; \forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha
+  \wedge \neg\code{on\_polypath}\ P\ Ps.
+     \end{split}
+\end{equation}
+
+\begin{equation}
+  \begin{split}\label{eq:jordanFormal4}
+  &(\forall P.\; \code{on\_polypath}\ Ps\ P \implies \code{on\_plane}\ P\ \alpha)\\
+  &(\forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ a)\\
+  &(\forall P.\; \code{on\_line}\ P\ b \implies \code{on\_plane}\ P\ b)\\
+  &\implies \code{on\_line}\ A\ a \vee \code{on\_line}\ A\ b\wedge 
+  \code{on\_line}\ B\ a \vee \code{on\_line}\ B\ b\\
+  &\implies \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ A\ B.
+\end{split}
+\end{equation}
+
+Here, Theorems~\ref{eq:jordanFormal1} and~\ref{eq:jordanFormal2} formalise the fact that there are respectively at least two and at most two path-connected regions, while Theorems~\ref{eq:jordanFormal3} and~\ref{eq:jordanFormal4} formalise the fact that exactly one region is unbounded.
+
+We would like to draw the reader's attention to the side-condition in the conclusion of Theorem~\ref{eq:jordanFormal1}. We must assert that $P$ and $Q$ lie in the plane of the polygon and do not lie on the polygon. \emph{Any} two points not satisfying these conditions are such that they cannot be path-connected. Without this side-condition, the theorem is trivial.
+
+In this subsection, we have presented the verification goals for this chapter, namely Theorems~\ref{eq:jordanFormal1} and~\ref{eq:jordanFormal2}. These theorems are also given in Appendix~\ref{app:JordanVerification}, together with all definitions on which the formalisations depend. Any definitions and theorems we introduce from here on are used only to support the verification, which is the subject of the rest of this chapter.
+
+\section{The Plane Divides into at Least Two Regions}
+This section concerns the verification of Theorem~\ref{eq:jordanFormal1}. Here, we start with a simple polygon, and must find two points in the plane with the following property: given an arbitrary polygonal path connecting the two points, we can find another point at which the path intersects the simple polygon. The overall idea of this proof is very similiar to Veblen's 1904 proof~\cite{Veblenphd} which we described in detail in \S\ref{sec:VeblenProof}. We give the correct version of this proof now.
+
+\subsection{Sketch Proof}\label{sec:ParityProofInformal}
+Consider the polygon $Ps$ shown in Figure~\ref{fig:rayCast1}. We pick an arbitrary point $X$ between $P_1$ and $P_2$  and then pick an arbitrary ray $h$ through a point not on the line of $AB$. This ray intersects the polygon $Ps$ a finite number of times, so we can find the point of intersection $H$ closest to the point $X$. We then pick an arbitrary point $A$ between $X$ and $H$. For this point, we have that the segment $AX$ does not intersect the polygon $Ps$. Finally, we consider the ray emanating from $X$ in the other direction. Applying the same reasoning as above, we find a point $B$ such that $BX$ does not intersect $Ps$. We end up with a segment $AB$ which intersects the polygon $Ps$ exactly once between $P_1$ and $P_2$.
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/rayCast1}
+\caption{The Witnesses ($A$ and $B$) for Theorem~\ref{eq:jordanFormal1}}
+\label{fig:rayCast1}
+\end{figure}
+
+\newcommand{\insideoutsideclaim}{every time the edge of a polygon crosses an edge of a triangle, it changes from being inside to outside the triangle and vice-versa}
+
+Now consider any polygonal path which connects $A$ and $B$. Together with the segment $AB$, this yields another polygon $Qs$ (possible non-simple) that intersects $Ps$ at least once at the segment $P_1P_2$. We now proceed by considering the exact same sequence of triangles that appear in Veblen's proof. However, the observation we shall carry through the argument is that the closed polygon $Qs$ must cross the edges of any triangle an \emph{even} number of times. This should be intuitively obvious. Indeed, \insideoutsideclaim. The total crossings must therefore be even in number, since we end in the same region we started.
+
+\begin{figure}
+\subfigure[Step 1: Four intersections]{\includegraphics[scale=0.6]{jordanVerification1/ParityProof1.pdf}\label{fig:ParityProof1}}
+\subfigure[Step 2: Six intersections]{\includegraphics[scale=0.6]{jordanVerification1/ParityProof2.pdf}\label{fig:ParityProof2}}
+\caption{Parity Proof}
+\label{fig:ParityProof}
+\end{figure}
+
+In Figures~\ref{fig:ParityProof} and~\ref{fig:ParityProofCont}, we illustrate a run of this parity argument through the triangles $P_1P_2P_3$, $P_1P_3P_4$, $P_1P_5P_6$, $P_1P_7P_8$ (the steps for the triangles $P_1P_4P_5$, $P_1P_6P_7$ have been omitted for clarity). At the start of the proof, we assume that the polygon $Qs$ crosses the edge $P_1P_2$ exactly once and at the point $O$. Note however, that for the purposes of the argument, we only need the more general fact that it crosses an odd number of times. 
+
+Now, if $Qs$ intersects the edge $P_2P_3$, we are done. Thus, we can assume that it does not cross this edge. In that case, the polygon $Qs$ must cross the edge $P_1P_3$ an \emph{odd} number of times, to ensure that the total crossings are even, and indeed, there are 3 such crossings shown in Figure~\ref{fig:ParityProof1}. Hence, we can continue with the triangle $P_1P_3P_4$. 
+
+We have that the polygon $Qs$ must cross the triangle $P_1P_3P_4$ an even number of times. We know that it crosses $P_1P_3$ an odd number of times, and we can assume that it does not cross $P_3P_4$ (otherwise, we are done). Hence, it must cross $P_1P_4$ an odd number of times, in order that the total be even. Indeed, there are another three crossings shown in Figure~\ref{fig:ParityProof2}. Again, we continue with the next triangle. Eventually, we shall find a point of intersection with the polygon, shown as point $Y$ in Figure~\ref{fig:ParityProofCont}.
+
+\begin{figure}
+\subfigure[Step 4: Four intersections]{\includegraphics[scale=0.6]{jordanVerification1/ParityProof4.pdf}}
+\subfigure[Step 6: Two intersections]{\includegraphics[scale=0.6]{jordanVerification1/ParityProof6.pdf}}
+\caption{Parity Proof (continued)}
+\label{fig:ParityProofCont}
+\end{figure}
+
+This is a deceptively simple proof. Most of the work involved hinges on the informal notion of ``crossing''. In the next section, we shall show how this notion is formulated.
+
+% \begin{enumerate}
+% \item A polygon which does not intersect a triangles' vertex must cross that triangle an even number of times.
+% \item The number of crossings of a polygon with the triangles $ABC$ and $ABD$ at the edge $AB$ is the same.
+% \end{enumerate}
+
+\subsection{Formulation: Crossings}
+We hope that our use of ``crossing'' in the above is intuitively clear. The basic idea is that a polygonal path crosses a segment $AB$ when it intersects $AB$ and moves from one side to the other. While intuitive, we found the idea resisted a nice formulation.
+
+\subsubsection{Context}
+In our formulation, a polygon is a vertex list, and from this vertex list it is trivial to recover an edge list using the function \code{adjacent}. Our plan then is to use this edge list to compute the number of crossings against a segment $AB$ by reducing the problem to crossings of a single edge against $AB$. We can then define the crossings of the full polygonal path by summing the crossings at each of its edges. 
+
+This introduces an obvious problem. Suppose we have an edge $P_iP_{i+1}$ of a polygonal path, and a triangle $ABC$, and suppose we are interested in whether $P_iP_{i+1}$ crosses the triangle at $AB$. If there is a point on $AB$ which is strictly between $P_i$ and $P_{i+1}$, then obviously, there is a crossing. But if one of the endpoints $P_{i}$ or $P_{i+1}$ are points on $AB$, then it is not the segment $P_iP_{i+1}$ which crosses the triangle, but some larger polygonal path $P_{i-m}\ldots P_{i-1}P_iP_{n+1}\ldots...P_{i+p}$ with $m,p > 0$. 
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/ContextChange}
+\caption{Assignment of Context on a Segment}
+\label{fig:ContextChanges}
+\end{figure}
+
+We can preserve the idea that the presence or absence of a crossing is nevertheless defined for each edge of a polygonal path by introducing a \code{boolean} ``context'' variable $\Gamma$. We could, for instance, assign a value of this variable to each edge $P_iP_{i+1}$ of the polygonal path. The value will tell us on which side of $AB$ the endpoint $P_{i+1}$ lies. If $P_{i+1}$ lies on the side $AB$, then we just propagate the preceeding context.
+
+In Figure~\ref{fig:ContextChanges}, we show a context value assigned in this way to the edges of $P_1\ldots P_{10}$. A value of $\top$ indicates the side which is the top half of the diagram, while $\bot$ indicates the bottom half. There are two places where the context switches truth value, which indicates that the polygonal path crosses the segment $AB$ twice.
+
+\subsubsection{Combined Context for Triangles}
+We will be counting crossings on the edges of a triangle, which would require three context variables. Also, the assignment of $\top$ and $\bot$ to the sides of each edge of the triangle could not be arbitrary as it was in Figure~\ref{fig:ContextChangesTriangle}. The problem with the triangle case is that we want to reason about the total crossings on all three sides and thus consider the way the variables interplay.
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/ContextChangeTriangle}
+\caption{Assignment of Context in a Triangle}
+\label{fig:ContextChangesTriangle}
+\end{figure}
+
+We chose a different approach. We declared the $\top$ side of each edge in a triangle to be the side containing the triangle's interior, and then we effectively combined the contexts by taking their conjunction. In other words, we used a single context variable which tracks whether a segment ends inside or outside the triangle. 
+
+In Figure~\ref{fig:ContextChangesTriangle}, we show the assignment of context values to a polygon intersecting a triangle $ABC$. Here, if an edge $P_iP_{i+1}$ is such that $P_{i+1}$ lies outside the triangle, then the edge is assigned $\bot$. If $P_{i+1}$ lies inside the triangle, then the edge is assigned $\top$. If the point $P_{i+1}$ lands on an edge, then we set the context as we did in the previous subsection.
+
+With these context values, we can compute the number of crossings at each edge of the triangle as follows: first, we count a crossing for $P_iP_{i+1}$ and the edge $AB$ (or $AC$ or $BC$) every time there is a point on $AB$ which is strictly between $P_iP_{i+1}$. The only other crossings occur when $P_i$ lies on the segment $AB$. Here, we count a crossing in two circumstances, which are consistent with the counting of crossings for the previous subsection:
+\begin{itemize}
+\item the context is $\bot$ and $P_iP_{i+1}$ has a point in the interior of $\triangle ABC$ (and thus moves from outside to inside);
+\item the context is $\top$ and $P_iP_{i+1}$ has a point in the exterior of $\triangle ABC$ (and thus moves from inside to outside).
+\end{itemize}
+
+Thus, in Figure~\ref{fig:ContextChangesTriangle}, there is one crossing on $AC$, two crossings on $BC$, and one crossing on $AB.$
+
+Now that we are always counting crossings at an edge relative to a triangle, it might appear that we have rendered our notion too specific. We will still need to be able to count crossings at an arbitrary segment $AB$ without mentioning triangles. To facilitate this, in Section~\ref{sec:CrossingsWellDefined}, we show that once we have fixed the vertices $AB$ in a triangle, our count of crossings at $AB$ is independent of the choice of the vertex $C$. In other words, the expression ``crossings of $P_iP_{i+1}$ at the edge $AB$'' is still well-defined. This theorem, together with several other key theorems, should fully clarify the intended semantics of a ``crossing.''
+
+\subsubsection{Avoiding Vertices}\label{sec:EdgeCases}
+% We have decided that a polygon crosses a triangle when it intersects the triangle and moves from inside the triangle to outside the triangle. We need to take care, though. Consider Figure~\ref{fig:crossingDifficult3}. Here, we probably want to say that there are two crossings in total, but it is not clear how to count the crossings at the three sides. Clearly, there is a crossing along the side $AB$, but where is the second crossing? We cannot say that it occurs between $A$ and $C$, because then the crossing vanishes for the triangle $AB'C$ which shares this side. Similarly, we cannot say that it occurs between $B$ and $C$, because then it vanishes for the triangle $A'BC$.
+
+\begin{figure}
+\centering\includegraphics[scale=0.6]{jordanVerification1/CrossingVertex}
+\caption{Context with Vertex Crossings}
+\label{fig:CrossingVertex}
+\end{figure}
+
+Our method of counting crossings of a polygonal path against the edges of a triangle breaks down when we allow the polygonal path to intersect the triangle's vertices. We have such a scenario in Figure~\ref{fig:CrossingVertex}(a). Here, we have drawn a \emph{polygon} $P_1P_2P_3P_4P_5P_6P_7$ intersecting a triangle $ABC$. We have assigned our context appropriately to each segment, and concluded, quite reasonably, that the polygon does not cross $ABC$. 
+
+However, when we assign context values for the triangle $BCD$ in Figure~\ref{fig:CrossingVertex}(b), we find that there suddenly appears a crossing on the shared edge $BC$ at the point $P_4$. In other words, the number of crossings at the segment $BC$ is not well-defined on our scheme.
+
+ % is true precisely when the last segment not on the side $AB$ emerged into the \emph{interior}  of the triangle $ABC$. When we come to compute the total number of crossings of the triangle $ABC$ from the individual segments of the polygon $Ps$, we thread this value through, updating it as necessary. In \S~\ref{sec:wasInsideThreading}, we will see some interesting consequences of this choice of formulation.
+
+
+% We have said that a polygon only crosses a triangle at a point of intersection, and in Figure~\ref{fig:crossingDifficult1}, the points of intersection are precisely these crossing points. But things are not always so clear. For instance, the polygon will sometimes intersect the triangle but ``bounce off''. In these cases, we do not want to count the intersection as a crossing (Figure~\ref{fig:crossingDifficult2}). 
+
+% One thing we glossed over in the sketch proof is the fact that we count both the \emph{total} crossings of a polygon with a triangle, and also the crossings at a particular edge. We need to consider both since we are actually applying two ideas:
+
+% \begin{enumerate}
+% \item A polygon crosses a triangle an even number of times.
+% \item The number of crossings of a polygon with the triangles $ABC$ and $ABD$ at the side $AB$ is the same.\label{item:crossingChange2}
+% \end{enumerate}
+
+% \begin{figure}
+% \centering\subfigure[One crossing on $AB$; one crossing on $AC$; two crossings on $BC$.]{\includegraphics{jordanVerification1/crossingDifficult1}\label{fig:crossingDifficult1}}
+% \qquad\centering\subfigure[No crossings.]{\includegraphics{jordanVerification1/crossingDifficult4}\label{fig:crossingDifficult2}}
+% \end{figure}
+
+% Perhaps we could say that the crossing occurs at the vertex $C$, and distinguish this from a crossing at a side. It seems we would have to do this in the situation depicted in \ref{fig:crossingDifficult4}. But then, how do we relate vertex crossings to side crossings and total crossings?
+
+This difficulty can be eliminated quite simply by assuming that the polygonal path does not intersect any vertex of the triangle. This is because the vertices of the triangles we consider in our sketch proof are all vertices of the original polygon $Ps$. If at any time we found a point of intersection between the polygonal path and a vertex of one of the triangles, we will have found the desired point of intersection between the polygonal path and $Ps$.\label{sec:NoVertexAssumption}
+
+% By ruling out all configurations where a polygon intersects a triangle's vertex, we eliminate the cases in Figures~\ref{fig:crossingDifficult3} and~\ref{fig:crossingDifficult4}. It makes life much easier.
+
+\subsubsection{Formalisation}
+% If we can first show how to compute the number of crossings between a triangle and an individual segment, then we should be able to compute the total number of crossings between the triangle and a polygon simply by summing the values for each of the polygon's sides. 
+
+% There is a minor technical issue here, since whether an individual side of a polygon crosses a triangle in a particular segment is not generally a local property of that segment. Consider Figure~\ref{fig:crossingContext}. Here, we depict the same segment $P_iP_{i+1}$ intersecting the same triangle $ABC$. In each case, we want to know whether the endpoint $P_n$ is a crossing point of the triangle. This happens in cases $(a)$ and $(c)$ but not in $(b)$. Since the position of the triangle and $P_iP_{i+1}$ is the same in each case, it is clear that whether or not $P_n$ is a crossing depends on additional information. Here, we can look back through the history of previous vertices to see whether the last segment not on the side $AB$ emerged into the exterior of $\triangle ABC$ as in case $(a)$ and $(c)$, or whether it emerged into the interior as in case $(b)$.
+
+% We decided to capture this dependency with a ``context'' variable which we shall denote by $\Gamma$. This is a \code{boolean} value, which is true precisely when the last segment not on the side $AB$ emerged into the \emph{interior}  of the triangle $ABC$. When we come to compute the total number of crossings of the triangle $ABC$ from the individual segments of the polygon $Ps$, we thread this value through, updating it as necessary. In \S~\ref{sec:wasInsideThreading}, we will see some interesting consequences of this choice of formulation.
+
+% Let us turn to the task of computing the number of crossings from the list of vertices which define a polygon. Even with the edge cases and issues of context dealt with, there are still many possible configurations to consider concerning how an individual segment might or might not fall on a given side of a triangle (see Figure~\ref{fig:CrossingCases}). It took some effort and a lot of care to work these out on paper, since a mistake at this stage might not be spotted until well into the verification. We finally settled on a formulation. The details are not particularly important. Our verification itself shows that we have correctly cover all cases, and the key lemmas in \S\ref{sec:CrossingVerification} effectively give a clearer semantics to this notion of ``crossing.''
+
+We now introduce the formal functions with which we shall calculate the number of crossings against an edge of a triangle. The right-hand sides of these definitions are implementation details and are not particularly important. We provide them only to suggest the distance we have to cross to recover our intuitive and informal definition of a crossing. 
+
+Our first function computes the crossings at an edge of a triangle based on a context.
+\begin{equation}\label{eq:oneCrossingDef}
+% let crossing = new_definition
+%   `crossing (A,B,C) was_inside P Q =
+%     if between A P B /\ between A Q B then 0
+%     else if (?R. between P R Q /\ between A R B) then 1
+%     else if between A P B
+%             /\ ((?R. between P R Q /\ in_triangle (A,B,C) R)
+%                 <=> ~was_inside) then 1
+%     else 0`;;
+  \code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} = 
+  \begin{cases}
+    0, \qquad\text{if }\between{A}{P}{B}\wedge\between{A}{P_{i+1}}{B}\\
+    1, \qquad\text{else if }\exists R. \between{P_i}{R}{P_{i+1}}\wedge\between{A}{R}{B}\\
+    1, \qquad\text{else if }\between{A}{P_i}{B}\\
+    \qquad\qquad\wedge\; (\exists R. \between{P_i}{R}{P_{i+1}}\\
+    \qquad\qquad\qquad\wedge\;\code{in\_triangle}\ (A,B,C)\ R \iff \neg\Gamma)\\
+    0, \qquad\text{otherwise.}
+  \end{cases}
+\end{equation}
+
+We will briefly explain the function's arguments here. The first argument gives the three points defining the triangle we are interested in as a triple. We arbitrarily declare the first two components of this triple to be the edge of the triangle against which we want to compute crossings. The next argument is the context $\Gamma$. The final two arguments are the endpoints of the polygonal path's edge against which we compute crossings.
+
+Thus, to compute the crossings for the edges $AC$ and $BC$, we just use the expressions $\code{crossing}\ (A,C,B)$ and $\code{crossing}\ (B,A,C)$, and to compute the total crossings of the segment $P_iP_{i+1}$ on the triangle, we evaluate
+\begin{multline}
+\code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} + \code{crossing}\ (A,C,B)\ \Gamma\ P_i\ P_{i+1}\\ + \code{crossing}\ (B,A,C)\ \Gamma\ P_i\ P_{i+1}.
+\end{multline}
+
+Our next function computes the context value for a segment $P_iP_{i+1}$ based on the existing context. The arguments are the same, but here, the output does not depend on any particular ordering of the triple $(A,B,C)$.
+\begin{equation}
+% `new_was_inside (A,B,C) was_inside P Q <=>
+%   in_triangle (A,B,C) Q
+%   \/ (on_triangle (A,B,C) Q /\ 
+%         ((?R. between P R Q /\ in_triangle (A,B,C) R)
+%             \/ on_triangle (A,B,C) P /\ was_inside))`
+\begin{split}
+\Gamma_{next}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} \iff &\code{in\_triangle}\ (A,B,C)\ P_{i+1}\\
+& \vee (\code{on\_triangle}\ (A,B,C)\ P_{i+1}\\
+& \quad \wedge (\exists R. \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C)\ R)\\
+& \qquad \vee \code{on\_triangle}\ (A,B,C)\ P_i \wedge \Gamma
+\end{split}
+\end{equation}
+
+Finally, we define the function which will compute the total number of crossings of an arbitrary polygonal path against the edge $AB$ for the triangle $ABC$. We do this recursively over the list of edges of the polygonal path, summing the values of $\code{polypath\_crossing}\ (A,B,C)$ for each segment and updating the context. Note that the this function still requires an initial context $\Gamma$. We shall show how to initialise it in \S\ref{sec:ContextInitialisation}.
+
+\begin{equation}
+% let polypath_crossings = define
+%   `polypath_crossings (A,B,C) was_inside [] = 0
+%    /\ polypath_crossings (A,B,C) was_inside (CONS seg Ps)
+%         = crossing (A,B,C) was_inside (FST seg) (SND seg)
+%           + polypath_crossings (A,B,C)
+%               (new_was_inside (A,B,C) was_inside (FST seg) (SND seg)) Ps`;;
+\begin{aligned}
+&\code{polypath\_crossings}\ (A,B,C)\ \Gamma\ [] = 0\\
+&\code{polypath\_crossings}\ (A,B,C)\ \Gamma\ (\cons{(P_i,P_{i+1})}{segments})\\
+ &\quad= \code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1}\\
+ &\qquad+ \code{polypath\_crossings}\ (A,B,C)\ (\Gamma_{next}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1})\ segments
+\end{aligned}
+\end{equation}
+
+% \includegraphics{jordanVerification1/Crossing3}
+% \includegraphics{jordanVerification1/Crossing4}
+% \includegraphics{jordanVerification1/Crossing5}
+% \includegraphics{jordanVerification1/Crossing6}
+% \includegraphics{jordanVerification1/Crossing7}
+
+\subsection{Triangle Interiors}\label{sec:TriangleInteriorDefinition}
+% One way or another, our verification reduces to the base case in triangles. Our proof from \S\label{sec:JordanCurveFirstProof} defines the interior and exterior of a polygon by adding and subtracting triangles until the desired figure is obtained. Veblen's Proof considers triples of vertices going around the polygon, and applies the polygonal Jordan Curve Theorem to the resulting triangles (which appears as Corollary~2 of Theorem~27 in his 1904 thesis~\cite{Veblenphd}.) Our revision, on the other hand, does not appeal directly to the base case of the theorem, but instead counts ``crossings'' along a triangle's edge. As we shall see, the theoretical details of crossings ultimately exploit the base-case of the Polygonal Jordan Curve Theorem. It is therefore worth having a look at this base case, especially because it makes non-trivial use of our ordering tactic and the theory of half-planes.
+
+% \subsection{Triangle Interiors}\label{sec:TriangleInteriorDefinition}
+The above formulations and formalisation assume that we know how to express the interior, exterior and boundary of a triangle (respectively $\code{in\_triangle}$, $\code{on\_triangle}$ and $\code{out\_triangle}$). This we can do directly. Veblen, for instance, in his 1904 thesis~\cite{Veblenphd}, defined the interior of the triangle $ABC$ as the the set of points $P$ such that there is a point $X$ on the segment $AB$ and a point $Y$ on $BC$ with $X$ between $Y$ and $Z$ (see Figure~\ref{fig:triangleDefs}). Here is another definition: the interior of $\triangle ABC$ is the set of all points on the same side of $AB$ as $C$, on the same side of $AC$ as $B$ and on the same side of $BC$ as $A$. In other words, the interior of a triangle is the interection of three half-planes. Each can be formalised as:
+\begin{equation*}
+\begin{split}
+  &\code{in\_triangle\_veblen}\ (A,B,C)\ P \iff\\
+  &\qquad\exists X\; Y.\; \between{A}{X}{B} \wedge \between{A}{Y}{C} \wedge \between{X}{P}{Y}.
+\end{split}
+\end{equation*}
+
+\begin{equation}\label{eq:inTriangleDef}
+\begin{split}
+  &\code{in\_triangle}\ (A,B,C)\ P \iff\\
+    &\qquad\exists hp\; hq\; hr.\;\code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp)\\
+    &\qquad\qquad\qquad\wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\  hp)\\
+    &\qquad\qquad\qquad\wedge \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\  hq)\\
+    &\qquad\qquad\qquad\wedge \code{on\_line}\ C\ (\code{line\_of\_half\_plane}\  hq)\\
+    &\qquad\qquad\qquad\wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\  hr)\\
+    &\qquad\qquad\qquad\wedge \code{on\_line}\ C\ (\code{line\_of\_half\_plane}\  hr)\\
+    &\qquad\qquad\qquad\wedge \code{on\_half\_plane}\ hp\ C \wedge \code{on\_half\_plane}\ hq\ B \wedge \code{on\_half\_plane}\ hr\ A\\
+    &\qquad\qquad\qquad\wedge \code{on\_half\_plane}\ hp\ P \wedge \code{on\_half\_plane}\ hq\ P \wedge \code{on\_half\_plane}\ hr\ P.
+\end{split}
+\end{equation}
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/triangleDefs}
+\caption{Two Definitions of a Triangle's Interior}
+\label{fig:triangleDefs}
+\end{figure}
+
+Veblen's definition is significantly shorter, but we wanted to try leveraging our theory of half-planes as much as possible in our verification of the Polygonal Jordan Curve Theorem, and the second definition gives us direct information about these. Besides which, Veblen's definition is first-order and more complicated to reason with. It is not immediately clear that his definition is symmetric up to permutations of $A$, $B$ and $C$. To prove this, we would need to figure out how to move from the arbitrary $X$ and $Y$ on $AB$ and $AC$ satisfying the given condition (and there are infinitely many possible choices), to another $X'$ and $Y'$ on another choice of segments. With the second definition, the symmetry is almost immediate. In fact, HOL~Light`s $\code{MESON}$ can easily prove the rewrites needed to normalise expressions of the form $\code{in\_triangle}\ (A,B,C)$. 
+
+\begin{equation}\label{eq:triSyms}
+  \begin{split}
+&    \code{on\_triangle}\ (A,B,C)\ P \iff \code{on\_triangle}\ (A,C,B)\ P\\
+&    \wedge \code{on\_triangle}\ (A,B,C)\ P \iff \code{on\_triangle}\ (B,A,C)\ P\\
+&    \wedge \code{in\_triangle}\ (A,B,C)\ P \iff \code{on\_triangle}\ (A,C,B)\ P\\
+&    \wedge \code{in\_triangle}\ (A,B,C)\ P \iff \code{on\_triangle}\ (B,A,C)\ P\\
+&    \wedge \code{outn\_triangle}\ (A,B,C)\ P \iff \code{on\_triangle}\ (A,C,B)\ P\\
+&    \wedge \code{out\_triangle}\ (A,B,C)\ P \iff \code{on\_triangle}\ (B,A,C)\ P
+  \end{split}
+\end{equation}
+
+That said, many of our early proofs about triangles always became bloated in the same clumsy way. When we started from a hypothesis that a point lies inside a triangle, we found ourselves having to extract all three witnessed half-planes in the definition and all twelve conjuncts they satisfy. In many cases, we found that the the main body of the proof was shorter than the bloated statement of the assumptions. It might be suggested that this ugliness could have been avoided had we perservered instead with Veblen's definition, and tried to avoid reasoning about half-planes. We have some circumstantial against this: nowhere in our proof do we use the fact that our definition implies Veblen's. This indicates that we found the half-planes on the sides of a triangle to be more useful in proofs than the two point witnesses given in Veblen's definition. On the other hand, there were twelve places in our formalisation where we had two points that could satisfy Veblen's definition, and where we appealed to a lemma which shows Veblen's definition implies our own. These steps would have been unnecessary had we used Veblen's definition directly. 
+
+These two observations can be understood by again dividing geometric lemmas into those which introduce geometric entities and those which allow us to infer properties from a figure. As a theorem, Veblen's definition is weak for introducing entities, but useful for inferring properties of figures.
+
+We make one final remark about our definition, which is important to keep in mind for some of the later verification. According to our definition, whenever we have $\code{in\_triangle}\ (A,B,C)\ P$, we know that all triples chosen from $\{A,B,C,P\}$ are non-collinear. This means that explicit assumptions about non-collinearity can be suppressed in many of our verified theorems. It also meant we could implement a discoverer \code{add\_in\_triangle} to derive these non-collinear triples automatically and make them available to the $\code{obviously}$ primitive. 
+
+We now briefly consider the formulation of a triangle's boundary and exterior. Since the boundary is just a polygonal path, it suffices to define:
+\begin{equation}\label{eq:onTriangleDef}
+\code{on\_triangle}\ (A,B,C)\ P \iff \code{on\_polypath}\ [A,B,C,A]\ P
+\end{equation}
+
+In fact, it is useful to reuse \code{on\_polypath} in this way in other places. For instance, we can refer to the set of points of a segment $AB$ with $\code{on\_polypath}\ [A,B]$, and given a triangle $ABC$, we can write $\code{on\_polypath}\ [A,B,C]$ to refer to the points on just two sides of the boundary. These expressions will prove convenient later on in our verification.
+
+Finally, the exterior of a triangle can be defined simply as the set of points not on the triangle and not on the boundary. This definition classifies all points which are not on the plane as part of the exterior, but since we shall be relativising all of our theorems against a single plane, this does not matter.
+
+\subsection{Some Prelimary Theorems}
+We recall the basic approach to synthetic axiomatic geometry as divided into two sorts of reasoning steps: one sort which introduces geometrical entities and one which identifies salient properties of the resulting figures. These properties may then allow us to introduce new configurations, and so on, until we have verified our goal theorem. 
+
+In the context of triangle interiors, we will need new rules to introduce points, and new rules to reason about geometric properties between interior and exterior points of these triangles. We have six theorems for this purpose, two to introduce points and four to reason about such points with respect to triangle interiors. In this section, we shall look in detail at a verification of one of the introduction theorems, and then summarise the remaining ones.
+
+\subsubsection{The Base Case}
+Our main goal in this section is to show that a simple polygon divides the plane into at least two regions. In the simplest case, we take the polygon to be a \emph{triangle}, and we find that a triangle divides the plane much as a line divides the plane into half-planes: specifically, given two points in different half-planes, we know there is a point between them which lies on the boundary. This therefore gives us two introduction rules, one for half-planes and one for triangles, and we use both frequently. The latter is even needed to prove our other introduction rule~\eqref{eq:triCutHalfPlane} in \S\ref{sec:AdditionalTheorems}. In turn, this second introduction rule is crucial to the verification of the well-definedness of crossings at a triangle's side (see \S\ref{sec:CrossingsWellDefined}).
+ 
+\begin{multline}\label{eq:baseCase}
+% |- on_plane A 'a /\
+%      on_plane B 'a /\
+%      on_plane C 'a /\
+%      in_triangle (A,B,C) P /\
+%      out_triangle (A,B,C) Q /\
+%      on_plane Q 'a
+%      ==> (?R. on_triangle (A,B,C) R /\ between P R Q)
+\code{in\_triangle}\ (A,B,C)\ P \wedge \code{out\_triangle}\ (A,B,C)\ Q \\\implies \exists R. \code{on\_triangle}\ (A,B,C)\ R \wedge \between{P}{R}{Q}
+\end{multline}
+
+We initially hoped the proof of this theorem would be trivial. After all, an almost identical theorem holds for half-planes, and a triangle is defined as the intersection of three of these. Instead, we found ourselves needing another point introduction lemma.
+
+\subsubsection{An ``Inner Pasch'' theorem}
+Initially, our only means to introduce points relative to triangles is Pasch's axiom~\eqref{eq:g24}. But this axiom is often difficult to apply because it has a disjunctive conclusion. Luckily, there are easier versions to apply, namely the inner and outer variations, which we have derived as Theorems~\ref{eq:innerPasch} and~\ref{eq:outerPasch}. Our point introduction lemma can we thought of as a variation of \eqref{eq:innerPasch}. It says that, given an interior point $P$ of a triangle $ABC$, and a point $Qs$ outside the triangle on the ray $AB$, we can introduce the point at which the line $P_iP_{i+1}$ intersects $BC$ (we could then use the Outer Pasch Axiom to find the point at which $P_iP_{i+1}$ intersects $AC$). See Figure~\ref{fig:tricut1}.
+
+\begin{figure}
+\centering\includegraphics[scale=1.0]{jordanVerification1/tricut1.pdf}
+\begin{equation}\label{eq:tricut1}
+  \begin{split}
+  % "!'a A B C P Q. on_plane A 'a /\ on_plane B 'a /\ on_plane C 'a
+  %    /\ in_triangle (A,B,C) P
+  %    /\ between A B Q
+  %    ==> ?X. between P X Q /\ between B X C"
+    &\code{in\_triangle}\ (A,B,C)\ P \wedge \between{A}{B}{Q} \\
+    &\implies\exists X. \between{P}{X}{Q} \wedge \between{B}{X}{C}
+  \end{split}
+\end{equation}
+\caption{``Inner Pasch'' for an interior point}
+\label{fig:tricut1}
+\end{figure}
+
+The proof of this theorem illustrates some common patterns of reasoning with half-planes, and some of the pros and cons of our representation. The first half of the proof is shown in Figure~\ref{fig:tricut11}. This block of script serves only to obtain the three half planes defining the triangle. The next three steps show that the lines of each half-plane lie in the plane $\alpha$. These facts are needed in order to infer the defining property of each half-plane, namely that two points in the plane $\alpha$ are in the same half-plane precisely when their segment does not cross the line of the half-plane. The annoyance here is that we really do not care about such details, since all our assumptions should constrain the figure to the plane $\alpha$ anyway. If we transcribed these proofs to planar geometry, these details could be omitted. 
+
+\begin{boxedfigure}
+\small
+\begin{align*}
+&\texttt{theorem }\code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha\\
+&\qquad\qquad\code{in\_triangle}\ (A,B,C)\ P \wedge \between{A}{B}{Q}\\
+&\qquad\qquad\implies\exists X. \between{P}{X}{Q} \wedge \between{B}{X}{C}\\
+&\texttt{assume } \Triangle{a}{A}{B}{C}A \texttt{ by } \eqref{eq:inTriangleNcol}&0\\
+&\texttt{assume } \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha&1,2,3\\
+  &\texttt{assume } \code{in\_triangle}\ (A,B,C)\ P\\
+  &\texttt{so consider } hp, hq \text{ and } hr \texttt{ such that }\\
+&\qquad \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp)& 4,5\\ 
+% &\qquad \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp) & 6\\
+% &\qquad \code{on\_line}\ C\ (\code{line\_of\_half\_plane}\ hp) & 7\\
+% &\qquad \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp) & 8\\
+% &\qquad \code{on\_line}\ C\ (\code{line\_of\_half\_plane}\ hp) & 9\\
+&\qquad \code{on\_half\_plane}\ C\ hp\ldots \wedge \code{on\_half\_plane}\ P\ hr & 6,7\\
+% &\qquad \code{on\_half\_plane}\ B\ hq & 11\\
+% &\qquad \code{on\_half\_plane}\ A\ hr & 12\\
+% &\qquad \code{on\_half\_plane}\ P\ hp & 13\\
+% &\qquad \code{on\_half\_plane}\ P\ hq & 14\\
+%&\qquad \code{on\_half\_plane}\ P\ hr 
+&\ldots \texttt{ by } \eqref{eq:inTriangleDef} & 8..15\\
+&\texttt{assume } \between{A}{B}{Q} & 16\\
+&\texttt{obviously have } \forall X. \code{on\_half\_plane }\ hp\ X \implies \code{on\_plane}\ X\ \alpha\\ &\qquad\texttt{from 0,1,2,3,4,5,6 by } \eqref{eq:g16}, \eqref{eq:halfPlaneOnPlane}& 17\\
+&\ldots & 18,19
+%&\texttt{obviously have } \forall X. \code{on\_half\_plane }\ hq\ X \implies \code{on\_plane}\ X\ \alpha\\ %&\qquad\texttt{from 0,1,2,3,8,9,10 by } \eqref{eq:halfPlaneOnPlane}, \eqref{eq:I6} & 18\\
+%&\texttt{obviously have } \forall X. \code{on\_half\_plane }\ hr\ X \implies \code{on\_plane}\ X\ \alpha\\ %&\qquad\texttt{from 0,1,2,3,12,13,14 by } \eqref{eq:halfPlaneOnPlane}, \eqref{eq:I6} & 19\\
+\end{align*}
+\caption{Proof of ``Inner Pasch'' for an interior point (part 1)}
+\label{fig:tricut11}
+\end{boxedfigure}
+
+That we need so many steps just to unfold our abstractions shows us the significant weaknesses in our representation. Fortunately, it is almost always the same steps which are needed. We shall omit such details, as well as any mention of planes from later proofs. We can only assure the reader that all steps in the verification are relativised to the same plane $\alpha$.
+
+The rest of the proof is shown in Figure~\ref{fig:tricut12}. In contrast to the first part of the proof, the steps here are succinct, readable and geometrically interesting. With the necessary assumptions laid out, we see how easily the theory of half-planes has been leveraged via the theorems~\ref{eq:betOnHalfPlane1} and~\ref{eq:betOnHalfPlane2}. In contrast to the first part of the proof, this puts the use of half-planes in a much more positive light. 
+
+\begin{boxedfigure}
+\small
+\begin{align*}
+&\texttt{obviously hence } \code{on\_plane}\ Q\ \alpha& 20\\
+&\qquad\neg\code{on\_line}\ Q\ (\code{line\_of\_half\_plane}\ hr) & 21\\
+&\qquad\neg\code{on\_half\_plane}\ hr\ Q \texttt{ from 0,1,2,12,13,14,16 by } \eqref{eq:g16}, \eqref{eq:g21}, \eqref{eq:onHalfPlaneNotBet}& 22\\
+&\texttt{consider } X \texttt{ such that } \code{on\_line}\ X\ (\code{line\_of\_half\_plane}\ hr) \wedge \between{P}{X}{Q}\\
+&\texttt{ from 15,19,20,21,22 by } \eqref{eq:onHalfPlaneNotBet} & 23 \\
+&\texttt{have } \code{on\_line}\ Q\ (\code{line\_of\_half\_plane}\ hp)\texttt{ by } \eqref{eq:g12}, \eqref{eq:g21} \texttt{ from 4,5,16}\\
+&\texttt{hence } \code{on\_half\_plane}\ hp\ X\texttt{ by } \eqref{eq:g21}, \eqref{eq:betOnHalfPlane} \texttt{ from 7,23} & 24\\
+&\texttt{hence } \neg\between{C}{B}{X} \texttt{ from 5,6,17 by } \eqref{eq:onHalfPlaneNotBet} & 25\\
+&\texttt{hence } \code{on\_half\_plane}\ hq\ Q \texttt{ from 8,10,16 by } \eqref{eq:betOnHalfPlane}\\
+&\texttt{hence } \code{on\_half\_plane}\ hq\ X \texttt{ from 11,23 by } \eqref{eq:betOnHalfPlane2}\\
+&\texttt{hence } \neg\between{B}{C}{X} \wedge B \neq X \wedge C \neq X\texttt{ from 5,9,10,18,24 by } \eqref{eq:onHalfPlaneNotBet}, \eqref{eq:halfPlaneNotOnLine}\\
+&\texttt{obviously qed from 0,12,13,23,25 by } \eqref{eq:four}
+\end{align*}
+\caption{Proof of ``Inner Pasch'' for an interior point (part 2)}
+\label{fig:tricut12}
+\end{boxedfigure}
+
+The basic strategy of the proof is to note that because $A$ and $Q$ lie on opposite sides of $BC$, so too must $P$ and $Q$. Thus, we can find a point $X$ between $P$ and $Q$ which is on the line $BC$. We just need to show that this point $X$ lies more specifically between $B$ and $C$.
+
+To do this, we note that $P$ and $X$ lie on a ray emerging from the line $AB$, and so they must be on the same side of this line. Thus $P$, $C$ and $X$ must all lie on the same side of $AB$ which means that the point $B$ cannot possibly lie between any of them. Similar considerations apply if we look at the line $AC$. We can thus conclude that $X$ can only lie between $B$ and $C$.
+
+The formalised proof captures the \emph{structure} of this line of argument almost exactly. However, the terms are almost completely different. To begin with, we do not introduce anonymous rays. This would only add extra $\code{consider}$ steps, which is unnecessary when we can talk directly in terms of betweenness. We also avoid talking in terms of sides of a line by talking instead in terms of half-planes. We effectively have the translation that
+
+\begin{tabular}{ccc}
+  $\code{on\_half\_plane}\ hp$ & becomes & on the same side of $AB$ as $C$ and $P$;\\
+  $\code{on\_half\_plane}\ hq$ & becomes & on the same side of $AC$ as $B$ and $P$;\\
+  $\code{on\_half\_plane}\ hr$ & becomes & on the same side of $BC$ as $A$ and $P$;\\
+  $\code{line\_of\_half\_plane}\ hp$ & becomes & the line $AB$; \\
+  $\code{line\_of\_half\_plane}\ hq$ & becomes & the line $AC$; \\ 
+  $\code{line\_of\_half\_plane}\ hr$ & becomes & the line $BC$. \\
+\end{tabular}
+
+With these translations in mind, we hope that the informal proof and its synthetic line of argument can be  recovered. We can try to justify the translation by drawing an analogy between synthetic proofs and their accompanying diagrams. The diagram is strictly unnecessary, but can usually be easily recovered from prose, and it is often helpful to reconstruct it. Similarly, the informal argument can be easily recovered from the formal verification, where intuitive phrases such as ``a ray emerging from the line'' make things much easier to follow, even if such phrases do not point to interesting abstractions that would help the theorem prover.
+
+\subsubsection{From ``Inner Pasch'' to the Base Case}\label{sec:JordanBaseCase1}
+We can now give an informal proof of Theorem~\ref{eq:baseCase}. Suppose that $P$ is inside a triangle $ABC$ and $Q$ is outside. Then $P$ is on the same side of one of the triangle's edges and opposite vertex, while $Q$ is not. Let us suppose, without loss of generality, that $P$ is on the same side of $AB$ as $C$ while $Q$ is not. Then $P_iP_{i+1}$ must intersect the line $AB$. If $P_iP_{i+1}$ intersects the \emph{segment} $AB$, we have found the required point on the triangle's boundary. Otherwise, there is a point $R$ on the segment $P_iP_{i+1}$ which also lies on either the ray emanating from $B$ in the direction $\overrightarrow{AB}$ or on the ray emanating from $A$ in the direction $\overrightarrow{BA}$. By applying Theorem~\ref{eq:tricut1} to each case, we can then find a point on the side $BC$ or the side $AC$ respectively, and we are done.
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/baseCase}
+\caption{``Inner Pasch'' to the Base Case}
+\end{figure}
+
+We have made a without-loss-of-generality assumption in this argument, namely in our choice of $AB$ and the point $C$. As Harrison has shown~\cite{HarrisonWLOG}, such assumptions can often be handled elegantly using without-loss-of-generality tactics, particularly in geometry. However, these tactics typically exploit a \emph{Kleinian View} of geometry. This view of geometry can be described as ``subtractive'': we start from a rich mathematical structure such as $\mathbb{R}^n$, and then ignore details by working only with invariants under a transformation group. Axiomatic geometry, on the other add, is additive, starting with only the most primitive machinery. As such, it is not clear how to build a theory of invariants which could capture our without-loss-of-generality cases.
+
+Instead, we formalised the above argument as a lemma, and then wrote an ad-hoc procedural script to manually apply the symmetries. Admittedly, a triangle only admits at most six symmetries and the procedural boilerplate is hardly a bottle-neck compared to our use of MESON in declarative proofs. Still, this represents a somewhat inelegant approach in our verification, one we would like to investigate in future work.
+
+\subsubsection{Additional Theorems}\label{sec:AdditionalTheorems}
+\begin{figure}
+\centering
+\includegraphics{jordanVerification1/triCutHalfPlane}
+\caption{Another Point Introduction Rule}
+\label{fig:triCutHalfPlane}
+\end{figure}
+
+We have one more rule to introduce points. Here, we suppose that we have a point $P$ on the edge of a triangle $ABC$ and a point $Q$ on the same side of $AB$ as $C$. In this case, the segment $P_iP_{i+1}$ must intersect the polygonal path $[A,B,C]$ at a point $X$ (see Figure~\ref{fig:triCutHalfPlane}). 
+
+\begin{equation}\label{eq:triCutHalfPlane}
+\begin{split}
+&\between{A}{P}{B}\\
+&\wedge \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp)\\
+&\wedge \code{on\_half\_plane}\ C\ hp \wedge \code{on\_half\_plane}\ Q\ hp\\
+&\wedge \code{out\_triangle}\ (A,B,C)\ Q\implies \exists X. \between{P}{X}{Q} \wedge \code{on\_polypath}\ [A,B,C]\ X
+\end{split}
+\end{equation}
+
+\begin{figure}
+\centering
+\subfigure[Points between the sides of a triangle are interior \eqref{eq:inTriangle1}]{\includegraphics[scale=1.2]{jordanVerification1/inTriangle1}}
+\qquad\subfigure[Points between an interior point and a side are interior \eqref{eq:inTriangle2}]{\includegraphics[scale=1.2]{jordanVerification1/inTriangle2}}
+\caption{Triangle Interior Lemmas}
+\label{fig:inTriangleTheorems}
+\end{figure}
+
+The remaining four theorems assume we have a configuration of points in relation to a triangle, and conclude that one of the points is interior or exterior. These theorems are used routinely throughout the first half of our main verification, particularly when we come to counting how many times a polygonal path crosses the sides of a triangle (see \S~\ref{sec:CrossingVerification}). Their proofs are similar to the one given in the previous subsection, and always reduce to reasoning about the interaction between rays and half planes.
+
+We give diagrams and a short description for each theorem in Figures~\ref{fig:inTriangleTheorems} and~\ref{fig:outTriangleTheorems}. These theorems all have reasonably clear synthetic proofs, and together require 82 proof steps. Roughly two fifths of these proof steps are assisted by our incidence discoverer via the \code{obviously} and \code{clearly} primitives.
+
+Note that Theorem~\ref{eq:inTriangle1} is one direction of the equivalence between our definition of triangles and Veblen's (see \S\ref{sec:TriangleInteriorDefinition}).
+
+\begin{figure}
+\centering\subfigure[A ray through an opposite side leaves the triangle \eqref{eq:outTriangle1}]{\includegraphics[scale=1.2]{jordanVerification1/outTriangle1}}
+\qquad\subfigure[A ray from inside the triangle to a side emerges outside the triangle \eqref{eq:outTriangle2}]{\includegraphics[scale=1.2]{jordanVerification1/outTriangle2}}
+\caption{Triangle Exterior Lemmas}
+\label{fig:outTriangleTheorems}
+\end{figure}
+
+\begin{equation}\label{eq:inTriangle1}
+  % "!A B C X Y P.
+  %    ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+  %    /\ between A X B /\ between A Y C /\ between X P Y
+  %    ==> in_triangle (A,B,C) P"
+  \begin{split}
+    &\Triangle{a}{A}{B}{C}\\
+    &\wedge \between{A}{X}{B} \wedge (\between{A}{Y}{C} \vee C = Y)\\
+    &\implies \between{X}{P}{Y} \implies \code{in\_triangle}\ (A,B,C)\ P
+  \end{split}
+\end{equation}
+
+\begin{equation}\label{eq:inTriangle2}
+  % "!A B C X P.
+  %    ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+  %    /\ between A X B /\ between C P X
+  %    ==> in_triangle (A,B,C) P"
+  \begin{split}
+    &\code{in\_triangle}\ (A,B,C)\ X \wedge \code{on\_triangle}\ (A,B,C)\ Y\\
+    &\implies \between{X}{P}{Y} \implies \code{in\_triangle}\ (A,B,C)\ P
+  \end{split}
+\end{equation}
+
+\begin{equation}\label{eq:outTriangle1}
+  % "!A B C X P.
+  %    ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+  %    /\ between A X B /\ between C P X
+  %    ==> in_triangle (A,B,C) P"
+  \begin{split}
+    &\Triangle{a}{A}{B}{C}\\
+    &\wedge \code{on\_triangle}\ (A,B,C)\ X \wedge \code{on\_triangle}\ (A,B,C)\ Y\\
+    &\implies \between{X}{Y}{P} \implies \code{out\_triangle}\ (A,B,C)\ P
+  \end{split}
+\end{equation}
+
+\begin{equation}\label{eq:outTriangle2}
+  % "!A B C X P.
+  %    ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+  %    /\ between A X B /\ between C P X
+  %    ==> in_triangle (A,B,C) P"
+  \begin{split}
+    &\code{in\_triangle}\ (A,B,C) X \wedge \code{on\_triangle}\ (A,B,C)\ Y\\
+    &\implies \between{X}{Y}{P} \implies \code{out\_triangle}\ (A,B,C)\ P
+  \end{split}
+\end{equation}
+
+\subsection{Key Theorems of Crossings}\label{sec:CrossingVerification}
+The formal definition of crossings as the threading of a context variable through a sequence of conditionals takes us a long way from the intuitive idea. The intuition only reappears in our key theorems governing the definition, and the distance between the intuition and the formalisation can be measured by the thousand or so lines of mostly declarative proof and the enormous number of case splits we consider to bridge the gap.
+
+\subsubsection{Numbers of Crossings}
+First, a relatively simple matter: a single segment crosses a triangle at most twice. Our verification of this takes the form of a crisp declarative proof based on Bernays' \ref{eq:supplementI}. We do not need any messy case-splits, only a short piece of procedural script to eliminate WLOG assumptions. We end up with this:
+\begin{equation}
+  \begin{split}
+    &\Triangle{a}{A}{B}{C}\\
+    &\implies \code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} + \code{crossing}\ (A,C,B)\ \Gamma\ P_i\ P_{i+1}\\
+    &\qquad\qquad+ \code{crossing}\ (B,C,A)\ \Gamma\ P_i\ P_{i+1} \leq 2
+  \end{split}
+\end{equation}
+
+The case-splits only appear for our next major stepping stone: a theorem which clearly explains how the values of $\code{crossing}$ compare when evaluated for a single segment at the various sides of a triangle. We give an impression of the cases involved in Figure~\ref{fig:CrossingCases}.
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/CrossingCases}
+\caption{Cases of Crossings}
+\label{fig:CrossingCases}
+\end{figure}
+
+\begin{multline}
+% `!A B C P Q.
+%       on_plane A 'a
+%       /\ on_plane B 'a
+%       /\ on_plane C 'a
+%       /\ on_plane P 'a
+%       /\ on_plane Q 'a
+%       /\ ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+%       /\ ~on_polypath [P; Q] A
+%       /\ ~on_polypath [P; Q] B
+%       /\ ~on_polypath [P; Q] C
+%       /\ (~on_triangle (A,B,C) P ==> (in_triangle (A,B,C) P <=> was_inside))
+%       ==> (crossing (A,B,C) was_inside P Q
+%            + crossing (A,C,B) was_inside P Q
+%            + crossing (B,C,A) was_inside P Q = 1
+%            <=> (was_inside =
+%                   ~new_was_inside (A,B,C) was_inside P Q))`  
+  \begin{aligned}
+    &\wedge \Triangle{a}{A}{B}{C}\\
+    &\wedge \neg\code{on\_polypath}\ [P_i,P_{i+1}]\ A\wedge \neg\code{on\_polypath}\ [P_i,P_{i+1}]\ B\wedge \neg\code{on\_polypath}\ [P_i,P_{i+1}]\ C\\
+    &\wedge(\neg\code{on\_triangle}\ (A,B,C)\ P_i \implies (\code{in\_triangle}\ (A,B,C)\ P_i \iff \Gamma))\\
+  \end{aligned}\\
+    \implies\left(\begin{aligned}[]
+        &\code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} + \code{crossing}\ (A,C,B)\ \Gamma\ P_i\ P_{i+1}\\
+          &\qquad+ \code{crossing}\ (B,C,A)\ \Gamma\ P_i\ P_{i+1} = 1  \iff \Gamma = \neg \Gamma_{next}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1}
+        \end{aligned}\right)
+\end{multline}
+
+The first hypothesis just requires that $ABC$ is a triangle. The second requires that the segment $P_iP_{i+1}$ does not intersect any of the vertices, as per our discussion in \S\ref{sec:NoVertexAssumption}. 
+
+The rest of the theorem then clarifies both the idea behind a crossing and the idea behind the context variable $\Gamma$. The third hypothesis says that if $P_i$ is not a point on the triangle, then the context variable $\Gamma$ must correctly track whether $P_i$ is inside or outside the triangle. The conclusion then says that the sum of crossings at the three sides is 1 precisely when the context variable switches truth-value. The formalisation almost transparently captures a claim made in the sketch proof: ``\insideoutsideclaim.''
+
+There is one more thing we should say about the context $\Gamma$. The above theorem hypothesises that $\Gamma$ tracks whether the point $P_i$ of the segment $P_iP_{i+1}$ is inside or outside a triangle. Since $P$ is intended to be a vertex of a polygonal path and $P_iP_{i+1}$ an edge, we want to make sure that this hypothesis on $\Gamma$ is preserved as it threads through the remaining vertices. Now as a vertex of the polygon, $P_{i+1}$ is the successor of $P_i$, so what we are saying here is that, just as $\Gamma$ tracks whether $P_i$ is inside or outside the triangle, so too must $\Gamma_{next}$ track whether $P_{i+1}$ is inside or outside. This matter is settled trivially from the definition using the simplifier.
+
+\begin{multline}
+%`!A B C P Q. ~on_triangle (A,B,C) Q
+%   ==> (in_triangle (A,B,C) Q <=> new_was_inside (A,B,C) was_inside P Q)`
+\neg\code{on\_triangle}\ (A,B,C)\ P_{i+1}\\
+\implies (\code{in\_triangle}\ (A,B,C)\ P_{i+1} \iff \Gamma_{next}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1}).
+\end{multline}
+
+\subsubsection{Some Verification}
+We will not bore the reader with the details of the verification. Instead, we will give an extract of a specific case, showing how in these proof we are still relying on our discovery algebra from Chapter~\ref{chapter:Automation}, our linear ordering tactic from Chapter~\ref{chapter:LinearOrder}, and how we leverage our lemmas for this section, and thus avoid having to deal directly with half-planes.
+
+The case we shall consider is, in effect, the base case for IH3 from our first sketch proof (see \S\ref{sec:FirstProofInductiveHypotheses}). We are going to say that if a segment $P_iP_{i+1}$ crosses a triangle $ABC$ exactly once at the point $R$, then its endpoints are in different regions with respect to the triangle. 
+
+\begin{multline}\label{eq:IH3}
+% crossing (A,B,C) was\_inside P Q = 1
+%          ==> crossing (A,C,B) was_inside P Q = 0
+%          ==> crossing (B,C,A) was_inside P Q = 0
+%          ==> on_plane A 'a /\ on_plane B 'a /\ on_plane C 'a
+%              /\ on_plane P 'a /\ on_plane Q 'a
+%              /\ ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+%              /\ ~on_polypath [P;Q] A /\ ~on_polypath [P;Q] B /\ ~on_polypath [P;Q] C
+%              /\ ~on_triangle (A,B,C) Q
+%              ==> (in_triangle (A,B,C) P \/ on_triangle (A,B,C) P /\ was_inside
+%                   <=> ~(in_triangle (A,B,C) Q))
+  \begin{aligned}
+    &\Triangle{a}{A}{B}{C}\\
+    &\wedge\between{P_i}{R}{P_{i+1}} \wedge \between{A}{R}{B} \\
+    &\quad\wedge\code{crossing}\ (A,C,B)\ \Gamma\ P_i\ P_{i+1} = 0\wedge\code{crossing}\ (B,C,A)\ \Gamma\ P_i\ P_{i+1} = 0\\
+    &\wedge\neg\code{on\_polypath}\ [P_i,P_{i+1}]\ A \wedge \neg\code{on\_polypath}\ [P_i,P_{i+1}]\ B \\
+    &\quad\wedge \neg\code{on\_polypath}\ [P_i,P_{i+1}]\ C\\
+    &\wedge\neg\code{on\_triangle}\ (A,B,C)\ P_i \wedge\neg\code{on\_triangle}\ (A,B,C)\ P_{i+1}
+  \end{aligned}\\
+  \implies\left(\code{in\_triangle}\ (A,B,C)\ P_i \iff \code{out\_triangle}\ (A,B,C)\ P_{i+1}\right)
+\end{multline}
+
+We divide the proof into the three cases shown in Figure~\ref{fig:IH3CaseSplit}. In case (a), we have assumed that $P_i$ is interior. It then follows immediately from Theorem~\ref{eq:outTriangle2} that $P_{i+1}$ is exterior. In case (b), we have assumed that $P_i$ is interior and that $P_i$ and $P_{i+1}$ are in line with the vertex $C$. In this case, we just apply Theorem~\ref{eq:inTriangle2}. Finally, in case (c), we have assumed that $P$ is again exterior but that the line of $P_iP_{i+1}$ does not intersect $C$. Under these circumstances, we can apply Pasch's Axiom \eqref{eq:g24} to the triangle and the line of $P_iP_{i+1}$ and thus obtain a point $S$ either on $AC$ or $BC$. It then follows from Theorem~\ref{eq:inTriangle1} that $P_{i+1}$ is interior.
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/IH3CaseSplit}
+\caption{Main Case Split}
+\label{fig:IH3CaseSplit}
+\end{figure}
+
+Actually, things are not \emph{quite} so simple for cases (b) and (c). In order to apply \eqref{eq:outTriangle2} in case (b), we first have to prove that $P_i$ is between $C$ and $R$. To do this, we want to apply our linear ordering tactic, but for this to work, the tactic will need some facts about the existing order relations among the points $P_i$, $P_{i+1}$, $R$ and $C$. These facts come from various places.
+
+First off, the incidence discoverer tells us that $C \neq R$. Next, from \eqref{eq:inTriangle2} and the fact that $P_i$ is exterior, we conclude that $P_i$ does not lie between $C$ and $R$. Finally, since $P_iP_{i+1}$ does not intersect $C$, we know that all three points are distinct and that $C$ does not lie between $P_i$ and $P_{i+1}$. Each of these inferences corresponds to a single declarative proof step, and once in place, the linear reasoning tactic can be applied to the four points $C$, $P_i$, $P_{i+1}$ and $R$, where it is able to show that $P_{i+1}$ lies between $C$ and $R$. We finish by applying~\eqref{eq:inTriangle2} to show that $P_{i+1}$ is interior to the triangle.
+
+Case (c) is more involved, but the most interesting part is probably that which establishes that $P_iP_{i+1}$ does not intersect either $A$ or $B$. Here, we proceed by contradiction. We can solve the goal in one step with the linear reasoning tactic, provided we again obtain the necessary information for it to work with. Unfortunately, it is not immediately obvious what information is needed.
+
+Assuming that $A$, $P_i$ and $P_{i+1}$ lie a line, the linear reasoning tactic will first infer that $A$, $B$, $P_i$, $P_{i+1}$ and $R$ are all collinear. Since $P_{i+1}$ does not lie on the triangle, this would force $A$ and $B$ to lie between $P_i$ and $P_{i+1}$, which is impossible because $P_iP_{i+1}$ does not intersect any of the triangle's vertices. This suggests that we should prove the following facts, and indeed, once armed with them, our tactic can solve the goal by reasoning across the five points:
+\begin{multline}
+A \neq P_i \wedge A \neq P_{i+1} \wedge B \neq P_i \wedge B \neq P_{i+1}\\ \wedge \neg\between{P_i}{A}{P_{i+1}} \wedge \neg\between{P_i}{B}{P_{i+1}} \wedge \neg\between{A}{P_i}{B}
+\end{multline}
+
+When we expand this one case to deal with the situation where $P$ starts on $AB$ and the context is used, we have a proof which runs to 70 steps. We are putting Mizar~Light through its paces, and for the most part, it copes very well with the complexity.
+
+In the places where the prover struggled, it was usually simple enough to apply the \code{using} and \code{tactics} combinators to inject pieces of procedural proof into the script. In doing this, we generally tried to respect the aims of declarative proof. For instance, at no point do we destructively modify the proof context, and we always insist that whenever our tactics apply an assumption, we include the assumption label so that a reader can at least track the dependencies.
+
+For instance, the automatic prover often struggles to apply complex conditionals with many hypotheses. For these situations, we add an initial \code{MATCH\_MP\_TAC} in a \code{using} clause. This leaves the default prover \code{MESON} with just the theorem's assumptions as goals. This tactic still keeps things largely declarative, since we name the theorem which are matching against and we do not modify any assumptions. 
+
+In other places, we found it helpful to introduce a function \code{mutual\_simp} which takes a list of theorems and simplifies each with respect to the others. This function is used to process the justifying theorems of a declarative step before they are handed to \code{MESON}. The need for such processing comes from the fact that a declarative proof is based on accumulating theorems in a proof context. These theorems are expected to influence one another without any destructive modification (consider, as a simple example, an equation inferred late in a proof development which could rewrite all previous assumptions). It is often helpful then to have the theorems modify one each other as they are applied at a step, using a function such as \code{mutual\_simp}, so that they are more useful to \code{MESON}.
+
+Finally, for theorems with hypotheses such as $\code{crossing}\ (A,C,B)\ X\ P_i\ P_{i+1} = 1$, we need to do some work in unfolding the mess of case-splits defined by the equation. For this, we use a \code{tactics} step and a tactic \code{unfold\_crossing\_tac} which unfolds the definition of $\code{crossing}$ and then sweeps through the goal term eliminating the cases. Again, this tactic does not modify any assumptions, and it is typically only applied at the very start of a proof. With the cases converted, the $\code{assume}$ steps allow us to make more meaningful assumptions, as in the proof extract in Figure~\ref{fig:UnfoldingCrossings}.
+
+\begin{boxedfigure}
+\small
+\begin{align*}
+&\code{theorem } \Triangle{a}{A}{B}{C} &\\
+&\qquad\wedge \code{crossing}\ (A,B,C)\ X\ P_i\ P_{i+1} = 1&\\
+&\qquad\wedge \code{crossing}\ (A,C,B)\ X\ P_i\ P_{i+1} = 1&\\
+&\qquad\implies \code{crossing}\ (B,C,A)\ X\ P_i\ P_{i+1} = 0&\\
+&\code{assume } \Triangle{a}{A}{B}{C}&\\
+&\code{tactics } \code{unfold\_crossing\_tac}&\\
+&\code{assume } \between{A}{P_i}{B} \vee \exists R. \between{P_i}{R}{P_{i+1}} \wedge \between{A}{R}{B}
+\end{align*}
+\caption{Unfolding Crossings}
+\label{fig:UnfoldingCrossings}
+\end{boxedfigure}
+
+% Mizar~Light's prover struggles to apply large theorems such as our ray-casting theorem. Luckily, the actual tactic used to justify a step can be customised inline. For theorems such as this, where we have a conditional with many assumptions, we often use code of the form
+
+% \begin{displaymath}
+% \code{K (MATCH\_MP\_TAC } \eqref{eq:changeTriangle}) \code{ THEN } (\code{MESON\_TAC } \circ \code{mutual\_simp}
+% \end{displaymath}
+
+% This tactic tells us to first match the goal with the conclusion \eqref{eq:changeTriangle}. This leaves us to prove the assumptions of \eqref{eq:changeTriangle}, which can be done by mutually simplifying the justifying theorems and feeding the results to $\code{MESON\_TAC}$. This preparatory step using \code{mutual\_simp} is often needed. In forward declarative proofs, we expect facts that we add to the proof context to affect facts already there.
+
+\subsubsection{Crossings are Well-defined}\label{sec:CrossingsWellDefined}
+In our sketch proof, we implicitly assume that when we have two triangles $ABC$ and $ABC'$, then the number of crossings made by a polygonal path against the shared edge $AB$ is always the same. This is not obvious from our formulation, because the number of crossings at $AB$ is dependent on a choice of triangle with edge $AB$. We need to show that this choice is arbitrary.
+
+Now the definition of a crossing makes use of a triangle's interior, and different triangles sharing the edge $AB$ will have interiors which may be disjoint, may overlap, or may contain one another. We will need to prove that, nevertheless, the values of the function \code{crossing} are always consistent. In other words, we must show that the expression ``crossings at $AB$'' is well-defined, without reference to the vertex $C$.
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/CrossingWellDefined}
+\caption{Triangles Sharing an Edge}
+\label{fig:CrossingWellDefined}
+\end{figure}
+
+There is an obvious case-split here, shown in Figure~\ref{fig:CrossingWellDefined}. If $C$ and $C'$ are on opposite sides of $AB$ as in (a), then the interiors of the two triangles are disjoint. In this case, as we move from the interior of $ABC$ across the edge $AB$ to the exterior, we simultaneously move from the exterior of $ABC$ to the interior. On the other hand, if $C$ and $C'$ are on the same side of $AB$ as in case (b), then the triangle interiors will overlap. Here, as we cross the edge $AB$, we enter or leave the interiors of both triangles together. 
+
+\begin{multline}\label{eq:crossChangeLemma1}
+  \begin{split}
+    &\code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp)\\
+    &\wedge\code{on\_half\_plane}\ hp\ C \wedge \code{on\_half\_plane}\ hp\ C'\wedge\between{A}{P_i}{B}
+  \end{split}\\
+  \implies\left(\begin{split} 
+      &(\exists R. \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C)\ R)\\
+      & \iff (\exists R. \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C')\ R)
+  \end{split}\right)
+\end{multline}
+
+\begin{multline}\label{eq:crossChangeLemma2}
+  \begin{split}
+    &\Triangle{a}{A}{B}{C'}\\
+    &\wedge \code{on\_polypath}\ [P_i;P_{i+1}]\ A \wedge \code{on\_polypath}\ [P_i;P_{i+1}]\ B\\
+    &\wedge\code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp)\\
+    &\wedge\code{on\_half\_plane}\ hp\ C \wedge \neg\code{on\_half\_plane}\ hp\ C'\\
+    &\wedge \between{A}{P_i}{B} \wedge \neg\between{A}{P_{i+1}}{B}
+  \end{split}\\
+  \implies\left(\begin{split}
+      &(\exists R. \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C)\ R)\\
+      &\iff\neg \exists R. \between{P_i}{R}{P_{i+1}} \wedge \neg\code{in\_triangle}\ (A,B,C')\ R
+  \end{split}\right)
+\end{multline}
+
+These two theorems are proven by reasoning about half-planes and, in both cases, applying Theorem~\ref{eq:triCutHalfPlane}. The assumptions on half-planes in Theorem~\ref{eq:crossChangeLemma1} require that the points $C$ and $C'$ lie on the same side of $AB$. In Theorem~\ref{eq:crossChangeLemma2}, they require that $C$ and $C'$ lie on opposite sides. Theorem~\ref{eq:crossChangeLemma2} needs some extra assumptions since the negations make for very weak claims. For instance, the fact that $C'$ does not lie on $hp$ might just mean that it lies on the line $AB$, so we have to add in a condition that the points $A$, $B$ and $C'$ are non-collinear.
+
+The important assumption to note in both theorems is $\between{A}{P_i}{B}$. This reflects the fact that the case-split is only pertinent when we come to update and make use of the context variable $\Gamma$. This variable is only needed when the edge $P_iP_{i+1}$ has exactly one endpoint on the segment $AB$. So when the edge lands on $AB$, the context variable must be correctly set to say that we were last inside or outside the triangle. When it emerges from $AB$, the context variable must be correctly applied to say whether the edge $P_iP_{i+1}$ counts as a crossing. These matters can be formally clarified by the corollaries in Figures~\ref{fig:CrossChange1} and~\ref{fig:CrossChange2} (we do not reproduce the assumptions in full).
+
+\begin{boxedfigure}
+  \begin{gather}
+    \begin{split}
+      (\between{A}{P_i}{B}&\implies \Gamma = \Gamma')\\
+      &\implies\code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} = \code{crossing}\ (A,B,C')\ \Gamma'\ P_i\ P_{i+1}
+    \end{split}\\
+    \begin{split}
+      \neg\between{A}{P_i}{B}&\wedge\between{A}{P_{i+1}}{B}\\
+      &\implies \Gamma_{next}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} = \Gamma_{next}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1}
+    \end{split}
+  \end{gather}
+  \caption{Well-definedness Theorems when $C$ and $C'$ are on the same side of $AB$}
+  \label{fig:CrossChange1}
+\end{boxedfigure}
+
+\begin{boxedfigure}
+  \begin{gather}
+    \begin{split}
+      (\between{A}{P_i}{B}&\implies \Gamma = \neg\Gamma')\\
+      &\implies\code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} = \code{crossing}\ (A,B,C')\ \Gamma'\ P_i\ P_{i+1}
+    \end{split}\\
+    \begin{split}
+      \neg\between{A}{P_i}{B}&\wedge\between{A}{P_{i+1}}{B}\\
+      &\implies \Gamma_{next}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} = \neg\Gamma_{next}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1}
+    \end{split}
+  \end{gather}
+  \caption{Well-definedness Theorems when $C$ and $C'$ are on opposite sides of $AB$}
+  \label{fig:CrossChange2}
+\end{boxedfigure}
+
+Thus, when $C$ and $C'$ are on the same side, we expect the context values to be the same when he hit the segment $AB$, and we expect them to be the same when they leave this segment. When $C$ and $C'$ are on opposite sides, we expect the context values to be opposite when we hit $AB$, and when we expect them to stay opposite when they leave this segment. 
+
+Now that we know that the vertex $C$ in the expression $\code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1}$ can be varied about the sides of $AB$ (so long as we change $\Gamma$ appropriately), we can generalise our notion of crossing. Instead of saying that a polygonal path crosses the side of a  \emph{triangle} by moving from interior to exterior and vice-versa, we can say that a polygonal path crosses an arbitrary \emph{segment} precisely when it moves from one side of the segment to the other. In other words, we have abstracted away the vertex $C$. The mechanics of this will become clear in our final proof in \S~\ref{sec:InductionProof}
+
+First, we must consider how we initialise $\Gamma$.
+
+% These cases are factored in when we consider the update and use of the context variable $\Gamma$. The update is pertinent when a segment $P_iP_{i+1}$ lands on the edge $AB$. The use of the context is pertinent when a segment $P'Q'$ leaves the edge $AB$. 
+
+% More generally, we should show that the number of crossings of a polygon at a side $AB$ of triangle $ABC$ is independent of the point $C$. Because of this, we can abstract over all possible choices of $C$ with a universal quantifier and thus recover the notion of crossings on an arbitrary segment. 
+
+%  we consider a triangle sequence where adjacent elements share an edge. Implicit in the sketch proof is that the number of crossings at an edge is well-defined. This is obvious intuitively, but not at all clear from our formalisation of crossings. This is the last gap between our formalisation and the intuitive idea of a crossing. 
+
+% The problem is that our definition of a crossing of $AB$ by a segment $P_iP_{i+1}$ \eqref{eq:oneCrossingDef} is given with respect to a triangle, since it must make use of the 
+
+%  we have formally defined  of crossing at the segment $AB$ in terms of the interior of a triangle $ABC$ and a context $\Gamma$. We must show that its value is well-defined as as we move both the vertex $C$ around the plane and thus consider a different triangle sharing the edge $AB$. We also need to consider the dependencies on the value of $\Gamma$.
+
+% There are three cases to consider here, and they arise in the context of our sketch proof with little difficulty. In Figure~\ref{fig:ChangeTriangle}, we show parts of two intersecting polygons $Ps$ and $Qs$, and we consider three transitions from the triangle $ABC$ to the next triangle $ABC'$ in the sequence defined by the sketch proof. In each case, we are interested in crossings of the segment $P_iP_{i+1}$ at the shared edge $AB$. Our aim is to show that the number of crossings at $AB$ by the segment $P_iP_{i+1}$ with respect to $ABC$ is the same as it is with respect to $ABC'$
+
+% What distinguishes these three cases are the positions of $C$ and $C'$ relative to the edge $AB$, and the consequence this has on the respective interiors of the triangles. In (a), we see that $C$ and $C'$ are on opposite sides of $AB$, and the interiors of the two triangles are therefore disjoint. Therefore, as $P_iP_{i+1}$ crosses the side $AB$, it leaves the interior of $ABC$ and enters the interior of $ABC'$. More generally, it leaves the interior of one triangle and enters the other.
+
+% In case (b), we see that $C$ and $C'$ are on the same side of $AB$, and the interiors overlap. Here, as $P_iP_{i+1}$ crosses $AB$, it leaves the interior of both triangles. Generally, it leaves the interior of both triangles or enters the interior of both.
+
+% In case (c), we see that $C$ and $C'$ are neither on opposite sides nor on the same side of $AB$. Instead, $C'$ is on the line of $AB$, and $ABC'$ is a degenerate case of a triangle and has \emph{no} interior. This last possibility can be factored into the previous two. Instead of allowing the point $C$ to move to any other point in the plane, we insist that it moves strictly between the two \emph{sides} of $AB$. To capture the case of (c), we will also allow the point $B$ to move along the ray $\overrightarrow{AB}$ to a point $B'$. The third case can then be recovered by setting $C=C'$ and moving $B$ to $B'$.
+
+% However, we will add a constraint on $B'$, namely that the segment $BB'$ is not intersected by $P_iP_{i+1}$. This makes sense in context if we consider \ref{fig:ChangeTriangleOnLine}. In general, the segment $BB'$ will be a segment of the original polygon $Ps$, and thus, any intersection here is the witness we need for the main theorem. The upshot is that the intersections of $P_iP_{i+1}$ with $AB$ are precisely the intersections of $P_iP_{i+1}$ with $AB'$. In effect, we can treat the two segments as identical.
+
+%\subsubsection{Crossings are Well-defined: Some Verification}
+%In this subsection, we shall give an overview of how our verification breaks down. 
+
+\subsubsection{Initialising the Context}\label{sec:ContextInitialisation}
+Recall that the context variable $\Gamma$ is needed when we want to count crossings of the edge $P_iP_{i+1}$ of a polygonal path and an edge $AB$ for a triangle $ABC$. If one of the endpoints $P_i$ and $P_{i+1}$ is on the boundary of $ABC$, then the number of crossings depends on additional information provided by the context. 
+
+When computing the total crossings for a polygonal path, this context is threaded through the calculations for each individual edge, starting from some initial context. The question is: how do we decide on this initial context?
+
+Sometimes, the answer is straightforward. If the endpoint $P_{i+1}$ lies in the interior of the triangle, then the value of the context for $P_iP_{i+1}$ is $\top$. If $P_{i+1}$ lies in the exterior of $ABC$, then the value is $\bot$. These give us our solutions for the initial context, and it would be convenient if we could rely on this simple case.
+
+There is some hope here, since any closed polygon which crosses a triangle must have a vertex which is not on the triangle. So perhaps all we have to do is arrange things so that we only start computing a crossing for a polygon at a vertex which lies either inside or outside the triangle. This will require that we have some way to rotate a polygon's vertex list, but we show how to do this in \S\ref{sec:RotatePolygon}.
+
+Unfortunately, this simple method breaks the well-definedness considered in the last section. In Figure~\ref{fig:ContextInitialiseCounter}, we have two triangles $ABC$ and $ABC'$ sharing an edge $AB$, each crossed by the polygonal path $P_1P_2P_3$. As we claimed, this polygonal path has a vertex off the boundary of each triangle ($P_3$ for $\triangle ABC$ and $P_1$ for $\triangle ABC'$), but there is no vertex off both boundaries. 
+
+\begin{figure}
+\centering\includegraphics{jordanVerification1/ContextInitialiseCounter}
+\caption{No Well-defined Initial Context}\label{fig:ContextInitialiseCounter}
+\end{figure}
+
+Thus, we simply cannot avoid the question of how to initialise the context when a polygonal path starts on the triangle's boundary. But if we understand the context as telling us whether or not we were recently inside the triangle, then we realise that the initial value of the context for a polygonal path should be sensibly related to the value of the context at the polygonal path's final edge. We can compute this final value with a recursive function:
+\begin{equation}
+% let polypath_new_was_inside = define
+%   `polypath_new_was_inside (A,B,C) was_inside [] = was_inside
+%    /\ polypath_new_was_inside (A,B,C) was_inside (CONS seg Ps)
+%         = polypath_new_was_inside (A,B,C)
+%             (new_was_inside (A,B,C) was_inside (FST seg) (SND seg))
+%             Ps`;;
+\begin{aligned}
+&\Gamma_{final}\ (A,B,C)\ \Gamma\ [] = \Gamma\\
+&\Gamma_{final}\ (A,B,C)\ \Gamma\ (\cons{(P_i,P_{i+1})}{segments}) = \\
+&\qquad\qquad\Gamma_{final}\ (A,B,C)\ (\Gamma_{next}\ (A,B,C)\ \Gamma\ \ P_i\ P_{i+1})\ segments
+\end{aligned}
+\end{equation}
+
+Now it turns out that if we push the final context back through the above function, we end up with the same value. Formally, $(\Gamma_{final}\ (A,B,C)\ \Gamma\ segments)$ is a fixpoint of the function $(\lambda \Gamma'. \Gamma_{final}\ (A,B,C)\ \Gamma'\ segments)$ for arbitrary $\Gamma$. No matter what our starting choice of $\Gamma$, the computed final context $\Gamma_{final}$ can be consistently taken as the initial context from then on. This expression should then give us a suitable starting context, and it will appear in our final specification in the next section.
+
+\subsubsection{The Specification of Crossings}
+\begin{boxedfigure}
+  \begin{multline}\label{eq:crossNZIntersect}
+    \code{polypath\_crossings}\ (A,B,C)\ \Gamma\ (\code{adjacent}\ Ps) > 0\\
+    \implies \exists. \code{on\_polypath}\ Ps\ Q \wedge\ \between{A}{Q}{B}
+  \end{multline}
+
+  \begin{multline}\label{eq:polypathCrossingsEven}
+  \begin{aligned}
+% !A B C was_inside Qs 'a P Ps.
+%          Qs = CONS P (APPEND Ps [P])
+%          ==> on_plane A 'a /\
+%              on_plane B 'a /\
+%              on_plane C 'a /\
+%              (!X. MEM X Qs ==> on_plane X 'a) /\
+%              ~on_polypath Qs A /\
+%              ~on_polypath Qs B /\
+%              ~on_polypath Qs C /\
+%              ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+%          ==> EVEN
+%              (polypath_crossings (A,B,C)
+%               (polypath_new_was_inside (A,B,C) was_inside (ADJACENT Qs))
+%               (ADJACENT Qs) +
+%               polypath_crossings (A,C,B)
+%               (polypath_new_was_inside (A,B,C) was_inside (ADJACENT Qs))
+%               (ADJACENT Qs) +
+%               polypath_crossings (B,C,A)
+%               (polypath_new_was_inside (A,B,C) was_inside (ADJACENT Qs))
+%               (ADJACENT Qs))  
+    &Qs = \append{[P]}{\append{Ps}{[P]}}\\
+    &\wedge \Gamma_{initial} = \Gamma_{final}\ (A,B,C)\ \Gamma\ (\code{adjacent}\ Qs)\\
+    &\wedge \neg\code{on\_polypath}\ Qs\ A \wedge \neg\code{on\_polypath}\ Qs\ B \wedge \neg\code{on\_polypath}\ Qs\ C\\
+    &\wedge \Triangle{a}{A}{B}{C}
+\end{aligned}\\
+\implies\code{even}\left(\begin{aligned}& \code{polypath\_crossings}\ (A,B,C)\ \Gamma_{initial}\ (\code{adjacent}\ Qs)\\
+    &+\;\code{polypath\_crossings}\ (A,C,B)\ \Gamma_{initial}\ (\code{adjacent}\ Qs)\\
+    &+\;\code{polypath\_crossings}\ (B,C,A)\ \Gamma_{initial}\ (\code{adjacent}\ Qs)
+  \end{aligned}\right)
+\end{multline}
+
+\begin{multline}\label{eq:changeTriangle}
+  %        Qs = CONS P (APPEND Ps [P]) /\
+  %        on_plane A 'a /\
+  %        on_plane B 'a /\
+  %        on_plane C 'a /\
+  %        on_plane C' 'a /\
+  %        (!X. MEM X Qs ==> on_plane X 'a) /\
+  %        ~(?a. on_line A a /\ on_line B a /\ on_line C a) /\
+  %        ~(?a. on_line A a /\ on_line B' a /\ on_line C' a) /\
+  %        ~on_polypath Qs A /\
+  %        (between A B B' \/ between A B' B \/ ~(A = B) /\ B = B') /\
+  %        ~(?X. on_polypath [B; B'] X /\ on_polypath Qs X)
+  %        ==> (?was_inside'. polypath_crossings (A,B,C)
+  %                           (polypath_new_was_inside (A,B,C) was_inside
+  %                           (ADJACENT Qs))
+  %                           (ADJACENT Qs) =
+  %                           polypath_crossings (A,B',C')
+  %                           (polypath_new_was_inside (A,B',C') was_inside'
+  %                           (ADJACENT Qs))
+  %                           (ADJACENT Qs))
+  \begin{aligned}
+    &Qs = \append{[P]}{\append{Ps}{[P]}}\\
+    &\wedge \neg\code{on\_polypath}\ Qs\ A \wedge \neg\code{on\_polypath}\ Qs\ B\\
+    &\implies \forall C\;C'. \Triangle{a}{A}{B}{C}\\
+    &\qquad\qquad\wedge \Triangle{a}{A}{B}{C'}\\
+    &\quad\implies \exists \Gamma'. \code{polypath\_crossings}\ (A,B,C)\ (\Gamma_{final}\ (A,B,C)\ \Gamma\ (\code{adjacent}\ Qs))\\
+    &\quad\qquad\qquad\qquad(\code{adjacent}\ Qs)\\
+    &\quad\qquad = \code{polypath\_crossings}\ (A,B,C')\ (\Gamma_{final}\ (A,B,C')\ \Gamma'\ (\code{adjacent}\ Qs))\\
+    &\quad\qquad\qquad\qquad(\code{adjacent}\ Qs)\\
+  \end{aligned}
+\end{multline}
+\caption{Final Specification of Crossings}\label{fig:CrossingsSpecification}
+\end{boxedfigure}
+
+We are at last able to recover the intuitive idea behind crossings from the mess of case-analyses and implementation detail of the previous sections. In Figure~\ref{fig:CrossingsSpecification} we give the key theorems which subsume the important details of the other theorems considered thus far. It is these theorems which we shall appeal to exclusively in our verification of Lemma~1 in \S\ref{sec:InductionProof}.
+
+The first, Theorem~\ref{eq:crossNZIntersect} is mostly a convenience. It simply relates crossings to intersections, telling us that if there are crossings at $AB$ by a polygonal path $Ps$, then $Ps$ really does intersect $AB$. The converse does not hold, since the polygonal path might merely intersect and then ``bounce off'', thus staying on the same side of $AB$.
+
+Theorem~\ref{eq:polypathCrossingsEven} assumes that we have a polygon $Qs$ and sets an initial context as described in the previous subsection. It also assumes we have a triangle $ABC$ and that $Qs$ does not intersect any of its vertices, as per our discussion in \S\ref{sec:NoVertexAssumption}. Under these conditions, the total number of crossings against the three sides is always even.
+
+Theorem~\ref{eq:changeTriangle} tells us that the choice of $C$ when counting crossings is arbitrary, so long as it is not on the line $AB$. There is a slight complication, in that the theorem tells us to set the initial context appropriately using the context $\Gamma'$ given in the conclusion, but since Theorem~\ref{eq:polypathCrossingsEven} holds for arbitrary choices of $\Gamma$, we can ignore this constraint when we apply the two theorems.
+
+The upshot of Theorem~\ref{eq:changeTriangle} is that we can understand a crossing without reference to a triangle, but instead only with reference to the points $A$ and $B$. In the next section, we shall see how this more general view plays out in our formalisation.
+
+\subsection{Verifying the Sketch Proof}
+In this section, we shall review our verification of the parity proof that we sketched in \S\ref{sec:ParityProofInformal}. There are two points that we find particularly noteworthy here: firstly, there are interesting details in the formalisation relating to our use of the theorems of the previous section. But more importantly, we can show that the first half of the Polygonal Jordan Curve Theorem arises as a corollary to a major theorem that we give at the end of this section. Unlike the Polygonal Jordan Curve Theorem, this theorem makes \emph{no} reference to \emph{simple polygons}. In fact, the proof leads to what we regard as a fair more elegant theorem about arbitrary polygonal paths, one which does not hinge on such complex definitions as the Polygonal Jordan Curve Theorem.
+
+\subsubsection{The Induction Proof}\label{sec:InductionProof}
+The parity proof assumes that we have two polygons $Ps$ and $Qs$ intersecting at an edge. Based on this, we consider a sequence of triangles formed from the vertices of the polygon $Ps$, and repeat a parity argument over the number of crossings.
+
+This argument readily formalises as a proof by induction, which gives us a nice reinterpretation. Rather than considering triangles with vertices drawn from $Ps$, we continually reduce the problem to smaller polygons. This inductive proof yields the (somewhat ugly) lemma:
+\begin{equation}\label{eq:oddCrossClosedPolypath}
+  % "!Ps Qs A B.
+  %    LENGTH Qs >= 2
+  %    /\ HD Qs = LAST Qs
+  %    /\ on_plane A 'a /\ on_plane B 'a
+  %    /\ (!X. MEM X Ps ==> on_plane X 'a)
+  %    /\ (!X. MEM X Qs ==> on_plane X 'a)
+  %    /\ ~(A = B) 
+  %    /\ (!C. on_plane C 'a
+  %            /\ ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+  %            ==> ?was_inside. 
+  %              ODD
+  %                (polypath_crossings (A,B,C)
+  %                  (polypath_new_was_inside (A,B,C) was_inside (ADJACENT Qs))
+  %               (ADJACENT Qs)))
+  %  ==> ?X. on_polypath (CONS B (APPEND Ps [A])) X
+  %          /\ on_polypath Qs X"
+  \begin{aligned}
+    &\code{length}\ Qs \geq 2 \wedge \code{head}\ Qs = \code{last}\ Qs\wedge P_1\neq P_2\\
+    &\wedge (\forall C. \Triangle{a}{P_1}{P_2}{C}\\
+    &\qquad\qquad \implies \exists \Gamma. \code{odd}\ (\code{polypath\_crossings}\ (P_1,P_2,C)\\
+    &\qquad\qquad\qquad\qquad\qquad(\Gamma_{final}\ (P_1,P_2,C)\ \Gamma\ (\code{adjacent}\ Qs))\ (\code{adjacent}\ Qs)))\\
+    &\implies\exists X. \code{on\_polypath}\ (\append{[B]}{\append{Ps}{[P_1]}})\ X \wedge \code{on\_polypath}\ Qs\ X
+  \end{aligned}
+\end{equation}
+
+Here, we assume two polygons of length at least two, namely $\append{[P_1,P_2]}{\append{Ps}{[P_1]}}$ and $Qs$. The polygon $Qs$ is assumed to cross the edge $AB$ an odd number of times. We then conclude that $Qs$ intersects the tail of $\append{[P_1,P_2]}{\append{Ps}{[P_1]}}$, exactly as we require in the sketch proof.
+
+Of particular note is how we formalise the idea that $Qs$ crosses the edge $P_1P_2$ in terms of the function \code{crossing}. To do this, we abstract away the $C$ and the $\Gamma$ variables with universal and existential quantifiers, knowing it is valid to do so based on our well-definedness theorems.
+
+Rather than use structural induction, we proceed by induction on the length of $Ps$. This is because we have virtually no constraints on the vertices of the two polygons: we do not even assume that the vertices in $Ps$ are distinct. In particular, it might be that $Ps$ has a prefix made up of copies of $P_2$. These need to be broken off if we are to apply our inductive hypothesis, and what we end up with is some shorter list of unspecified structure.
+
+We take this opportunity to introduce the \code{break} function, which splits a list in two at the first point at which a predicate evaluates to true. We have defined this function rather clumsily using an auxiliary function and an accumulator, but what emerges after a few procedural proofs is an elegant and complete specification which is trivial to apply in formal proofs:
+\begin{align*}
+&\code{all}\ (\lambda x. \neg(p\ x))\ (\code{fst}\ (\code{break}\ p\ xs))\\
+&\code{exists}\ p\ xs \rightarrow \code{snd}\ (\code{break}\ p\ xs) \neq [] \wedge p (\code{head}\ (\code{snd}\ (\code{break}\ p\ xs)))\\
+&\append{\code{fst}\ (\code{break}\ p\ xs)}{\code{snd}\ (\code{break}\ p\ xs)} = xs
+\end{align*}
+
+Using the expression $\code{break}\ (\lambda P. P_2 \neq P)\ Ps$, we can break off all the repeated copies of $P_2$. If we are left with an empty list, then the tail of our polygon is effectively just $[P_2,P_1]$, a single segment against which we know by assumption that there is a crossing. Thus, in this case, we just apply  \ref{eq:crossNZIntersect} to find the required point of intersection. 
+
+If the break does not leave us with an empty list, then we consider the first vertex $P_3$ in the list which is distinct from $P_2$. Our aim will be to show that there is an odd number of crossings on $P_1P_3$, after which we can apply the inductive hypothesis. According to our treatment of this idea from \ref{sec:CrossingsWellDefined}, our goal is formalised as
+\begin{equation*}
+% !C'. on_plane C' 'a
+%                    /\ ~(?a. on_line A a /\ on_line C a /\ on_line C' a)
+%                    ==> (?was_inside. ODD
+%                              (polypath_crossings (A,C,C')
+%                                 (polypath_new_was_inside (A,C,C') was_inside
+%                                    (ADJACENT Qs))
+%                                (ADJACENT Qs)))
+  \begin{aligned}
+    &\forall C. \Triangle{a}{P_1}{P_3}{C}\\
+    &\quad \implies \exists \Gamma. \code{odd}\ (\code{polypath\_crossings}\ (P_1,P_3,C)\\
+    &\qquad\qquad\qquad(\Gamma_{final}\ (P_1,P_3,C)\ \Gamma\ (\code{adjacent}\ Qs))\ (\code{adjacent}\ Qs))
+  \end{aligned}
+\end{equation*}
+
+In proving this, we get to assume that the polygon $Qs$ does not intersect the segment $P_2P_3$, since otherwise we are done. In Mizar~Light, the assumption is made quite literally:
+
+\begin{center}\boxed{\code{assume}\ \neg(\exists X. \code{on\_polypath}\ [B,C]\ X \wedge \code{on\_polypath}\ Qs\ X)}\end{center}
+
+There is actually yet another case-split to consider here. It is possible that $P_3$ lies on the line of $P_1P_2$, or, more specifically, on the \emph{ray} $\overrightarrow{P_1P_2}$\footnote{For this inference, we use our linear reasoning tactic}. We shall not cover the details of this case. Suffice to say, it requires a complication of Theorem~\ref{eq:changeTriangle}, which we give in Appendix~\ref{app:JordanVerificationExtra}. Explaining it here would just obscure the basic ideas of the verification.
+
+Thus, we shall assume that $P_3$ forms a triangle with $P_1P_2$. This means we can apply our assumption that there are an odd number of crossings at $P_1P_2$, namely
+\begin{align*}&\forall C. \Triangle{a}{P_1}{P_2}{C}\\
+    &\quad\implies \exists \Gamma. \code{odd}\ (\code{polypath\_crossings}\ (P_1,P_2,C)\\
+    &\qquad\qquad\qquad(\Gamma_{final}\ (P_1,P_2,C)\ \Gamma\ (\code{adjacent}\ Qs))\ (\code{adjacent}\ Qs)))
+\end{align*}
+
+It should now be clear how the quantifiers in this expression are to be used. We need $C$ to be arbitrary, because we must instantiate it with the particular vertex $P_3$ that we have obtained from the list $Ps$. We must then obtain an appropriate starting context $\Gamma$ depending on $C$, which is chosen according to which side of the edge $P_1P_2$ the vertex $P_3$ lies. 
+
+By applying Theorems~\ref{eq:crossNZIntersect} and~\ref{eq:polypathCrossingsEven}, we can then conclude that there must be an odd number of crossings at $P_1P_3$ \emph{with respect to the triangle $P_1P_2P_3$}. All we need now to complete the inductive step is to generalise this claim by quantifying over the variable $P_2$. For this final step, we just use our well-definedness theorem~\eqref{eq:changeTriangle}.
+
+\subsubsection{A Theorem of Polygonal Paths}
+Theorem~\ref{eq:oddCrossClosedPolypath} is all we need to reach the claim that a simple polygon divides the plane into two regions. It is interesting to note, however, that we have not mentioned path connecteness in this theorem, nor have we supposed that the polygons concerned are simple. In fact, such an assumption is overkill even for the main theorem we intend to prove in this chapter. This suggests there are other interesting theorems to be had from the ideas considered thus far, and we shall consider one in this section.
+
+This little detour allows us to present the main results of this section in a way which does not rely on bulky formalisations about \emph{crossings}. We have come this far by building a large tower of abstractions, complicated and unweildy definitions, and theorems containing far too many hypotheses. The pay-off from this sort of formalisation is a result which throws out such rickety scaffolding and brings us to a neat and easily grasped theorem.
+
+In a fairly short proof (42 steps), we apply Theorem~\ref{eq:oddCrossClosedPolypath} to obtain a highly symmetric theorem concerning arbitrary intersecting polygons.
+
+\begin{equation}\label{eq:intersectPolypathClosed}
+   % on_plane P1 'a /\ on_plane P2 'a /\ on_plane Q1 'a /\ on_plane Q2 'a 
+   % /\ (!X. MEM X Ps ==> on_plane X 'a) /\ (!X. MEM X Qs ==> on_plane X 'a) 
+   % /\ ~(?a. on_line P1 a /\ on_line P2 a /\ on_line Q1 a)
+   % /\ ~(?a. on_line Q1 a /\ on_line Q2 a /\ on_line P1 a)
+   % /\ between P1 X P2 /\ between Q1 X Q2
+   % /\ P1 = LAST (CONS P2 Ps) /\ Q1 = LAST (CONS Q2 Qs)
+   % ==> ?Y. on_polypath (CONS P2 Ps) Y /\ on_polypath (CONS Q1 (CONS Q2 Qs)) Y
+   %         \/ on_polypath (CONS P1 (CONS P2 Ps)) Y /\ on_polypath (CONS Q2 Qs) Y"
+  \begin{aligned}
+    &\Triangle{a}{P_1}{P_2}{Q_1}\\
+    &\wedge\Triangle{a}{Q_1}{Q_2}{P_1}\\
+    &\wedge\between{P_1}{X}{P_2} \wedge \between{Q_1}{X}{Q_2}\\
+    &\wedge P_1 = \code{last}\ Ps \wedge Q_1 = \code{last}\ Qs\\
+    &\implies \exists Y. \code{on\_polypath}\ (\cons{P_2}{Ps})\ Y \wedge \code{on\_polypath}\ (\cons{Q_1}{\cons{Q_2}{Qs}})\ Y\\
+    &\qquad\qquad\vee \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{Ps}})\ Y \wedge \code{on\_polypath}\ (\cons{Q_2}{Qs})\ Y\\
+  \end{aligned}
+\end{equation}
+
+In words, if we have polygons $P_1P_2\ldots P_1$ and $Q_1Q_2\ldots Q_1$ such that the segment $P_1P_2$ and $Q_1Q_2$ intersect, then one of the polygons intersects a non-trivial suffix of the other.
+
+\begin{figure}
+\centering\includegraphics[scale=0.5]{jordanVerification1/Theorem}
+\caption{Arbitrary Intersecting Polygons}
+\label{fig:IntersectingPolygons}
+\end{figure}
+
+The theorem places no constraints on the polygons other than that they cross at their first edges. They can have repeated vertices; they can self-intersect; they could even be the trivial polygons $P_1P_2P_1$ and $Q_1Q_2Q_1$. The point to visualise is that if two segments $P_1P_2$ and $Q_1Q_2$ cross one another, and if we attempt to connect $P_2$ back to $P_1$ whilst attempting to connect $P_2$ back to $P_1$, we will draw another point of intersection. See Figure~\ref{fig:IntersectingPolygons}.
+
+\subsection{The Plane Divides into at Least Two Regions}\label{sec:FinalProofJordan1}
+We can now prove the main theorem for this section. We assume a simple polygon $P_1P_2\ldots P_n$, and we must find two points off this polygon which cannot be connected by a polygonal path without crossing the simple polygon. Equivalently, any polygonal path connecting the two chosen points must intersect the simple polygon.
+
+The strategy we use to prove this has already been covered in \S\ref{sec:ParityProofInformal}, and the formalisation respects the structure. In the sketch proof, we consider two rays emerging on either side of the edge $P_1P_2$. We find the points where these rays intersect $Ps$, and pick the point of intersection closest to $AB$. In our formalisation, this step is handled by a ``ray-casting'' theorem which we discuss in \S\ref{sec:RayCasting}. 
+
+In context, this ray-casting is the one and only place where we need to assume the simplicity of the simple polygon. In fact, we do not need to assume that much. All we really need to know is that there is \emph{some} edge of a polygon, and \emph{some} point $P$ inside that edge, such that $P$ does not lie on the rest of the polygon. Under these circumstances, we know that the polygon divides the plane into at least two regions.
+
+This is to be contrasted with the verification in the next section. There, the assumption of a polygon's simplicity will feature heavily. The reason, of course, is that there are many ways for a polygon to divide the plane into multiple regions, but fewer ways for a polygon to restrict the number of regions to \emph{two}.
+
+\begin{equation}
+  \begin{split}
+    &\code{simple\_polygon}\ \alpha\ Ps\\
+    &\implies \exists P\ Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
+    &\qquad\wedge \neg\code{on\_polypath}\ Ps\ P \wedge \neg\code{on\_polypath}\ Ps\ Q\\
+    &\qquad\wedge \neg\code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q.
+  \end{split}\tag{\ref{eq:jordanFormal1}}
+\end{equation}
+
+% \subsection{There are at most two regions}
+% We now briefly discuss Veblen's second lemma. We see no significant problems with Veblen's proof here (despite Guggenheimer's claim that the proof is only valid for convex polygons~\cite{GuggenheimerJordanCurve}). The crux of proof is to show that one can effectively find a path from a point near one edge of a simple polygon to a point near some other edge. This is only meant to be illustrative of the idea. We obviously have no way to gauge distances in a theory with no metric, and this unfortunate fact rules out the common proof based on ``offset curves'' (see Tvergberg~\cite{TverbergJordan}).
+
+% Instead, Veblen introduces the term ``accessibility'' and gives a proof that all points of a polygon are accessible from all points in the plane. When we come to verify this lemma in \S\ref{sec:Lemma2Verification}, we shall instead talk in terms of ``lines-of-sight''. This notion can be shown equivalent to Veblen's idea of accessibility, but we hope it lends to a more intuitive proof. 
+
+% The second lemma is then proven by systematically applying two powerful results: a lemma which effectively allows one to carry out ``ray-casting'', and another lemma needed to ``peer'' through small gaps.
+
+% \section{Base Case}
+% In this section, we discuss a verification of the version of the Polygonal Jordan Curve Theorem applied to triangles. In our first informal proof from \ref{sec:JordanCurveFirstProof}, we pointed out that if we explicitly define the interior and exterior of a polygon, then the theorem amounts to three claims (IH1--IH3 from that section):
+
+% \begin{enumerate}
+% \item Interior points $A$ and $B$ of a triangle can be connected by a polygonal path which does not intersect the boundary of the triangle.
+% \item Exterior points $A$ and $B$ of a triangle can be connected by a polygonal path which does not intersect the boundary of the triangle.
+% \item Any path connecting an interior point $A$ of a triangle to an exterior point must intersect the boundary of the triangle.
+% \end{enumerate}
+
+% The first clause is provable almost immediately from the same property of half-planes: the segment between $A$ and $B$ lies entirely on every one of the half-planes defining the triangle's interior, and thus, lies entirely in the triangle's interior. This segment is the polygonal path we need to connect $A$ and $B$.
+
+% The third clause is more involved. 
+
+% \texttt{ at 1 such that } \neg \onplane{B}{\alpha} \texttt{ by g18}\\
+% &\texttt{have } A \neq B \texttt{ at 2 from 0,1}\\
+% &\texttt{so consider } a \texttt{ at 3 such that } \online{A}{a} \wedge  \online{B}{a} \texttt{ by g11}\\
+% &\texttt{consider } C \texttt{ at 4 such that } \neg \online{C}{a} \texttt{ by g13b}\\
+% &\texttt{have } \Triangle{b}{A}{B}{C}\\
+% &\quad\texttt{otherwise consider } b \texttt{ at 5 such that }\online{A}{b}\wedge \online{B}{b}\wedge \online{C}{b}\\
+% &\quad\texttt{hence } a = b \texttt{ from 2,3 by g12}\\
+% &\quad\texttt{qed from 4,5}\\
+% &\texttt{so consider } \beta \texttt{ at 5 such that }\\
+% &\quad\onplane{A}{\beta}\wedge \onplane{B}{\beta}\wedge \onplane{C}{\beta} \texttt{ by g14a}\\
+% &\texttt{consider } D \texttt{ at 6 such that } \onplane{D}{\alpha}\wedge \onplane{D}{\beta}\wedge A\neq D \\
+% &\qquad\texttt{ from 0,1,5 by g17}\\
+% &\texttt{consider } E \texttt{ at 7 such that } \neg \onplane{E}{\beta} \texttt{ by g18}\\
+% &\texttt{have } \Triangle{b}{A}{B}{E} \texttt{ at 8}\\
+% &\quad\texttt{otherwise consider } b \texttt{ at 9 such that }\online{A}{b}\wedge \online{B}{b}\wedge  \online{E}{b}\\
+% &\quad\texttt{hence }\onplane{E}{\beta} \texttt{ from 2,5 by g16}\\
+% &\quad\texttt{qed from 7}\\
+% &\texttt{so consider } \gamma \texttt{ at 9 such that}\\
+% &\quad\onplane{A}{\gamma}\wedge \onplane{B}{\gamma}\wedge \onplane{E}{\gamma}\texttt{ by g14a}\\
+% &\texttt{assume } \alpha\neq\gamma \texttt{ from 8,9}\\
+% &\texttt{so consider } F \texttt{ at 10 such that }\onplane{F}{\alpha}\wedge \onplane{F}{\gamma}\wedge A \neq F \\
+% &\quad\texttt{ from 0,9 by g17}\\
+% &\texttt{have }\Triangle{b}{A}{D}{F}\\
+% &\quad\texttt{otherwise consider } b \texttt{ at 11 such that }\\
+% &\quad\quad\online{A}{b}\wedge \online{D}{b}\wedge \online{F}{b}\\
+% &\quad\texttt{hence }\onplane{D}{\gamma}\texttt{ at 12 from 0,9,10 by g16}\\
+% &\quad\texttt{have }\Triangle{c}{A}{B}{D}\\
+% &\quad\quad\texttt{otherwise consider } c \texttt{ at 13 such that }\\
+% &\quad\quad\quad\online{A}{c}\wedge \online{B}{c}\wedge \online{D}{c}\\
+% &\quad\quad\texttt{hence }\onplane{B}{\alpha}\texttt{ from 0,6 by g16}\\
+% &\quad\quad\texttt{qed from 1}\\
+% &\quad\texttt{hence }\beta=\gamma \texttt{ from 5,6,9,12 by g15}\\
+% &\quad\texttt{qed from 7,9}\\
+% &\texttt{qed from 0,6,10}
+
+% Here, we insist that a simple polygon is defined by at least three points and thus that it has at least two vertices. As we shall see, the remaining constraints will ensure that the polygon has at least three (non-collinear) vertices. 
+
+% With polygonal paths and simple polygons defined, we are able to formalise a statement of the Polygonal Jordan Curve Theorem. 
+
+% \begin{align*}
+%   &\code{simple\_polygon}\ Ps \wedge (\forall P. \code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha) \implies\\
+%   &\qquad(\exists P\ Q.\ \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
+%   &\qquad\quad \implies   \neg\code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q)\\
+%   &\qquad\wedge \forall P\ Q\ R.\ \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha \wedge \code{on\_plane}\ R\ \alpha \implies\\
+
+%   &\qquad\qquad \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q\\
+%   &\qquad\qquad \vee \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ R\\
+%   &\qquad\qquad \vee \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ Q\ R
+% \end{align*}
+
+% We should once again that half the conditions in this statement are those concerning the plane $\alpha$, showing again the added complexity we get when we cannot assume, as Hilbert did, to be working relative to an ambient plane.
+
+% \section{Triangles}
+% The simplest case of the Jordan Curve Theorem is that for the triangle. Here, we can directly define the two regions into which the plane is partitioned. For Veblen, a point in $P$ is in the interior of a triangle $(A,B,C)$ precisely when there exist points $X$ and $Y$ inside $AB$ and $AC$ respectively such that $P$ is between $X$ and $Y$.
+
+% We choose to define the interior points of a triangle as the intersection of three half-planes on the line $AB$, $AC$ and $BC$. 
+
+% \begin{align*}
+% &\code{in\_triangle}\ (A,B,C)\ P \iff\\
+% &\quad \exists hp\ hq\ hr. \ \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp) \\
+% &\qquad\quad \wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp) \\
+% &\qquad\quad \wedge \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hq) \\
+% &\qquad\quad \wedge \code{on\_line}\ C\ (\code{line\_of\_half\_plane}\ hq) \\
+% &\qquad\quad \wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hr) \\
+% &\qquad\quad \wedge \code{on\_line}\ C\ (\code{line\_of\_half\_plane}\ hr) \\
+% &\qquad\quad \wedge \code{on\_half\_plane}\ hp\ C \wedge \code{on\_half\_plane}\ hq\ B \wedge \code{on\_half\_plane}\ hr\ A \\
+% &\qquad\quad \wedge \code{on\_half\_plane}\ hp\ P \wedge \code{on\_half\_plane}\ hq\ P  \wedge \code{on\_half\_plane}\ hr\ P
+% \end{align*}
+
+% \begin{align*}
+% &\code{on\_triangle}\ (A,B,C)\ P \iff\\
+% &P = A \vee P = B \vee P = C \vee \code{between}\ A\ P\ B \vee \code{between}\ A\ P\ C \vee \code{between}\ B\ P\ C
+% \end{align*}
+
+% This definition has the advantage of being symmetric and allowing us to leverage our theory of half-planes from section \S\ref{sec:halfplanes}. Moreover, the three half-planes in the definition are unique and easily obtained from any triangle, and so when applying this definition, the existential reasoning is trivial. For instance, on Veblen's definition, when we need to prove that one point $Qs$ is an interior point on the basis of another interior point $P$, we have to obtain specific points $X$ and $Y$ on $AB$ and $AC$ such that $P$ is between $X$ and $Y$, and then use these to find points $X'$ and $Y'$ such that $Qs$ is between $X'$ and $Y'$. Using half-planes, 
+
+% For instance, a theorem we cannot overlook in formalisation is one which shows that the interior and exterior of triangles are \emph{non-empty}. For this, we just need some simple and generally useful lemmas which relate half-planes to the betweenness relation.
+
+% \begin{lemma}
+% A ray emananting from the line of a half-plane contains points entirely in that half-plane.
+% \begin{align*}
+% &\forall hp\ P\ Q\ R. \code{on\_line}\ P\ (\code{line\_of\_half\_plane}\ hp)\\
+% &\qquad \wedge \code{on\_half\_plane}\ hp\ Q\\
+% &\qquad \wedge (\code{between}\ P\ Q\ R \vee \code{between}\ P\ R\ Q)\\
+% &\qquad \implies \code{on\_half\_plane}\ hp\ R
+% \end{align*}
+% \label{lemma:betOnHalfPlane}
+% \end{lemma}
+
+% \begin{lemma}
+% If $P$ and $Qs$ lie in a half-plane, then the points of the segment $P_iP_{i+1}$ also lie in that half-plane.
+% \begin{align*}
+% &\forall hp\ P\ Q\ R. \code{\code{on\_half\_plane}\ hp\ P} \wedge \code{\code{on\_half\_plane}\ hp\ P}\\
+% &\qquad \wedge \code{between}\ P\ Q\ R \implies \code{on\_half\_plane}\ hp\ R
+% \end{align*}
+% \label{lemma:betOnHalfPlane2}
+% \end{lemma}
+
+% With these lemma, we can easily find candidates for interior and exterior points. Given $\triangle ABC$, we use Theorem~3 to first obtain a point $X$ between $A$ and $B$, and then to obtain a point $P$ between $X$ and $C$. By Lemma~\ref{lemma:betOnHalfPlane}, it immediately follows that this point lies in all three half-planes defining the interior of a triangle, without us having to find any points on $AB$ and $AC$ whose segment contains $P$ as Veblen's definition requires.
+
+% To find an exterior point, our job is even easier. We just use Axiom~II,2 to obtain a point $Y$ which lies beyond the segment $AB$. We know immediately by the definition of half-planes that this point is on the opposite half-plane to $A$ and therefore cannot be an interior point. Importantly, we do not need to refute the existence of points on $AB$ and $AC$ whose segment contains $Y$.
+
+% \section{The Base Case}
+% We give a complete proof of the Jordan Curve Theorem in the base case. This divides into three claims:
+
+% \begin{itemize}
+% \item
+% Any two interior points of a triangle are path-connected.
+% \item 
+% A point in the interior of a triangle is \emph{not} path-connected to an exterior point.
+% \item
+% Any two exterior points of a triangle are path-connected.
+% \end{itemize}
+
+% The first is trivial from the definition of half-planes. By Lemma~\ref{lemma:betOnHalfPlane2}, the segment of two interior points of a triangle lies in all the same half-planes defining the triangle as the interior points themselves, and therefore does not intersect the boundary of the triangle. 
+
+% \subsection{Interior points are not Path-Connected to Exterior Points}
+% The second claim is slightly more involved. Suppose we are given an interior point $P$ and an exterior point $Qs$ of a triangle $ABC$ (see Figure~\ref{fig:triSegClosed}, and consider the segment between them. We will first find a point $X$ on this segment which is also on one of the line $AB$, $AC$ or $BC$.
+
+% If $Qs$ lies on one of these lines, we are done. Otherwise $P$ and $Qs$ must lie on opposite sides of one of the lines $AB$, $AC$ and $BC$. Assume without loss of generality that they are on opposite sides of $AC$. Then by the definition of half-planes, there exists a point $X$ on the line $AC$ such that $X$ is between $P$ and $Qs$.
+
+% Now if $X$ lies on the segment $AC$, we are done. So without loss of generality, and appealing to Theorem~4, suppose $C$ lies on the segment $AX$. This means, by definition, that $A$ and $X$ lie on opposite sides of the line $BC$, and thus from the definition of $P$, that $P$ and $X$ lie on opposite sides of $BC$.
+
+% We can thus obtain a point $Y$ on $BC$ between $P$ and $X$, which we can show must lie between the lines $AC$ and $AC$. By \ref{lemma:betOnHalfPlane}, $Y$ must lie on the same side of $AC$ as the point $P$. By the same lemma, $X$ must lie on the same side of $AB$ as $P$, and so by \ref{lemma:betOnHalfPlane2}, the point $Y$ must lie on the same side of $AB$ as $P$. By the definition of half-planes, this means that $C$ cannot lie between $B$ and $Y$, nor $B$ between $C$ and $Y$. And so by Theorem~4, $Y$ must lie between $B$ and $C$. Since $Y$ then lies on the triangle, it is impossible to connect an interior point of a triangle to an exterior point by a single segment.
+
+% \begin{figure}
+% \centering
+% \includegraphics{triclosed.pdf}
+% \caption{An Interior and Exterior Point}
+% \label{fig:triSegClosed}
+% \end{figure}
+
+% This proof formalises almost exactly, requiring just 48 proof steps. With it, we know that adjacent points in a polygonal path that does not intersect a triangle and which begins with an interior point must also end with an interior point. In other words, interior and exterior points of a triangle are not path-connected. 
+
+% \subsection{Exterior points are Path-Connected}
+
+% \subsection{The Base Case of Veblen's Proof}
+% One of the main lemmas in proofs of the Polygonal Jordan Curve Theorem states that if the segment $P_iP_{i+1}$ intersects a polygon exactly once at between two of its vertices, then $P$ and $Qs$ must lie on opposite sides of the polygon. Veblen proves this lemma by reducing it to the case of a triangle. We prove the base case here.
+
+% The main result is that if a segment $P_iP_{i+1}$ intersects a triangle exactly once and between two of its vertices, then one of $P$ and $Qs$ must lie inside the triangle. We know that both points cannot be interior points from Lemma~\ref{lemma:betOnHalfPlane2}, which shows that the segment of two such points lies entirely inside the triangle.
+
+% \begin{align*}
+% &\code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha\\
+% &\neg(\exists a. \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a \wedge \code{on\_line}\ C\ a)\\
+% &\wedge\neg\code{on\_triangle}\ (A,B,C)\ P\wedge\neg\code{on\_triangle}\ (A,B,C)\ Q\\
+% &\code{between}\ A\ R\ B \wedge \code{between}\ P\ R\ Q\\
+% &\wedge(\forall X. \code{on\_triangle}\ (A,B,C)\ X \wedge \code{between}\ P\ X\ Q \implies R = X)\\
+% &\implies \code{in\_triangle}\ (A,B,C)\ P \vee \code{in\_triangle}\ (A,B,C)\ Q
+% \end{align*}
+
+% \begin{figure}
+% \caption{Crossing a Triangle}
+% \includegraphics{trianglecross.pdf}
+% \label{fig:cross}
+% \end{figure}
+
+
+
+% The proof runs to 18 steps (excluding steps for reasoning about planes) and 3 of these use our linear ordering tactic from \S\ref{sec:order}. We start by considering the case that $C$ lies on the line $P_iP_{i+1}$. To use our linear reasoning tactic, we prove the following:
+
+% \begin{align}
+% &\neg\between{P}{C}{Q}\label{eq:cond1}\\
+% &P \neq C \wedge Q \neq C \wedge R \neq C\label{eq:cond2}
+% \end{align}
+
+% The first condition follows because we assume that $P_iP_{i+1}$ intersects the triangle only once and at $R$. The second condition follows because we assume that $P$ and $Qs$ are not on the triangle. 
+
+% We now set as our goal the conclusion $\between{C}{P}{R} \vee \between{C}{Q}{R}$, and apply our linear reasoning tactic. The tactic solves the goal, and allows us to conclude from either case that one of $P$ or $Qs$ is inside the triangle.
+
+% Next, we consider the possibility that $C$ is not on $P_iP_{i+1}$. Our plan here is to apply Pasch's Axiom to the triangle and the line of $P_iP_{i+1}$, and so obtain a point at which the line $P_iP_{i+1}$ exits the triangle. But to do this, we must show that the vertices $A$ and $B$ do not lie on the line $P_iP_{i+1}$. We do this by contradiction.
+
+% Supposing that one of the vertices lies on $P_iP_{i+1}$, it follows that $P_iP_{i+1}$ \emph{is} the line $AB$. But we know that $P$ and $Qs$ do not lie on the triangle, so we must have:
+% \begin{align*}
+% P \neq A \wedge P \neq B \wedge Q \neq A \wedge Q \neq B \wedge \neg\between{P}{A}{Q} \wedge \neg\between{P}{B}{Q}
+% \end{align*}
+
+% At this point, a contradiction must follow by linear reasoning alone, and is deduced using a tactic.
+
+% We can now apply Pasch's axiom to find a point $X$ where the line $P_iP_{i+1}$ emerges from the triangle. In other words, we obtain a point $X$ that is either between $B$ and $C$ or between $A$ and $C$. 
+
+% Now we prove the following
+
+% \begin{align}
+% &\neg\between{P}{X}{Q}\label{eq:cond3}\\
+% &P \neq X \wedge Q \neq X\label{eq:cond4}
+% \end{align} 
+
+% Again, the first condition follows because we assume that $P_iP_{i+1}$ intersects the triangle only once. The second follows because $P$ and $Qs$ are not on the triangle. We set as our goal the conclusion $\between{R}{P}{X} \vee \between{R}{Q}{X}$, and then apply our linear reasoning tactic. The first disjunct tells us that $P$ is inside the triangle. The second tells us that $Qs$ is inside. This concludes all the cases of the theorem.
+
+
+% \section{Polygonal Paths and Orderings}
+% A surprisingly challenging but crucial theorem concerns the points of collinear polygonal paths. If no point of such a segment lies in any of its individual segments, then they must occur one after the other along the line. 
+
+% We have the definitions in place to state this formally. Recall the definition of an \emph{ordering} from \S\ref{sec:Ordering}. This relation says of a function $f:[0\ldots n-1]\rightarrow \code{point}$ that it orders the $n$ points of a set linearly according to the $\code{betweenness}$ relation. This is exactly what we need for our collinear polygonal paths:
+
+% \begin{gather*}
+%   \begin{split}
+%     &\code{ordered\_list} \;:\; [\code{point}] \rightarrow \code{bool}\\
+%     &\code{ordered\_list}\ Ps = \code{ordering}\ Ps\ (\lambda n. \code{el}\ n\ Ps)\ (\code{set\_of\_list Ps})
+%   \end{split}\\
+%   \begin{split}
+%     &\forall Ps\ a.\ (\forall P.\ \code{mem}\ P\ Ps \implies \online{P}{a})\\
+%     &\qquad\quad \wedge \code{pairwise}\ (\neq)\ Ps\\
+%     &\qquad\quad\wedge \forall x\ y. (x,y)\in \code{poly\_segments}\ Ps \implies \neg\between{x}{P}{y})\\
+%     &\qquad\qquad \implies \code{ordered\_list}\ Ps
+%   \end{split}
+% \end{gather*}
+
+% The non-trivial case of this theorem occurs when the polygonal path consists of at least two points. Here, we can suppose that the first two elements of $Ps$ are points defining the line $a$, and then proceed by induction from the end of the list. The base case is trivially solved via simple arithmetic. The difficulty lies in the step case, which amounts to proving the following:
+
+% \begin{equation*}
+%   \begin{split}
+%     &\forall Ps\ a.(\forall P. \code{mem}\ P\ (\append{Ps}{[X]}) \implies \online{P}{a})\\
+%     &\quad \wedge \code{pairwise}\ (\neq)\ (\append{Ps}{[X]})\\
+%     &\quad \wedge \forall x\ y. (x,y)\in \code{poly\_segments}\ (\append{Ps}{[X]}) \implies \neg\between{x}{P}{y})\\
+%     &\quad\wedge \code{ordered\_list}\ Ps\implies \code{ordered\_list}\ (\append{Ps}{[X]})
+%   \end{split}
+% \end{equation*}
+
+% The proof here relies on careful case-splits using Theorem~4 (see \S\ref{sec:Theorem4}) and applications of our ordering tactic from \S\ref{sec:Ordering}. The basic idea is that we consider the three places that the point $X$ could be relative to the points $f\ 0$ and $f\ (\code{length}\ xs)$. Here, we describe how to refute one of the cases, that the point $X$ lies in between the endpoints. In this situation, we want to conclude that $X$ must also lie between two adjacent points of the ordering, and thus between two adjacent points of the list, contradicting our assumptions about the polygonal path. We prove a general lemma for this, that if a point lies between the endpoints of a linearly ordered set of points, then it must lie between adjacent points of the ordered set of points.
+
+% \begin{multline*}
+% \forall f\ Ps\ P.\ \code{ordering}\ f\ Ps \wedge \between{(f\ 0)}{P}{(f\ (|Ps|-1))}\\
+% \implies P\in Ps \vee \exists n. n < |Ps|-1 \wedge \between{(f\ n)}{P}{(f\ (n+1))}
+% \end{multline*}
+
+% \begin{center}\includegraphics[scale=1.0]{PolypathOrdering.pdf}\end{center}
+
+% Suppose we have a set $Ps$ ordered by $f$. Then $f\ 0$ is the first point of the ordering and $f\ (|Ps|-1)$ is the last point. Further suppose that $P$ is not one of the points in the set $Ps$. Then the two adjacent points we seek are $f\ n$ and $f\ (n+1)$ where $n$ is the largest natural number less than $|Ps|$ such that $P$ is between $Ps[n]$ and the last point $f\ (|Ps|-1)$. We can prove that this is the desired point from the definition of ordering and from the maximality of $n$, which together show that $P$ must lie between $f\ n$ and $f\ (n+1)$.
+
+% \section{Squeeze}
+% Perhaps the most important lemma we need in order to prove the Jordan Curve Theorem is one to help us navigate the maze-like structures we are forced to consider by squeezing through arbitrarily narrow passageways. It is tempting to think of this action, and the manner in which it is executed, in terms by judging distances in tight spaces, but of course, we can make no appeals to distance from the weak theory of Hilbert's Group~II. Instead, we must find a way to crawl through our mazes by only using our notion of betweenness.
+
+% \begin{figure}
+% \includegraphics{Squeeze.pdf}
+% \caption{A Tricky Corridor}
+% \label{fig:corridor}
+% \end{figure}
+
+% In Figure~\ref{fig:corridor}, we show part of a polygon $p$ making a corridor in the unshaded region. The line segment $AX$ does not intersect $p$, and we know it is separated from $p$ because there is no point on $AB$ that intersects $p$. Our goal is to find a line through the corridor, which we will anchor at the point $X$.
+
+% Formally, we want to find a point $Z$ on the segment $AB$ such that the segment $XZ$ does not contain a point of the polygonal path $p$. First, however, we shall find a point $Z$ on $AB$ such that the interior of the \emph{triangle} $AXZ$ does not contain any point of the polygonal path. We can do this by incrementally finding smaller and smaller triangles inside $ABX$:
+
+% \begin{enumerate}
+% \item
+% Start with $\triangle ABX$ and point $P$ (figure \ref{fig:squeezeABX}).
+% \item
+% Point $P$ lies in $\triangle ABZ$, so find the intersection $Z_1$ of $XP$ and $AB$.
+% \item
+% Take triangle $\triangle AXZ_1$ and point $Qs$ (figure \ref{fig:squeezeAXZ1}).
+% \item
+% Point $Qs$ does not lie in $\triangle AXZ_1$ so continue.
+% \item
+% Take triangle $\triangle AXZ_1$ and point $R$.
+% \item
+% Point $R$ lies in $\triangle AXZ_1$, so find the intersection $Z_2$ of $XR$ and $AB$.
+% \item
+% Take triangle $\triangle AXZ_2$ and point $S$ (figure \ref{fig:squeezeAXZ2}).
+% \item
+% Point $S$ lies in $\triangle AXZ_2$, so find the intersection $Z_3$ of $XS$ and $AB$.
+% \item
+% Points $T$ and $U$ do not lie in $\triangle AXZ_2$ so finish.
+% \end{enumerate}
+
+% \begin{figure}
+%   \mbox{\subfigure[$\triangle ABX$]{\includegraphics[scale=0.5]{Squeeze1.pdf}\label{fig:squeezeABX}}}
+%   \mbox{\subfigure[$XPZ_1$]{\includegraphics[scale=0.5]{Squeeze2.pdf}\label{fig:squeezeAXZ1}}}
+
+%   \mbox{\subfigure[$XRZ_2$]{\includegraphics[scale=0.5]{Squeeze3.pdf}\label{fig:squeezeAXZ2}}}
+%   \mbox{\subfigure[$XSZ_3$]{\includegraphics[scale=0.5]{Squeeze4.pdf}\label{fig:squeezeAXZ3}}}
+%   \caption{Squeezing through the Corridor}
+% \end{figure}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../thesis"
+%%% End: 

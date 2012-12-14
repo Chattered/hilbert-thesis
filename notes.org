@@ -1,0 +1,22 @@
+* In introduction, put in diagram giving the logical relationships.
+* Turn Chapter 3 into "Representation" and refer to other systems based on their benefits (subtyping, etc)
+** Move onto MIZAR Light. Brief forward reference about metatheoretical issues, but most discussion should go linear ordering chapter, since it needs context. Combinators + forward reference. Modifications. Keep contributions separate.
+* Put detailed examples in the half-planes chapter and order chapters about why they are useful, and brief in-context examples in JCT when it's not that interesting, and detailed examples when it's interesting.
+* Keep minimal model in infinity, since it is there to justify that infinite sets cannot be derived from G1.
+* Group 1: axioms, elementary consequences. Combinatorial reasoning with sets -> need for automation.
+* Maybe change chapter "Group II: Hilbert's Proofs"
+* Maybe change: "Linear Order" to "Group II: Ordering along a line" -- bring natural numbers in earlier
+* Maybe change: "Half-planes" to "Group II: Ordering in the plane"
+* Reference to Poincare, Feigl: explain that we do hold of it.
+* Maybe suggest reader can skip first proof attempt. Explain reward of proof. Bring some of the discussion to the front. More commentary during the proof and forward references.
+* Explain corollary to Veblen's theorem
+* Q1'Q2' and triangle are not in figure 9.10
+* Replace general abstractions with concrete outside quotes
+* Explain introduction of primes on O_k and O_j
+* Maybe mention asymptote and how shit was found
+
+* Counting conventions
+  ** Do not count "per cases"
+  ** Do not count "have" which begins a subproof
+  ** Count "qed"
+  ** Do not count trivial "fix"

@@ -1,0 +1,48 @@
+\chapter{Group I}\label{chapter:Group1}
+\section{Representation}\label{Verbosity}
+The formalised proofs in \S \ref{ProofStyle} involve a lot of tedious but necessary reasoning about incidence relations, which we tried to eliminate by choosing better representations. We believe the problem is that Hilbert's ``incidence'' relation does not \emph{compose}, and that an obvious way to fix this is to think in terms of collinearity of point \emph{sets}\footnote{We did not consider the dual, concurrency of line sets, since few of the proofs we are formalising involve more than two concurrent lines.}. We can then lift composable set-theoretic operations to the level of collinear sets, with the following two rules which we proved in Isabelle/HOL:
+
+We should note that the complexity in the original proof has just been moved to the proofs of the collinear and planar rules. However, the complexity is now reusable. Indeed, nearly all of our proofs in Groups II and III were cast in terms of collinear and planar sets. 
+
+Substantial gains were made elsewhere. Meikle and Fleuriot's procedural proof of Theorem~3 used twenty-seven special case lemmas and a forty step proof, while our proof using the above rules have twenty-two steps and no additional lemmas. But even with these gains, simple proofs still end up being verbose and tedious to write.
+
+\subsection{Degenerate cases}
+As we mentioned in \S\ref{degeneracy}, traditional synthetic geometry theorems generally have attached non-degeneracy conditions. In Hilbert's version of Pasch's axiom, we have:
+
+\begin{figure}\label{PaschDiagram}
+% \begin{pspicture}(-2,0)(5,3.5)
+% \psset{xunit=0.75cm}
+% \psset{yunit=0.5cm}
+% \put(1.3,0.2){\parbox{5cm}{$A$}}
+% \put(6,0.2){\parbox{5cm}{$B$}}
+% \put(5.2,2.6){\parbox{5cm}{$C$}}
+% \put(4.3,0){\parbox{5cm}{$a$}}
+% \psline[linewidth=0.15mm](2,1)(8,1)
+% \psline[linewidth=0.15mm](2,1)(7,5)
+% \psline[linewidth=0.15mm](7,5)(8,1)
+% \psline[linewidth=0.25mm](5.5,0)(8,6)
+% \end{pspicture}
+\caption{Axiom II,4}
+\end{figure}
+
+\begin{quote}II,4. Let $A$, $B$, $C$ be three points that do not lie on a line and let $a$ be a line in the plane $ABC$ which does not meet any of the points $A$, $B$, $C$. If the line $a$ passes through a point of the segment $AB$, it also passes through a point of the segment $AC$, or through a point of the segment $BC$. [\emph{See Figure \ref{PaschDiagram}}]\end{quote}\label{PaschAxiom}
+
+There are five non-degeneracy conditions here: that the points $A$, $B$ and $C$ are non-collinear, that the line $a$ lies in the plane of $ABC$ and that it does not meet any of $A$, $B$ and $C$. Moreover, the conclusion is a disjunction. In order to be rigorous, every application of this theorem must verify the non-degeneracy conditions, and eliminate one of the disjuncts in the conclusion. 
+
+Now Hilbert uses this axiom once in Theorem~3, four times in Theorem~4, and, according to our mechanisation, a total of \emph{eight} times in Theorem~5, many implicit by a terse ``repeated applications of Axiom~II,4''. In not one application does Hilbert show that the assumptions required for the theorem hold, nor does he eliminate the disjunct in his conclusions. Doing so mechanically requires a lot of work (incidentally, our example proofs (\S\ref{DeclarativeBranchProof}) existed solely to verify a condition needed to use Pasch's axiom --- that the line $a$ lies in the plane of $A$, $B$ and $C$).
+
+These are interesting facts about Hilbert's proofs, but were only found after a great deal of labour. Being able to reason with our composable collinear and planar predicates helps, especially when we notice that four of the five non-degeneracy conditions in Pasch's axiom can be understood as claims that three points are non-collinear. To see this, we must assume that the line $a$ is determined by the points $D$ and $E$. In practice, this actually makes things easier, since Hilbert always refers to the line $a$ in terms of the two points he used to construct it:
+
+\begin{tabular}{p{5cm}r}
+  Let $A$, $B$, $C$ be three points that do not lie on a line... & $\neg\code{collinear}\{A,B,C\}$\\
+
+...let $a$ be a line in the plane $ABC$ which does not meet [the point $A$] ... & $\neg\code{collinear}\{A,D,E\}$ \\
+
+...[the point $B$] ... & $\neg\code{collinear}\{B,D,E\}$ \\
+
+...[the point $C$] .... & $\neg\code{collinear}\{B,D,E\}$
+\end{tabular}
+
+Now the existence of three non-collinear points can be derived in one step by $\code{collinear\_union}$ and $\code{collinear\_subset}$, but the reasoning is not geometrically intuitive, being indirect and in terms of point-sets: suppose we have a collinear set $\{A, B, C\}$ and a non-collinear set $\{A, B, D\}$, and suppose that all points are distinct. Then we can deduce that the sets $\{A, C, D\}$ and $\{B, C, D\}$ are not collinear. Because if they \emph{were}, it would follow that $\{A, B, C, D\}$ is collinear. 
+
+Now we consider the conclusion of Pasch's axiom, which says that ``if the line $a$ passes through a point of the segment $AB$, it also passes through a point of the segment $AC$, or through a point of the segment $BC$.'' The disjunction here generally leads to a case split, where one of the cases is reduced to false by reasoning about the unique intersection of lines, showing that two points are equal and then deriving a contradiction. It turns out we can do this with just one application of our rules, but again, the argument is indirect. Suppose that the sets $\{A, B, C\}$ and $\{B, C, D\}$ are collinear while $\{A, B, C, D\}$ is not. Then we can deduce that $C = D$, for otherwise we could apply our rules to show that $\{A, B, C, D\}$ is collinear.

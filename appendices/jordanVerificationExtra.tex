@@ -1,0 +1,44 @@
+\label{app:JordanVerificationExtra}
+\chapter{Polygonal Jordan Curve Theorem: Supporting Theorems}
+
+\begin{equation}\label{eq:inTriangleNcol}
+\code{in\_triangle}\ (A,B,C)\ P \implies \Triangle{a}{A}{B}{C}
+\end{equation}
+
+\begin{equation}
+\begin{aligned}
+% !was_inside A B B' C C' P Ps Qs.
+%       Qs = CONS P (APPEND Ps [P])
+%       /\ on_plane A 'a /\ on_plane B 'a /\ on_plane C 'a /\ on_plane C' 'a
+%       /\ (!X. MEM X Qs ==> on_plane X 'a)
+%       /\ ~(?a. on_line A a /\ on_line B a /\ on_line C a)
+%       /\ ~(?a. on_line A a /\ on_line B' a /\ on_line C' a)
+%       /\ ~on_polyseg Qs A
+%       /\ (between A B B' \/ between A B' B \/ ~(A = B) /\ B = B')
+%       /\ ~(?X. on_polyseg [B; B'] X /\ on_polyseg Qs X)
+%       ==> ?was_inside'.
+%             polyseg_crossings (A,B,C) (polyseg_new_was_inside (A,B,C)
+%                                           was_inside (ADJACENT Qs))
+%             (ADJACENT Qs)
+%           = polyseg_crossings (A,B',C') (polyseg_new_was_inside (A,B',C')
+%                                            was_inside' (ADJACENT Qs))
+%             (ADJACENT Qs)
+    &Qs = \append{[P]}{\append{Ps}{[P]}}\\
+    &\wedge \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha \wedge \code{on\_plane}\ C'\ \alpha\\
+    &(\forall X. \code{mem}\ X\ Qs \implies \code{on\_plane}\ X\ \alpha)\\
+    &\neg\code{on\_polyseg} Qs A\\
+    &\wedge (\between{A}{B}{B'} \vee \between{A}{B'}{B} \vee A\neq B \wedge B\neq B')\\
+    &\wedge \neg(\exists. \code{on\_polyseg}\ [B,B']\ X \wedge \code{on\_polyseg}\ Qs\ X)\\
+    &\implies \forall C\;C'. \Triangle{a}{A}{B}{C}\\
+    &\qquad\qquad\wedge \Triangle{a}{A}{B'}{C'}\\
+    &\qquad\implies \exists \Gamma'. \code{polyseg\_crossings}\ (A,B,C)\ (\Gamma_{final}\ (A,B,C)\ \Gamma\ (\code{adjacent}\ Qs))\\
+    &\qquad\qquad\qquad\qquad(\code{adjacent}\ Qs)\\
+    &\qquad\qquad = \code{polyseg\_crossings}\ (A,B',C')\ (\Gamma_{final}\ (A,B',C')\ \Gamma'\ (\code{adjacent}\ Qs))\\
+    &\qquad\qquad\qquad\qquad(\code{adjacent}\ Qs)\\
+\end{aligned}\tag{\ref{eq:changeTriangle}}
+\end{equation}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "thesis"
+%%% End: 

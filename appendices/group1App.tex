@@ -1,0 +1,36 @@
+\chapter{Group~I Axioms and Elementary Consequences}\label{app:group1}
+
+\section{Axioms}
+\begin{equation}\label{eq:g11}
+  \tag{I, 1}
+    A \neq B \implies \exists a. \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a
+\end{equation}
+
+\begin{equation}\label{eq:g12}
+  \tag{I, 2}
+  \begin{split}
+    A \neq B &\wedge \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a\\
+    &\wedge \code{on\_line}\ A\ b \wedge \code{on\_line}\ B\ b\\
+    &\implies a = b
+  \end{split}
+\end{equation}
+
+\begin{equation}\label{eq:g16}
+  \tag{I, 6}
+  \begin{split}
+    A \neq B &\wedge \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha\\
+    &\wedge \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a\\
+    &\implies \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha
+  \end{split}
+\end{equation}
+
+\section{Elementary Consequences}
+\begin{multline}\label{eq:PlaneThree}
+  \exists A\;B\;C. \code{on\_plane}\ A\ \alpha\wedge\code{on\_plane}\ B\ \alpha\wedge\code{on\_plane}\ C\ \alpha\\
+  \wedge \Triangle{a}{A}{B}{C}
+\end{multline}
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "thesis"
+%%% End: 

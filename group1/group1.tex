@@ -1,48 +1,308 @@
 \chapter{Group I}\label{chapter:Group1}
-\section{Representation}\label{Verbosity}
-The formalised proofs in \S \ref{ProofStyle} involve a lot of tedious but necessary reasoning about incidence relations, which we tried to eliminate by choosing better representations. We believe the problem is that Hilbert's ``incidence'' relation does not \emph{compose}, and that an obvious way to fix this is to think in terms of collinearity of point \emph{sets}\footnote{We did not consider the dual, concurrency of line sets, since few of the proofs we are formalising involve more than two concurrent lines.}. We can then lift composable set-theoretic operations to the level of collinear sets, with the following two rules which we proved in Isabelle/HOL:
 
-We should note that the complexity in the original proof has just been moved to the proofs of the collinear and planar rules. However, the complexity is now reusable. Indeed, nearly all of our proofs in Groups II and III were cast in terms of collinear and planar sets. 
+\section{Introduction}
+Hilbert has only the briefest introduction to the \emph{Foundations of Geometry}, before diving in with a declaration of his primitive notions and then laying out his first group of axioms. These are his axioms of \emph{incidence}. In this chapter, we discuss their formalisation, the verification of a few of their elementary consequences, and then discuss how these incidence axioms feature in the rest of Hilbert's axiomatics.
 
-Substantial gains were made elsewhere. Meikle and Fleuriot's procedural proof of Theorem~3 used twenty-seven special case lemmas and a forty step proof, while our proof using the above rules have twenty-two steps and no additional lemmas. But even with these gains, simple proofs still end up being verbose and tedious to write.
+\section{Primitives}
+Hilbert opens his axiomatics by declaring three sets of primitive objects: a set of objects called \emph{points}, a set of objects called \emph{lines} and a set of objects called \emph{planes}. These sets are \emph{abstract}. All we can know about their inhabitants is what is specified by Hilbert's axioms. 
 
-\subsection{Degenerate cases}
-As we mentioned in \S\ref{degeneracy}, traditional synthetic geometry theorems generally have attached non-degeneracy conditions. In Hilbert's version of Pasch's axiom, we have:
+That we call these abstract objects \emph{points}, \emph{lines} and \emph{planes} can be thought of as mere \emph{documentation}. It has no real significance to the formal theory, and Hilbert and Pasch both held this sort of abstraction as fundamental to rigour in geometry~\cite{TableChairMug}. As Hilbert was known to remark, it would serve just as well to give the inhabitants of the three sets the names \emph{mugs}, \emph{tables} and \emph{chairs}~\cite{PaschToPeano}. 
 
-\begin{figure}\label{PaschDiagram}
-% \begin{pspicture}(-2,0)(5,3.5)
-% \psset{xunit=0.75cm}
-% \psset{yunit=0.5cm}
-% \put(1.3,0.2){\parbox{5cm}{$A$}}
-% \put(6,0.2){\parbox{5cm}{$B$}}
-% \put(5.2,2.6){\parbox{5cm}{$C$}}
-% \put(4.3,0){\parbox{5cm}{$a$}}
-% \psline[linewidth=0.15mm](2,1)(8,1)
-% \psline[linewidth=0.15mm](2,1)(7,5)
-% \psline[linewidth=0.15mm](7,5)(8,1)
-% \psline[linewidth=0.25mm](5.5,0)(8,6)
-% \end{pspicture}
-\caption{Axiom II,4}
+This is the modern axiomatic method, and it is a noble sentiment if we hold rigour in such high esteem. But it is one thing to say that the theory would work just as well if we only referred to \emph{mugs}, \emph{tables} and \emph{chairs}, and quite another to carry this out. We will not be evaluating the matter, but we would conjecture that it would be very difficult for a human to actually follow the steps of Hilbert's arguments if it was \emph{literally} rendered in terms of \emph{mugs}, \emph{tables} and \emph{chairs}. If Hilbert thought a reader could follow his proofs so blindly, then why did he feel the need to accompany his proofs with diagrams? Diagrams are completely outside the scope of formalised mathematics.
+
+This brings us to the problem with formalised mathematics. Our computers carry out Pasch's idea of stripping away all interpretation. They might as well be reading about \emph{mugs}, \emph{tables} and \emph{chairs}. They see nothing but abstract symbols, and must validate the arguments without any reference to human intuitions. If this is too much to expect of a human, then it is quite something to expect of a machine, notwithstanding Veblen and Poincar\'{e}'s claims that Hilbert's arguments would pass through a device as primitive as a Stanley Jevons logical machine~\cite{PoincareReview,VeblenHilbertReview}.
+
+It is perhaps to be expected that we found, along with Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}, that there are many weaknesses in Hilbert presentation from the standpoint of formalised mathematics. Hilbert misses out complex proofs, mistakenly declaring them to be easily obtainable. His decisions about when it is necessary to cite a particular axiom are erratic at best. Furthermore, we suggest that much of the time, Hilbert lets intuition dictate what reasoning steps are permissible. In other words, the \emph{documentation} is driving the development. This cannot happen when we use a machine to carry out the proofs.
+
+One reason to mention all of these issues is because Hilbert liberally sprinkles his text with documentation that has no bearing on the formal development. Having introduced points, lines and planes, he goes on to declare that ``[t]he points are also called the \emph{elements of line geometry}; the points and the lines are called the \emph{elements of plane geometry}; and the points, lines and planes are called the \emph{elements of space geometry} or the \emph{elements of space}.'' We are happy to ignore these comments, and all others like them, without worrying about jeapordising our aims of producing a \emph{faithful} formalisation of Hilbert's axiomatics. These comments, even when they take the superficial form of definitions, are mere \emph{documentation}, no more a part of the formal theory than Hilbert's diagrams. 
+
+In general, we shall only introduce new derived terms into our formal theory when they identify useful abstractions.
+
+\subsection{Incidence Relations}
+Following the abstract sets of \emph{points}, \emph{lines} and \emph{planes}, Hilbert introduces a primitive  relation ``lie'', whose axioms are intended to characterise it as an \emph{incidence relation}. With it, we can say that a point \emph{lies} on a line, or that a point \emph{lies} on a plane. 
+
+In a foreword to the text, Professor Goheen said that there must, in fact, be \emph{two} relations. It is not clear to us why. Perhaps Goheen is taking his perspective from first-order logic. In this case, the \emph{sets} would most naturally be represented by distinct and disjoint \emph{sorts}, and thus, we would need two \emph{lie} relations, one for each sort. 
+
+There is often an implicit assumption on \emph{sorts}, namely that they are inhabited. This assumption is removed in \emph{free-logics}, usually for philosophical concerns, and often at the expense of breaking certain standard inference rules (see Mendelson's classic text~\cite{Mendelson}). 
+
+Whether or not Hilbert was making the assumption that his sets were inhabited is unclear. Fortunately, we do not need to be too concerned, since the assumption is not needed. To formally settle this, we consider a formalisation that Goheen perhaps neglected: we will represent each of Hilbert's three sets by a \emph{predicate}, and consider relativising Hilbert's axioms to this predicate. This is, in effect, the embedding of a free-logic in classical logic. It has the additional benefit of allowing us to consider just one primitive sort, and one primitive incidence relation. We leave the sort abstract.
+
+The formalisation is in Figure~\ref{fig:InhabitedTypes}. Here, we have formalised four of Hilbert's incidence axioms (\ref{eq:g11}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g18} from Appendix~\ref{app:group1}) as conditions on the predicate sets \code{point}, \code{line} and \code{plane} and the single relation \code{lie}. We then prove that any four objects satisfying these conditions is such that the three predicate sets are inhabited.
+
+\begin{figure}
+  \begin{align*}
+    &\code{Group1}\ (\code{point}\;:\;\alpha\rightarrow\code{bool}, \code{line}\;:\;\alpha\rightarrow\code{bool},\code{plane}\;:\;\alpha\rightarrow\code{bool},\\
+    &\qquad\qquad\code{lie}\;:\;\alpha\rightarrow\alpha\rightarrow\code{bool})\\
+    &\iff (\forall A\; B. \code{point}\ A \wedge \code{point}\ B \wedge A \neq B \implies \exists a. \code{line}\ a \wedge \code{lie}\ A\ a \wedge \code{lie}\ B\ a)\\
+    &\qquad\wedge (\exists A\;B\;C. \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C \wedge \forall a. \code{line}\ a\\
+    &\qquad\qquad\implies \neg(\code{lie}\ A\ a \wedge \code{lie}\ B\ a \wedge \code{lie}\ C\ a))\\
+    &\qquad\wedge(\forall A\;B\;C. \code{point}\ A \wedge \code{point}\ B\ \code{point}\ C\\
+    &\qquad\qquad\wedge (\forall a. \code{line}\ a \implies \neg(\code{lie}\ A\ a \wedge \code{lie}\ B\ a \wedge \code{lie}\ C\ a))\\
+    &\qquad\qquad\implies\exists\alpha. \code{plane}\ \alpha \wedge \code{lie}\ A\ \alpha \wedge \code{lie}\ B\ \alpha \wedge \code{lie}\ C\ \alpha)\\
+    &\qquad (\exists A\;B\;C\;D. \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C \wedge \code{point}\ D\\
+    &\qquad\qquad \wedge \forall\alpha. \code{plane}\ \alpha \implies \neg(\code{lie}\ A\ \alpha \wedge \code{lie}\ B\ \alpha \wedge \code{lie}\ C\ \alpha \wedge \code{lie}\ D\ \alpha)\\
+  \end{align*}
+  \begin{displaymath}
+    \vdash \code{Group1}\ \code{point}\ \code{line}\ \code{plane}\ \code{lie} \implies (\exists A\;a\;\alpha. \code{point}\ A \wedge \code{line}\ a \wedge \code{plane}\ \alpha)
+  \end{displaymath}
+\caption{Points, lines and planes exist}
+\label{fig:InhabitedTypes}
 \end{figure}
 
-\begin{quote}II,4. Let $A$, $B$, $C$ be three points that do not lie on a line and let $a$ be a line in the plane $ABC$ which does not meet any of the points $A$, $B$, $C$. If the line $a$ passes through a point of the segment $AB$, it also passes through a point of the segment $AC$, or through a point of the segment $BC$. [\emph{See Figure \ref{PaschDiagram}}]\end{quote}\label{PaschAxiom}
+\section{Formalisation}
+Knowing that our types are inhabited, we return to what we regard as a more natural formulation of Hilbert's axioms, one which appeared in our earlier work, in Meikle and Fleuriot's work and the work of Dehlinger at el~\cite{DehlingerFOG,MeikleFleuriotFormalizingHilbert,ScottMScThesis}. We declare three primitive \emph{types} for points, lines and planes, and two incidence relations: one tells us whether points lie on a line and the other whether points lie on a plane. This gives a more readable formalisation than that of Figure~\ref{fig:InhabitedTypes}, since we can drop the relativising predicates. It also improves type-safety: HOL~Light can reject axioms which do not use the primitive relations in sensible ways, and it removes the possibility of pathological expressions such as ``a plane lies on a point.''
 
-There are five non-degeneracy conditions here: that the points $A$, $B$ and $C$ are non-collinear, that the line $a$ lies in the plane of $ABC$ and that it does not meet any of $A$, $B$ and $C$. Moreover, the conclusion is a disjunction. In order to be rigorous, every application of this theorem must verify the non-degeneracy conditions, and eliminate one of the disjuncts in the conclusion. 
+We now give Hilbert's incidence axioms as they appear in the tenth edition of \emph{Foundations of Geometry}. The convention throughout, and one which we adopt for the rest of the present work, is that points are denoted by uppercase Roman, $A$, $B$, $C$, $P$, $Q$, $R$, and so on. Lines are denoted by lowercase Roman $a$, $b$, $c$. And planes are denoted by Greek $\alpha$, $\beta$, $\gamma$. 
 
-Now Hilbert uses this axiom once in Theorem~3, four times in Theorem~4, and, according to our mechanisation, a total of \emph{eight} times in Theorem~5, many implicit by a terse ``repeated applications of Axiom~II,4''. In not one application does Hilbert show that the assumptions required for the theorem hold, nor does he eliminate the disjunct in his conclusions. Doing so mechanically requires a lot of work (incidentally, our example proofs (\S\ref{DeclarativeBranchProof}) existed solely to verify a condition needed to use Pasch's axiom --- that the line $a$ lies in the plane of $A$, $B$ and $C$).
+Hilbert's axioms, as they appear in the tenth edition, run as follows:
+\begin{enumerate}
+\item[I,1] For every two points $A$, $B$ there exists a line $a$ that contains each of the points $A$, $B$.
+\item[I,2] For every two points $A$, $B$ there exits [sic] no more than one line that contains each of the points $A$, $B$.
+\item[I,3] There exist at least two points on a line. There exist at least three points that do not lie on a line.
+\item[I,4] For any three points $A$, $B$, $C$ that do not lie on the same line there exits [sic] a plane $\alpha$ that contains each of the points $A$, $B$, $C$. For every plane there exists a point which it contains.
+\item[I,5] For any three points $A$, $B$, $C$ that do not lie on one and the same line there exists no more than one plane that contains each of the three points $A$, $B$, $C$.
+\item[I,6] If two points $A$, $B$ of a line $a$ lie in a plane $\alpha$ then every point of $a$ lies in the plane $\alpha$.
+\item[I,7] If two planes $\alpha$, $\beta$ have a point $A$ in common then they have at least one more point $B$ in common.
+\item[I,8] There exist at least four points which do not lie in a plane.
+\end{enumerate}
 
-These are interesting facts about Hilbert's proofs, but were only found after a great deal of labour. Being able to reason with our composable collinear and planar predicates helps, especially when we notice that four of the five non-degeneracy conditions in Pasch's axiom can be understood as claims that three points are non-collinear. To see this, we must assume that the line $a$ is determined by the points $D$ and $E$. In practice, this actually makes things easier, since Hilbert always refers to the line $a$ in terms of the two points he used to construct it:
+Even these simple axioms have undergone a substantial amount of revision since the first-edition, with axioms being reordered, combined, split and redundancies deleted. The fact that there are redundancies in the first place goes to show that Hilbert's later claim that his axioms are independent was never \emph{fully} investigated in the \emph{Foundations of Geometry}\. In fact, only a few interdependencies were ever considered.
 
-\begin{tabular}{p{5cm}r}
-  Let $A$, $B$, $C$ be three points that do not lie on a line... & $\neg\code{collinear}\{A,B,C\}$\\
+We give our formalisation in Appendix~\ref{app:group1}. It is mostly straightforward. Here, we will just give some supplementary discussion of the axioms as of the tenth edition.
 
-...let $a$ be a line in the plane $ABC$ which does not meet [the point $A$] ... & $\neg\code{collinear}\{A,D,E\}$ \\
+Hilbert's Axioms II, 3 and II, 4 each contain two distinct claims. We have not identified any interesting logical connection between these, and so we have split them in our formalisation into Axiom~\ref{eq:g13a}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g14b}, giving a total of 10 axioms. 
 
-...[the point $B$] ... & $\neg\code{collinear}\{B,D,E\}$ \\
+Axioms~\ref{eq:g11} and~\ref{eq:g12}, which were a single axiom in the first edition, require that two points uniquely determine a line. Analogous axioms for planes are given by~\ref{eq:g14a} and \ref{eq:g15}, while the \emph{converse}, namely that a line is determined by two points appears as Axiom~\ref{eq:g13a}. The converse for planes, that a plane is determined by three non-collinear points was an axiom of the first-edition, but was later weakened to assert only that a plane contains at least one point in Axiom~\ref{eq:g13b}. Hilbert was clearly aware that the former could be derived from the latter, but the proof and theorem are both absent from the text. We present our own proof and its formal verification in \S\ref{sec:PlaneThree}.
 
-...[the point $C$] .... & $\neg\code{collinear}\{B,D,E\}$
-\end{tabular}
+We should note that there is some ambiguity in Axiom~\ref{eq:g13a}. Is Hilbert saying that there are two points and some line such that the points lie on that line, or is he saying more generally that \emph{every} line contains two points. We adopted the latter, since on the weaker interpretation, we could formalise a model of the first group of axioms following the technique in \S\ref{sec:GroupIModels}, and show in this model that there is a line with \emph{no} incident points. We assume Hilbert did not intend this. 
 
-Now the existence of three non-collinear points can be derived in one step by $\code{collinear\_union}$ and $\code{collinear\_subset}$, but the reasoning is not geometrically intuitive, being indirect and in terms of point-sets: suppose we have a collinear set $\{A, B, C\}$ and a non-collinear set $\{A, B, D\}$, and suppose that all points are distinct. Then we can deduce that the sets $\{A, C, D\}$ and $\{B, C, D\}$ are not collinear. Because if they \emph{were}, it would follow that $\{A, B, C, D\}$ is collinear. 
+Next, we have Axiom~\ref{eq:g13b}. This is a \emph{dimension} axiom, requiring that the geometry has at least dimension 2. An analogous axiom is Axiom~\ref{eq:g18}, which requires that the geometry has at least dimension three. We will have very little need for this last axiom, since almost all of Hilbert's proofs are effectively planar proofs.
 
-Now we consider the conclusion of Pasch's axiom, which says that ``if the line $a$ passes through a point of the segment $AB$, it also passes through a point of the segment $AC$, or through a point of the segment $BC$.'' The disjunction here generally leads to a case split, where one of the cases is reduced to false by reasoning about the unique intersection of lines, showing that two points are equal and then deriving a contradiction. It turns out we can do this with just one application of our rules, but again, the argument is indirect. Suppose that the sets $\{A, B, C\}$ and $\{B, C, D\}$ are collinear while $\{A, B, C, D\}$ is not. Then we can deduce that $C = D$, for otherwise we could apply our rules to show that $\{A, B, C, D\}$ is collinear.
+Finally, we have the Axioms~\ref{eq:g16} and Axiom~\ref{eq:g17}. Together, these require that intersecting planes meet in a line, and thus, they restrict the dimension of the geometry to~3.
+
+It is important to note that Hilbert adopts the uncommon convention that when he writes expressions such as ``two points'', ``three points'', or ``two lines'', ``three lines'', he is assuming that the points in question are distinct. For this reason, a number of explicit distinctness assumptions appear in our formalisation which are only implicit in the prose. Some of these distinctness assumptions can actually be dropped, such as in Axiom~I: there is, of course, a line through the point $A$ and $B$ whether or not $A$ and $B$ are distinct. But, we keep the weaker form as the axiom, and derive the more useful stronger version as a theorem.
+\begin{displaymath}
+  \vdash \exists a. \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a
+\end{displaymath}
+
+\subsection{Related Axiomatisations}
+Hilbert's axiomatisation appears within a culture of related attempts to rigorise geometry. Oswald Veblen's doctoral work \cite{Veblenphd} is perhaps the most closely related, and it is clear that ideas developed by Veblen and his supervisor E. H. Moore filtered into later editions of Hilbert's text.
+
+Veblen differs significantly from Hilbert by following a trend he identifies with Pasch and Peano. Here, the fundamental primitives of geometry are just \emph{points} and the relation of \emph{betweenness}. \emph{Lines}, \emph{planes} and \emph{incidence} are no longer primitive, but are instead \emph{derived} concepts. 
+
+A similar approach was taken up by Tarksi, who developed the first formal system for elementary geometry with the benefit of modern formal logic \cite{TarskiGeometrySystem}. Like Veblen, Tarski used only one primitive sort for points, but unlike Veblen, he admitted a congruence relation on pairs of points. Nevertheless, his axioms are particularly elegant. They do not appeal to complex derived notions as Hilbert's axioms later axioms do, such as those of the third group, and his dimension axiom has the pleasing property that it can be mechanically modified to axiomatise an arbitrary dimension.
+
+Despite this, Tarski's axioms are known to be far more primitive than Hilbert's, and thus it takes much more work to be able to carry out even simple proofs in the theory. In fact, it takes significant effort just to recover Hilbert's axioms from Tarski's~\cite{NarbouxTarskiHilbert}.
+
+\subsection{Elementary Consequences}
+Hilbert highlights two theorems for his first group.
+
+\begin{quotation}
+  THEOREM~1. Two lines in a plane either have one point in common or none at all. Two planes have no point in common, or have one line and otherwise no other point in common. A plane and a line that does not lie in it either have one point in common or none at all.
+
+  THEOREM 2. Through a line and a point that does not lie on it, as well as through two distinct lines with one point in common, there always exists one and only one plane.
+\end{quotation}
+
+These theorems are largely trivial. In fact, the first and last clause in Theorem~1 are barely rewordings of Axiom~\ref{eq:g12} and Axiom~\ref{eq:g16},~\footnote{We are assuming classical logic here. In fact, the first clause of Theorem~1 assumes that point equality is decidable. See Dehlinger et al~\cite{DehlingerFOG}.} and so we did not bother to formalise them. The other clauses are only slightly more involved. 
+
+The middle clause, that two planes have either no point in common or otherwise one line and no other point in common is a little more involved. We start by giving it a tidier rephrasing which makes it more suitable for formalising: two planes with a point in common intersect exactly in some line.
+\begin{multline}
+  \alpha \neq \beta \wedge \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ P\ \beta\\
+  \implies (\exists a. \forall Q. \code{on\_plane}\ Q\ \alpha \wedge \code{on\_plane}\ Q\ \beta \iff \code{on\_line}\ Q\ a).
+\end{multline}
+
+The verification of this theorem is given in Figure~\ref{fig:Theorem1}. It is a straightforward piece of Mizar~light, using five of the ten axioms. This shall be the first piece of Mizar~light we will demonstrate, one which we hope makes a convincing case that readable proof scripts are possible in this simple combinator language.
+
+\begin{boxedfigure}
+\small
+  \begin{align*}
+    &\code{assume}\ \alpha\neq\beta \wedge \code{on\_plane}\ P\ \alpha\wedge\code{on\_plane}\ P\ \beta & 1\\
+    &\code{so consider}\ Q\ \code{such that}\ P\neq Q \wedge\code{on\_plane}\ Q\ \alpha \wedge\code{on\_plane}\ Q\ \beta\ \code{by}\ \eqref{eq:g17} & 2\\
+    &\code{so consider}\ a\ \code{such that}\ \code{on\_line}\ P\ a\wedge\code{on\_line}\ Q\ a\ \code{by}\ \eqref{eq:g11} & 3\\
+    &\code{take}\ a\\
+    &\code{fix}\ R\\
+    &\code{have}\ \code{on\_plane}\ R\ \alpha\wedge\code{on\_plane}\ R\ \beta \implies \code{on\_line}\ R\ a\ \code{proof}\\
+    &\qquad\code{assume}\ \code{on\_plane}\ R\ \alpha\wedge\code{on\_plane}\ R\ \beta & 4\\
+    &\qquad\code{otherwise assume}\ \neg\code{on\_line}\ R\ a & 5\\
+    &\qquad\code{hence}\ \Triangle{a}{P}{Q}{R}\ \code{from}\ 2,3\ \code{by}\ \eqref{eq:g12}\\
+    &\qquad\code{qed from}\ 1,2,4\ \code{by}\ \eqref{eq:g15}\\
+    &\code{qed from}\ 1,2,3\ \code{by}\ \eqref{eq:g16}
+  \end{align*}
+  \caption{Intersecting planes intersect in a line}
+  \label{fig:Theorem1}
+\end{boxedfigure}
+
+Theorem~2 admits a straightforward formalisation in two separate formal theorems. The verifications depend on Axioms~\ref{eq:g12},~\ref{eq:g13a},~\ref{eq:g14a},~\ref{eq:g15} and~\ref{eq:g16}. 
+\begin{displaymath}
+  \neg\code{on\_line}\ P\ a \implies \exists!\alpha. \code{on\_plane}\ P\ \alpha \wedge \forall Q. \code{on\_line}\ Q\ a \implies \code{on\_plane}\ Q\ \alpha.
+\end{displaymath}
+\begin{multline}
+  a\neq b\wedge\code{on\_line}\ P\ a\wedge\code{on\_line}\ P\ b\\
+  \implies\exists!\alpha. \forall P. \code{on\_line}\ P\ a \vee \code{on\_line}\ P\ b \implies\code{on\_plane}\ Q\ \alpha.
+\end{multline}
+
+We omit the verifications, since Hilbert does not refer to these theorems again, nor do their verified counterparts feature anywhere in our formal development. Instead, we base all our future incidence reasoning on an alternative set of representations and theory which we explain in \S\ref{sec:PointSets}. 
+
+The only other theorem we need is one we use when developing our theory of half-planes in Chapter~\ref{chapter:HalfPlanes}. This theorem was mentioned earlier in this section: it is the claim that every plane contains a non-collinear triple, an axiom of the first edition but a statement that now needs to be proven. It is perhaps an oversight of Hilbert's that he neglected to state the theorem explicitly, since the proof is not entirely trivial, and has us considering a configuration of six points and three planes.
+
+\label{sec:PlaneThree}
+\begin{theorem}\label{eq:PlaneThree}
+Every plane $\alpha$ contains at least three non-collinear points.
+\end{theorem}
+\begin{proof}
+By Axiom~\ref{eq:g14b} and Axiom~\ref{eq:g18}, we can take a point $A$ on $\alpha$ and a point $B$ not on $\alpha$. We connect these two points by a line $a$. By Axiom~\ref{eq:g13b}, we can take a third point $C$ off the line $a$. The three points $A$,$B$ and $C$ must determine a plane $\beta$ by Axiom~\ref{eq:g14a}.
+
+Since the planes $\alpha$ and $\beta$ intersect at the point $A$, we can choose another intersection point $D$ by Axiom~\ref{eq:g17}, and by Axiom~\ref{eq:g18}, we can find a fifth point $E$ off the plane $\beta$. Now $A$,$B$ ad $E$ must be non-collinear, and so they determine a plane $\gamma$. If this plane is $\alpha$, then $A$, $B$ and $E$ are our three points and we are done. Otherwise, we have two distinct planes intersecting at $A$ and so we can take another intersection point $F$ by Axiom~\ref{eq:g17}. This gives us three non-collinear points in $\alpha$, namely $A$, $D$ and $F$. See Figure~\ref{fig:PlaneThree}.
+\begin{multline}
+\exists A\;B\;C. \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha\\
+\Triangle{a}{A}{B}{C}
+\end{multline}
+\end{proof}
+\begin{figure}
+\centering\includegraphics[scale=0.8]{group1/PlaneThree}
+\caption{Planes contain non-collinear points}
+\label{fig:PlaneThree}
+\end{figure}
+
+This is the only three-dimensional theorem we will consider in the present work, and as such, it is the only theorem which depends on Axiom~\ref{eq:g18}.
+
+% \begin{figure}
+% \small
+% \begin{align*}
+% &\texttt{theorem }\forall\alpha.\,\exists A\,B\,C.\,\onplane{A}{\alpha} \wedge \onplane{B}{\alpha} \wedge  \onplane{C}{\alpha}\\
+% &\qquad\wedge  \Triangle{a}{A}{B}{C}\\
+% &\texttt{fix } \alpha\\
+% &\texttt{consider } A \texttt{ at 0 such that } \onplane{A}{\alpha} \texttt{ by g14b}\\
+% &\texttt{consider } B \texttt{ at 1 such that } \neg \onplane{B}{\alpha} \texttt{ by g18}\\
+% &\texttt{have } A \neq B \texttt{ at 2 from 0,1}\\
+% &\texttt{so consider } a \texttt{ at 3 such that } \online{A}{a} \wedge  \online{B}{a} \texttt{ by g11}\\
+% &\texttt{consider } C \texttt{ at 4 such that } \neg \online{C}{a} \texttt{ by g13b}\\
+% &\texttt{have } \Triangle{b}{A}{B}{C}\\
+% &\quad\texttt{otherwise consider } b \texttt{ at 5 such that }\online{A}{b}\wedge \online{B}{b}\wedge \online{C}{b}\\
+% &\quad\texttt{hence } a = b \texttt{ from 2,3 by g12}\\
+% &\quad\texttt{qed from 4,5}\\
+% &\texttt{so consider } \beta \texttt{ at 5 such that }\\
+% &\quad\onplane{A}{\beta}\wedge \onplane{B}{\beta}\wedge \onplane{C}{\beta} \texttt{ by g14a}\\
+% &\texttt{consider } D \texttt{ at 6 such that } \onplane{D}{\alpha}\wedge \onplane{D}{\beta}\wedge A\neq D \\
+% &\qquad\texttt{ from 0,1,5 by g17}\\
+% &\texttt{consider } E \texttt{ at 7 such that } \neg \onplane{E}{\beta} \texttt{ by g18}\\
+% &\texttt{have } \Triangle{b}{A}{B}{E} \texttt{ at 8}\\
+% &\quad\texttt{otherwise consider } b \texttt{ at 9 such that }\online{A}{b}\wedge \online{B}{b}\wedge  \online{E}{b}\\
+% &\quad\texttt{hence }\onplane{E}{\beta} \texttt{ from 2,5 by g16}\\
+% &\quad\texttt{qed from 7}\\
+% &\texttt{so consider } \gamma \texttt{ at 9 such that}\\
+% &\quad\onplane{A}{\gamma}\wedge \onplane{B}{\gamma}\wedge \onplane{E}{\gamma}\texttt{ by g14a}\\
+% &\texttt{assume } \alpha\neq\gamma \texttt{ from 8,9}\\
+% &\texttt{so consider } F \texttt{ at 10 such that }\onplane{F}{\alpha}\wedge \onplane{F}{\gamma}\wedge A \neq F \\
+% &\quad\texttt{ from 0,9 by g17}\\
+% &\texttt{have }\Triangle{b}{A}{D}{F}\\
+% &\quad\texttt{otherwise consider } b \texttt{ at 11 such that }\\
+% &\quad\quad\online{A}{b}\wedge \online{D}{b}\wedge \online{F}{b}\\
+% &\quad\texttt{hence }\onplane{D}{\gamma}\texttt{ at 12 from 0,9,10 by g16}\\
+% &\quad\texttt{have }\Triangle{c}{A}{B}{D}\\
+% &\quad\quad\texttt{otherwise consider } c \texttt{ at 13 such that }\\
+% &\quad\quad\quad\online{A}{c}\wedge \online{B}{c}\wedge \online{D}{c}\\
+% &\quad\quad\texttt{hence }\onplane{B}{\alpha}\texttt{ from 0,6 by g16}\\
+% &\quad\quad\texttt{qed from 1}\\
+% &\quad\texttt{hence }\beta=\gamma \texttt{ from 5,6,9,12 by g15}\\
+% &\quad\texttt{qed from 7,9}\\
+% &\texttt{qed from 0,6,10}
+% \end{align*}
+% \caption{Formalised proof of Theorem \ref{theorem:PlaneHasThreePoints}}
+% \label{fig:PlaneHasThreePoints}
+% \end{figure}
+
+\section{Absent Arguments}
+After splitting conjunctions, we find that there are ten axioms in Hilbert's first group. This is twice as many axioms as the next largest group, Group~III. One would expect, then, that the axioms would feature the most in proofs. This is indeed the case with formal verifications, but in Hilbert's prose, the axioms of this particular group are almost never cited.
+
+This appears to directly contradict a claim made by Weyl that the deductions in Hilbert's geometry contain no \emph{gaps}~\cite{TableChairMug}. Indeed, taking this claim at face-value, we would agree with Meikle and Fleuriot that Hilbert's arguments are full of missing assumptions and lemmas. But we do not believe Hilbert ever made this claim. Given that he is happy to elide whole proofs, it seems to us that whatever his standards of rigour, they were never intended to coincide with the extremely pedantic standards of formal logic. Perhaps the only standard we want to hold Hilbert to is that his deductions are logical consequences of previous ones, and that he has made a reasonable balance in his presentation, carefully elucidating only the particularly tricky proofs. So far, we have confirmed that all of his deductions are indeed valid. It is less clear whether his presentation is balanced, as we shall discuss over the remaining chapters.
+
+Of the axioms which Hilbert is careful to cite is Axiom~I,3 (or more precisely in our formalisation, Axiom~\ref{eq:g13b}). We might suppose this is because the rule is usually used to \emph{introduce} points. In an informal geometry proof, where the goal is to \emph{obtain} a geometric figure, one would not want to leave these sorts of introduction steps implicit. 
+
+For many of the other axioms whose citations are missing, we might still excuse Hilbert by noting again that almost all of his proofs are \emph{planar}. In effect, Hilbert makes a pervasive ``without-loss-of-generality'' assumption throughout his proofs, which is justified because the axioms he invokes will always force the objects considered to lie in the same plane. This makes his life substantially easier, since it means he is effectively working with just Axioms~\ref{eq:g11}, \ref{eq:g12} and \ref{eq:g13a}. 
+
+It would have made our verification effort somewhat easier had we been able to make this same without-loss-of-generality assumption. A simple idea would have been to develop a purely planar theory of geometry which could then be embedded in the individual planes of a space geometry. Unfortunately, we could see no way to do this using Isabelle's module system nor HOL~Light's simple type theory. Theory embeddings which depend upon particular \emph{planes} would suggest we would need at least a dependently typed theory such as Coq's~\cite{Coq}.
+
+One final reason we might let Hilbert off the hook is by simply claiming that his missing lemmas and missing citations are just \emph{trivial}. If the missing detail happens to end up dominating a formal verification of Hilbert's geometry, then so much for formal verification. It just appears to confirm Poincar\'{e}'s frank dismissal of the merits of formal verification that we mentioned in Chapter~\ref{chapter:Introduction}. 
+
+\section{Representation}
+Whatever position we take on Hilbert's gaps, we still wished to use formal verification as a tool with which to analyse Hilbert's prose arguments. When we are forced to add the missing detail concerning incidence, our verifications no longer reflect the prose even structurally. The salient parts of the proof text, those parts which correspond to inferences in the prose, are lost to the surrounding lengthy arguments about incidence. This makes it difficult to identify dependencies, redundancies, circularities, missing details, or alternative proof strategies.
+
+A first step in the direction of fixing this problem was to find a representation for incidence statements which was significantly more expressive than the basic primitives. Realising that the domain of incidence reasoning is inherently combinatorial, we opted to represent incidence claims in terms of points sets. One advantage of point sets is that they at least have the possibility of being composed via basic operations on sets.
+
+Thus, we defined two predicates.
+\begin{align*}
+\code{collinear}\;&:\;(\code{point}\rightarrow\code{bool})\rightarrow\code{bool}
+\\\code{collinear\ Ps} &\iff \exists a. \forall P. P \in Ps \implies \code{on\_line}\ P\ a
+\end{align*}
+\begin{align*}
+\code{planar}\;&:\;(\code{point}\rightarrow\code{bool})\rightarrow\code{bool}
+\\\code{planar\ Ps} &\iff \exists a. \forall P. P \in Ps \implies \code{on\_plane}\ P\ a.
+\end{align*}
+
+Our use of sets here does not depend on axiom of infinity, since it might still be that only finite sets exists. The use of set theory is really only giving us a way, at the object level, to collapse multiple claims about the incidence of individual points to one claim about a collinear or planar point set, while abstracting away the particular lines and planes with which the points are incident. If there are still foundational concerns here, we can reassure the reader that, in the next chapter, we will be move this use of set-theory to the metalevel for efficiency.
+
+We now refer to lines and planes by using the points which uniquely identify them. So if two distinct points $A$ and $B$ lie on a line $a$, we are able to express the fact that two other points $C$ and $D$ also lies on $a$ by writing 
+\begin{displaymath}
+\code{collinear}\ \{A, B, C, D\}.
+\end{displaymath}
+
+Furthermore, we can say that another point $E$ does \emph{not} lie on the line $a$ by writing $\neg \code{collinear}\ \{A, B, E\}$. Notice that we only need to use three points to make this claim, and that indeed, adding more points only weakens the statement (collinear sets which contain only three-point collinear sets are themselves collinear). This means that claims of non-incidence are claims about the existence of triangles.
+
+The real advantage to be gained by talking in terms of collinear and planar sets is that we were able to move all the logic of incidence into composition rules for sets. The systematic use of these rules made up the bulk of the missing incidence reasoning in our earlier work~\cite{ScottMScThesis}.
+
+\subsection{Incidence Reasoning with Point Sets}\label{sec:PointSets}
+In Figure~\ref{fig:PointSets}, we reproduce a set of rules for reasoning with collinear and planar sets which were used in our earlier work in Isabelle~\cite{ScottMScThesis}, and which we have verified again in HOL~Light. Note that we have assumed that singleton sets are both collinear and planar, and that the empty set is assumed to be the smallest collinear and planar set. 
+
+\begin{figure}
+\begin{align}
+&\code{collinear}\ \, \{A,B\} \label{rule:colltwo}\\
+&\neg \code{collinear}\ \, \{A,B,C\} \implies A \neq B
+  \label{rule:noncollneq}\\
+&S \subseteq T \wedge \code{collinear}\ \, T \implies \code{collinear}\ \, S
+  \label{rule:collsubset}\\
+&A \neq B \wedge A,B \in S,T \implies \code{collinear}\ \, S \wedge \code{collinear}\ \, T \implies \code{collinear}\ \, (S \cup T) \label{rule:collunion}\\
+&\code{planar}\ \, \{A,B,C\} \label{rule:planethree}\\
+&S \subseteq T \wedge \code{planar}\ \, T \implies \code{planar}\ \, S
+  \label{rule:planesubset}\\
+&\neg\code{collinear}\ \, (S \cap T) \wedge \code{planar}\ \, S \wedge \code{planar}\ \, T \implies \code{planar}\ \, (S \cup T) \label{rule:planeunion}\\
+&\code{collinear}\  S \implies \code{planar}\  S \label{rule:collplane}\\
+&A \neq B \wedge A,B \in S,T \wedge \code{collinear}\ \, S \wedge \code{planar}\ \, T \implies \code{planar}\ \, (S \cup T) \label{rule:collplaneplane}\\
+&P \in S \wedge P \in T \wedge \code{collinear}\ \, S \wedge \code{collinear}\ \, T \implies \code{planar}\ \, (S \cup T) \label{rule:collcollplane}
+\end{align}
+\caption{Incidence Rules in Point Sets}\label{fig:PointSets}
+\end{figure}
+
+So long as we are restricting our attention to a finite number of points, we can make these axioms correspond to the incidence axioms which do not introduce points, and thus justify them as an alternative presentation of the incidence rules. Given a set of points $S$, let us think of a line containing the points of $S$, should it exist, as a maximal collinear superset of $S$. Similarly, let us think of a plane containing the points of $S$, should it exist, as a maximal planar superset of $S$. In this way, we can define lines and planes entirely in terms of point-sets known to be collinear and planar. Now in a finite universe of points, which will be the context for most of the incidence reasoning we encounter in Hilbert's proofs, we know that so long as $S$ is a collinear set, then there are maximal collinear supersets of $S$ which, as we have said, are the lines that the points of $S$ lie on. Similarly, we know that so long as $S$ is a planar set, then there are maximal planar supersets of $S$ which, as we have said, are the planes that the points of $S$ lie on.
+
+In this sense, Rule~\ref{rule:colltwo} must assert that the points $A$ and $B$ are incident with a line $AB$, corresponding to Axiom~\ref{eq:g11}. Rule~\ref{rule:collunion} is less easy to understand, but effectively corresponds to Axiom~\ref{eq:g12}. It asserts that the expression ``the line $AB$'' is well-defined: the line $AB$, as we have said, must be a unique maximal superset of all points containing $A$ and $B$. Now the largest possible set containing $A$ and $B$ is just the finite union of all sets containing $A$ and $B$. What Rule~\ref{rule:collunion} is telling us is that this set is collinear. In other words, the unique largest set containing $A$ and $B$ is the line of $AB$.
+
+Similarly, Rule~\ref{rule:planethree} tells us that $A$, $B$ and $C$ are incident with the plane $ABC$ while Rule~\ref{rule:planeunion} asserts that the expression ``the plane $ABC$'' is well-defined, or more generally, that a plane is uniquely determined by any of its non-collinear subsets.
+
+Rule~\ref{rule:collplaneplane} is a stronger version of Axiom~\ref{eq:g16}. To see this, we again think of our lines and planes as maximal collinear and planar sets. Axiom~I,6 says ``[i]f two points $A$, $B$ of a line $a$ lie in a plane $\alpha$ then every point of $a$ lies in the plane $\alpha$.'' Here, we take the line $a$ to be a maximal collinear set $S$ and $\alpha$ to be a maximal planar set $T$. According to \ref{rule:collplane}, $S$ is also planar, and according to \ref{rule:collplaneplane}, so is $S \cup T$. But $T$ is maximal, so we must have $S \cup T = T$ and thus $S \subseteq T$. In other words, all points of the line $S$ lie in the plane $T$.
+
+Our final rule, Rule~\ref{rule:collcollplane}, tells us that, once we understand lines to be maximal collinear sets, then intersecting lines lie in a plane. But if these lines are distinct, their union must be non-collinear, since otherwise they would not be maximal sets. Thus, the two lines lie in a unique plane, which is exactly the claim made in Hilbert's Theorem~2. 
+
+The other theorem, Theorem~1, notes firstly that distinct lines have either no points in common or just one point in common. This follows directly from Rule~\ref{rule:collunion}. Indeed, distinct lines as maximal collinear sets must have a non-collinear union, so they cannot have more than one point in common. 
+
+Theorem~1 further notes that distinct planes have either no points in common or one line in common. We know that distinct planes as maximal planar sets must have non-planar unions and so must have collinear intersections by Rule~\ref{rule:planeunion}. Moreover, we know that if the intersection contains two points, then, according to rules \ref{rule:collunion} and \ref{rule:collplaneplane}, the two points yield a maximal collinear set contained in the maximal planar set. We cannot say anything about the case of a one-point intersection, since this requires the existential Axiom~\ref{eq:g17}: if two planes have one point in common, they have at least one other point in common.
+
+In conclusion, we have shown how all incidence axioms which do not introduce points can be expressed and strengthed as composition rules on collinear and planar sets. The primitives \emph{line} and \emph{plane} are no longer used directly, since all the axioms governing them can be subsumed by these composition rules. 
+
+\subsection{Evaluation}
+Meikle and Fleuriot's work in Hilbert's geometry involved a lot of tedious but necessary reasoning about incidence relations, and the derivation of many additional lemmas to support the main proofs. With our alternative rules, the proofs are a good deal less complex. For instance, the verification of Hilbert's third theorem, which relies a great deal on incidence reasoning, needed twenty-seven special case lemmas and a forty step proof in Meikle's verification, while our proof using the above rules has twenty-two steps and no additional lemmas. 
+
+This is an improvement, but it still leaves our proofs bogged down in trivial combinatorial details that make it difficult to compare to the prose. Besides, the proofs are still very difficult to obtain, since the sets involved in the rules in Figure~\ref{fig:PointSets} almost always need to be manually instantiated so that the theorem prover's generic automation can make progress. This is not just tedious, but error-prone. When our proofs were correct, they were often suboptimal. And in one case, our difficulty at proving certain incidence facts about a geometric configuration led us to believe, mistakenly, that Hilbert had made an error in one of his arguments (see \S\ref{Theorem4}).
+
+Luckily, when we reflected on our manually crafted proofs, we realised that the rules of Figure~\ref{fig:PointSets} were always applied systematically. In the next Chapter, we shall describe how we made these rules the basis for an automated tool which can completely hide the messy incidence reasoning. We can then justify Hilbert's omission of incidence arguments by claiming that they are mostly computational and do not require any real insight. In a geometric proof, the important rules are those which introduce points and thereby build up the geometric configuration. Hilbert's prose proofs, and our own verifications backed up by our incidence automation, leave just those rules explicit.
+
+We finish by remarking that the rules of Figure~\ref{fig:PointSets} were verified in a procedural rather than declarative style in HOL~Light. Since we only intend them to be implementation details of an incidence algorithm, rather than of general geometric interest, it was sensible to take full advantage of HOL~Lights tactics and its simplifier, which are particularly useful for working with finite sets.  
+
+\section{Conclusion}
+The formalisation of Hilbert's first group of axioms and the verification of his first two theorems is straightforward, up to a few minor technical points about the choice of representation and whether we implicitly assume that the primitive sorts or types are inhabited. Otherwise, Group~I is conspicuous only by its absence from the remaining formal theory. However we justify the absence of missing detail, it must be restored in the formal verification, and when we do that, we find our proofs are washed out with fussy incidence arguments. The skeleton of Hilbert's proofs are lost to these details. 
+
+By introducing better representations, we can alleviate this somewhat, but it only takes us so far. If we are to make Hilbert's arguments clear in our verifications, so that we can better use verification to judge and evaluate his prose proofs, we shall need to remove the incidence arguments almost entirely. This we leave to the next chapter, where we consider automation.
+
+%%% Local Variables: 
+%%% TeX-master: "../thesis"
+%%% End: 

@@ -1,6 +1,5 @@
 \chapter{Group I}\label{chapter:Group1}
 
-\section{Introduction}
 Hilbert has only the briefest introduction to the \emph{Foundations of Geometry}, before diving in with a declaration of his primitive notions and then laying out his first group of axioms. These are his axioms of \emph{incidence}. In this chapter, we discuss their formalisation, the verification of a few of their elementary consequences, and then discuss how these incidence axioms feature in the rest of Hilbert's axiomatics.
 
 \section{Primitives}
@@ -52,7 +51,7 @@ The formalisation is in Figure~\ref{fig:InhabitedTypes}. Here, we have formalise
 \section{Formalisation}
 Knowing that our types are inhabited, we return to what we regard as a more natural formulation of Hilbert's axioms, one which appeared in our earlier work, in Meikle and Fleuriot's work and the work of Dehlinger at el~\cite{DehlingerFOG,MeikleFleuriotFormalizingHilbert,ScottMScThesis}. We declare three primitive \emph{types} for points, lines and planes, and two incidence relations: one tells us whether points lie on a line and the other whether points lie on a plane. This gives a more readable formalisation than that of Figure~\ref{fig:InhabitedTypes}, since we can drop the relativising predicates. It also improves type-safety: HOL~Light can reject axioms which do not use the primitive relations in sensible ways, and it removes the possibility of pathological expressions such as ``a plane lies on a point.''
 
-We now give Hilbert's incidence axioms as they appear in the tenth edition of \emph{Foundations of Geometry}. The convention throughout, and one which we adopt for the rest of the present work, is that points are denoted by uppercase Roman, $A$, $B$, $C$, $P$, $Q$, $R$, and so on. Lines are denoted by lowercase Roman $a$, $b$, $c$. And planes are denoted by Greek $\alpha$, $\beta$, $\gamma$. 
+We now give Hilbert's incidence axioms as they appear in the tenth edition of \emph{Foundations of Geometry}. The convention throughout, and one which we adopt for the rest of the present work, is that points are denoted by uppercase Roman, $A$, $B$, $C$, $P$, $Q$, $R$, $X$, $Y$, $Z$, and so on. Lines are denoted by lowercase Roman $a$, $b$, $c$. And planes are denoted by Greek $\alpha$, $\beta$, $\gamma$. 
 
 Hilbert's axioms, as they appear in the tenth edition, run as follows:
 \begin{enumerate}
@@ -92,7 +91,7 @@ Veblen differs significantly from Hilbert by following a trend he identifies wit
 
 A similar approach was taken up by Tarksi, who developed the first formal system for elementary geometry with the benefit of modern formal logic \cite{TarskiGeometrySystem}. Like Veblen, Tarski used only one primitive sort for points, but unlike Veblen, he admitted a congruence relation on pairs of points. Nevertheless, his axioms are particularly elegant. They do not appeal to complex derived notions as Hilbert's axioms later axioms do, such as those of the third group, and his dimension axiom has the pleasing property that it can be mechanically modified to axiomatise an arbitrary dimension.
 
-Despite this, Tarski's axioms are known to be far more primitive than Hilbert's, and thus it takes much more work to be able to carry out even simple proofs in the theory. In fact, it takes significant effort just to recover Hilbert's axioms from Tarski's~\cite{NarbouxTarskiHilbert}.
+Despite this, Tarski's axioms are known to be far more primitive than Hilbert's, and thus it takes much more work to be able to carry out even simple proofs in the theory. In fact, it takes significant effort just to recover Hilbert's axioms from Tarski's~\cite{NarbouxTarskiHilbert}. There are existing mechanisations of Tarski's geometry in the Otter automated prover~\cite{QuaifeTarski} and Coq proof assistant~\cite{NarbouxTarski}. 
 
 \subsection{Elementary Consequences}
 Hilbert highlights two theorems for his first group.
@@ -240,7 +239,7 @@ Thus, we defined two predicates.
 \\\code{planar\ Ps} &\iff \exists a. \forall P. P \in Ps \implies \code{on\_plane}\ P\ a.
 \end{align*}
 
-Our use of sets here does not depend on axiom of infinity, since it might still be that only finite sets exists. The use of set theory is really only giving us a way, at the object level, to collapse multiple claims about the incidence of individual points to one claim about a collinear or planar point set, while abstracting away the particular lines and planes with which the points are incident. If there are still foundational concerns here, we can reassure the reader that, in the next chapter, we will be move this use of set-theory to the metalevel for efficiency.
+Our use of sets here does not depend on axiom of infinity, since it might still be that only finite sets exists. The use of set theory is really only giving us a way, at the object level, to collapse multiple claims about the incidence of individual points to one claim about a collinear or planar point set, while abstracting away the particular lines and planes with which the points are incident. If there are still foundational concerns here, we can reassure the reader that, in the next chapter, we will be move this use of set-theory to the metalevel.
 
 We now refer to lines and planes by using the points which uniquely identify them. So if two distinct points $A$ and $B$ lie on a line $a$, we are able to express the fact that two other points $C$ and $D$ also lies on $a$ by writing 
 \begin{displaymath}
@@ -257,8 +256,6 @@ In Figure~\ref{fig:PointSets}, we reproduce a set of rules for reasoning with co
 \begin{figure}
 \begin{align}
 &\code{collinear}\ \, \{A,B\} \label{rule:colltwo}\\
-&\neg \code{collinear}\ \, \{A,B,C\} \implies A \neq B
-  \label{rule:noncollneq}\\
 &S \subseteq T \wedge \code{collinear}\ \, T \implies \code{collinear}\ \, S
   \label{rule:collsubset}\\
 &A \neq B \wedge A,B \in S,T \implies \code{collinear}\ \, S \wedge \code{collinear}\ \, T \implies \code{collinear}\ \, (S \cup T) \label{rule:collunion}\\
@@ -290,13 +287,13 @@ Theorem~1 further notes that distinct planes have either no points in common or 
 In conclusion, we have shown how all incidence axioms which do not introduce points can be expressed and strengthed as composition rules on collinear and planar sets. The primitives \emph{line} and \emph{plane} are no longer used directly, since all the axioms governing them can be subsumed by these composition rules. 
 
 \subsection{Evaluation}
-Meikle and Fleuriot's work in Hilbert's geometry involved a lot of tedious but necessary reasoning about incidence relations, and the derivation of many additional lemmas to support the main proofs. With our alternative rules, the proofs are a good deal less complex. For instance, the verification of Hilbert's third theorem, which relies a great deal on incidence reasoning, needed twenty-seven special case lemmas and a forty step proof in Meikle's verification, while our proof using the above rules has twenty-two steps and no additional lemmas. 
+Meikle and Fleuriot's work in Hilbert's geometry involved a lot of tedious but necessary reasoning about incidence relations, and the derivation of many additional lemmas to support the main proofs. With our alternative rules, the proofs are a good deal less complex. For instance, the verification of Hilbert's third theorem, which relies a great deal on incidence reasoning, needed twenty-seven special case lemmas and a forty step proof in Meikle's verification, while our proof using the above rules has twenty-two steps and no additional lemmas. We will give some examples of these proofs in Chapter~\ref{chapter:Group2} once we have introduced Hilbert's axioms of \emph{order}.
 
 This is an improvement, but it still leaves our proofs bogged down in trivial combinatorial details that make it difficult to compare to the prose. Besides, the proofs are still very difficult to obtain, since the sets involved in the rules in Figure~\ref{fig:PointSets} almost always need to be manually instantiated so that the theorem prover's generic automation can make progress. This is not just tedious, but error-prone. When our proofs were correct, they were often suboptimal. And in one case, our difficulty at proving certain incidence facts about a geometric configuration led us to believe, mistakenly, that Hilbert had made an error in one of his arguments (see \S\ref{Theorem4}).
 
 Luckily, when we reflected on our manually crafted proofs, we realised that the rules of Figure~\ref{fig:PointSets} were always applied systematically. In the next Chapter, we shall describe how we made these rules the basis for an automated tool which can completely hide the messy incidence reasoning. We can then justify Hilbert's omission of incidence arguments by claiming that they are mostly computational and do not require any real insight. In a geometric proof, the important rules are those which introduce points and thereby build up the geometric configuration. Hilbert's prose proofs, and our own verifications backed up by our incidence automation, leave just those rules explicit.
 
-We finish by remarking that the rules of Figure~\ref{fig:PointSets} were verified in a procedural rather than declarative style in HOL~Light. Since we only intend them to be implementation details of an incidence algorithm, rather than of general geometric interest, it was sensible to take full advantage of HOL~Lights tactics and its simplifier, which are particularly useful for working with finite sets.  
+We finish by remarking that the rules of Figure~\ref{fig:PointSets} were verified in a procedural rather than declarative style in HOL~Light. We only intend these verifications to justify rules that will be become the implementation details of an incidence algorithm, rather than rules of general geometric interest. It therefore made sense to take full advantage of HOL~Lights tactics and its simplifier, which are particularly useful for working with finite sets.  
 
 \section{Conclusion}
 The formalisation of Hilbert's first group of axioms and the verification of his first two theorems is straightforward, up to a few minor technical points about the choice of representation and whether we implicitly assume that the primitive sorts or types are inhabited. Otherwise, Group~I is conspicuous only by its absence from the remaining formal theory. However we justify the absence of missing detail, it must be restored in the formal verification, and when we do that, we find our proofs are washed out with fussy incidence arguments. The skeleton of Hilbert's proofs are lost to these details. 

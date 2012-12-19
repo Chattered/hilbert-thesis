@@ -1,144 +1,139 @@
 \chapter{Automation}\label{chapter:Automation}
-\section{Automated Incidence Reasoning with Point Sets}\label{sec:Incidence} 
-In this section, we discuss how we have incorporated new automation into our formalisation of Hilbert's text. We motivate that automation as capturing implicit, systematic combinatorial inferences with finite sets of points. We argue that the conclusions of these inferences are not always \emph{obvious}, and so the automation should support proof \emph{discovery}. We further show how we have exploited the idle-time available during proof development to perform such discovery.
+In the last chapter, we considered a representation for incidence claims involving lines and planes which helped us write shorter verifications. The use of these rules also appeared ripe for automation. 
 
-\subsubsection{Wu's method and Degenerate Conditions}\label{degeneracy}
-One powerful algebraic mechanical procedure for elementary geometry theorem proving is Wu's method \cite{WuMechanicalTheoremProving}, which draws directly on a mechanisation procedure in Hilbert's \emph{Foundations of Geometry}. Wu gave interesting philosophical motivations for his method which are very much relevant to our own work. One of Wu's insights was that the method of proof in a synthetic geometry system such as Hilbert's can never be rigorous because degenerate cases are nearly always neglected. Typically, when we state axioms and theorems for some geometric figure, we have in mind a particular ``genericity'' of that figure which is hard to state. Moreover, the axioms and theorems may admit some generalisation to what we would regard as ``degenerate'' cases. For instance, a theorem about a triangle might hold if we regard it as just three arbitrary points and relax the condition that those three points are non-collinear. A theorem about ellipses, hyperbolas and circles might hold if we rephrase it in terms of conic sections including single points and lines. 
+The HOL~Light theorem prover expects its users to work ``close to the metal'', often writing ML directly. Writing new tools can be comfortable in this environment, and it is easy to prototype and experimentally integrate new tools into the rest of the system and existing proof languages. In this chapter, we shall see how this integration can take the form of a concurrent and collaborative discovery tool for incidence reasoning, which can be made available as a tactic and in Mizar~light proof steps.
 
-But ``degenerate'' is not well-defined, and it is not always clear how the conditions of a theorem can be relaxed. On the other hand, when trying to rule out certain degenerate cases, there are plenty that are easily missed. When we formalise, we cannot simply neglect these degenerate cases unless we have proof tools that can do it for us (we shall consider such tools in \S\ref{CollinearAlgorithms}). Filling in all the gaps requires enormous effort and complication of the proof, so it would seem that Wu is correct: we cannot be truly rigorous unless we can systematically deal with degenerate conditions. 
+Much of this chapter and the subsequent chapter is an expansion and improvement on earlier work~\cite{ScottExploring,ScottComposable}.
 
-To use Wu's method, we must translate the conclusion and hypotheses of all geometric theorems to polynomial equations. His mechanical procedure will then attempt to show that the conclusion follows from the premises. If it succeeds, then the theorem is \emph{generic} and applies in all degenerate cases. Otherwise, the procedure will insert enough non-degeneracy conditions to make the conclusion follow. Furthermore, Wu's method will, if possible, automatically delete redundant conditions to make a specific theorem more generic. 
+\section{Related Work}
+As far as fully automated theorem proving goes, the oldest successes are probably in geometry. The signed-area method \cite{MachineProofsInGeometry} of Chou et al, proved to be particularly capable at finding large numbers of non-trivial geometric theorems. In this section, we restrict our attention to automation that can apply to the very basic incidence theory we consider here. The signed-area method, which typically assumes an ordered field, is already outside of our scope.
 
-Wu's method has been used to automatically prove an enormous number of non-trivial theorems in unordered geometry \cite{MechanicalGeometryTheoremProving}. To cover ordered geometry, Wu appealed to Tarski's system of elementary geometry. Tarski had adapted a decision procedure to solve certain systems of polynomial equalities and inequalities and showed how to translate statements of his elementary geometry into such a system, but the algorithm is very inefficient \cite{TarksiMcNaugtonReview}.
+\subsection{Wu's Method}
+When considering general automation in Hilbert's \emph{Foundations of Geometry}, there is probably no work more relevant than Wu's method~\cite{WuMechanicalTheoremProving}. Wu, perhaps giving too much credit to Hilbert, claimed that the \emph{Foundations of Geometry} contains metatheoretical insights towards a mechanisation procedure for the whole of geometry. 
 
-\subsubsection{Applicability}
-Despite their success, these automation procedures are not really appropriate when developing elementary geometry in an axiomatic theory such as Hilbert's. If we were to implement Wu's method, for instance, we would need to show how each of his mechanical steps can be reduced to the axioms of Hilbert's system. But this reduction will presuppose some of the very elementary theorems which we are trying to mechanise. Indeed, Wu's method is based at least on results which rest on Desargues' theorem --- Theorem~53 in the \emph{Foundations of Geometry} -- and it is not even clear what an appropriate minimal set of results would be needed for the coordinate-free techniques. In any case, by the time we have proven such results, most of our proposed mechanisation will have been completed. Furthermore, these methods are far too powerful for our analysis. In one step, they are able to discharge whole theorems we seek to prove, and so they cannot tell us anything about Hilbert's prose proofs.
+One of Wu's own insights was that the method of proof in a synthetic geometry system such as Hilbert's often falls short of absolute rigour because degenerate cases are routinely missed. Typically, when we state axioms and theorems for some geometric figure, we have in mind a particular ``genericity'' of that figure which is hard to capture formally. Moreover, the axioms and theorems may admit some generalisation to what we would regard as ``degenerate'' cases, even if this is not immediately clear at the time. We have already seen in the last group that some of Hilbert's axioms, such as Axiom~\ref{eq:g11} hold in degenerate cases (though this does not imply that the axiom should be made \emph{stronger}). 
 
-\subsection{The Need for Automation}
-We wish to make formalisation our analytical tool, and to do so, we need a formal way to describe the implicit lines of incidence reasoning in Hilbert's prose. To do this, we have implemented an algorithm to fill in the missing proof steps. What is left corresponds almost one-to-one with Hilbert's prose, as we shall see in Section \ref{sec:FormalisationAnalysis}. Moreover, the formal proof texts are significantly shorter, easier to read and write, and the automation allows the user to rapidly explore alternative proof strategies at the level of the prose without having to worry about reproducing tedious incidence reasoning. 
+But ``degenerate'' is not well-defined, and it is not always clear how the conditions of a theorem can be relaxed. On the other hand, when trying to rule out certain degenerate cases, there are plenty that are easily missed. When we formalise, we cannot simply neglect these degenerate cases unless we have proof tools that can do it for us. Filling in all the gaps requires enormous effort and complication of the proof, so it would seem that Wu is correct: we cannot be truly rigorous unless we can systematically deal with degenerate conditions. This provides an alternative way to diagnose the gaps in Hilbert's proofs spotted by Meikle and Fleuriot~~\cite{MeikleFleuriotFormalizingHilbert}: they were gaps concerning degeneracy conditions about point incidence.
 
+Wu's highly celebrated method automatically inserts non-degeneracy conditions to the theorems it proves, and if possible, it automatically deletes redundant conditions to make a specific theorem more generic. The method has been used to automatically prove an enormous number of non-trivial theorems in unordered geometry \cite{MechanicalGeometryTheoremProving}. To cover ordered geometry, Wu appealed to the embedding of Euclidean geometry in real-closed fields, for which Tarksi has a well-known decision procedure. The method has much less success here, owing to the gross intractability of the decision procedure~\cite{TarksiMcNaugtonReview}. 
 
-\section{Pasch's Axiom}
-The first of Hilbert's \emph{proofs} appear in Group~II, and they make extensive use of an axiom due to Pasch. This axiom asserts that any line $a$ which enters a triangle $ABC$ on one side must leave by one of the other two sides, such as in the case depicted in Figure \ref{PaschDiagram}.
+Unfortunately, Wu's automation is not particularly appropriate for our own work. If we were to implement Wu's method, for instance, we would need to show how each of his mechanical steps can be reduced to the axioms of Hilbert's system. But this reduction will presuppose some of the very elementary theorems which we are trying to mechanise. Indeed, Wu's method is based at least on results which rest on Desargues' theorem --- Theorem~53 in the \emph{Foundations of Geometry}. Furthermore, our focus in the present work is \emph{ordered geometry}, a domain in which Wu's method is ill-suited. 
 
-\begin{figure}\label{PaschDiagram}
-% \begin{pspicture}(-2,0)(5,3.5)
-% \psset{xunit=0.75cm}
-% \psset{yunit=0.5cm}
-% \put(1.3,0.2){\parbox{5cm}{$A$}}
-% \put(6,0.2){\parbox{5cm}{$B$}}
-% \put(5.2,2.6){\parbox{5cm}{$C$}}
-% \put(4.3,0){\parbox{5cm}{$a$}}
-% \psline[linewidth=0.15mm](2,1)(8,1)
-% \psline[linewidth=0.15mm](2,1)(7,5)
-% \psline[linewidth=0.15mm](7,5)(8,1)
-% \psline[linewidth=0.25mm](5.5,0)(8,6)
-% \end{pspicture}
-% \caption{Axiom II,4}
-\end{figure}
+\subsection{Ranks}
+For the specific problem of incidence reasoning, Magaud et al's work~\cite{RankDesargues} is closest in spirit to our own. It too, is based on point-sets, but the authors have beautifully abstracted the core idea. 
 
-This is a complex axiom to apply. The claim that a line cannot intersect any of the triangle's vertices cashes out as three claims of \emph{non-incidence}, and as we explained in \S\ref{NonIncidenceTriangle}, a claim of non-incidence just asserts that three points form a triangle. Together with the triangle that is being intersected, this means we need to find four triangles every time we apply Pasch's axiom. The matter was formalised when we derived the following version of the axiom:
+Several of our rules for lines and planes in Figure~\ref{fig:PointSets} in the last chapter appear analogous. Magaud et al have captured the analogy formally using \emph{ranks}. The rough idea is that an $n$-dimensional set is assigned a rank of $n+1$. There are then key rules which assert that, given point sets $X$ and $Y$, the sum of the ranks of $X \cup Y$ and $X \cap Y$ is no greater than the sum of the ranks of $X$ and $Y$. This abstractly characterises our rule for taking the union of collinear and planar sets. 
 
-\begin{align*}
-&\neg\code{collinear}\{A, B, C\}\\
-\wedge\,&\neg\code{collinear}\{A, D, E\}\\
-\wedge\,&\neg\code{collinear}\{B, D, E\}\\
-\wedge\,&\neg\code{collinear}\{C, D, E\}\\
-&\quad\rightarrow\between\,A\,B\,C \\
-&\qquad\rightarrow\exists F.\; \code{collinear} \{D, E, F\} \wedge (\between\,A\,F\,C \vee \between\,B\,F\,C).
-\end{align*}
+Magaud's approach allows the author's to generalise to arbitrary dimension, and the elegance of the theory helps us see our own approach as less ad-hoc than it might otherwise. For the rest of this chapter, however, we shall focus on our original, more concrete representation.
 
-The axiom is further complicated by its existential and disjunctive conclusion. Every time this axiom is applied in Hilbert's proofs, at least one of the disjuncts must be eliminated, by deriving a falsehood on its assumption. We are then left with an existential, which is often eliminated by showing that the point in question has already been constructed. In all but one case, Hilbert elides the case-splitting and the existential elimination. In our Isabelle formalisation, this elided reasoning turned into often complicated incidence arguments based on point sets.
+\section{Inference Rules}
+The rules from Figure~\ref{fig:PointSets} tell us how to reason with finite collinear and planar sets, and so can form the basis of a combinatorial algorithm. Our rules trade in four kinds of theorem: theorems about which points are distinct, which points are collinear, which triples are non-collinear, and which points are planar. These theorems will be the domain of our algorithm, whose chief procedures will be based on rules to interderive them.
 
-\subsection{Pasch as a Tactic}
-When Hilbert draws the reader's attention to an application of Pasch's axiom, he generally does so in the following way:
-\begin{quote}By an application of Axiom~II,4 to the triangle $BCG$ and to the line $AD$....\end{quote}
+Our rules already show how to introduce collinear and planar sets. Additionally, we need ways to derive the inequalities and triangles on which the rules depend. Firstly, we note that any triangle or non-collinear triple implies the mutual distinctness of its three points, giving us one way to introduce point inequalities. Another way to derive inequalities is through simple congruence reasoning: suppose we have a collinear set $S$, and a non-collinear triple sharing two points with $S$. Then the third point of the triple must be distinct from all points in $S$. 
 
-The wording here suggests that Pasch is not being treated as a mere axiom, but as a two-argument \emph{procedure}, taking a triangle and a line (in this case, $BCG$ and $AD$). We followed up this idea by implementing our own two argument Pasch procedure, allowing us to write proof steps in the form
+Next, we need to introduce non-collinear triples. We based our method here on patterns of reasoning that showed up in our Isabelle formalisation. Suppose we have a collinear set $S$ and a non-collinear triple sharing two points with $S$. Then the third point forms a non-collinear triple with all pairs of points in $S$ known to be distinct.
 
-\vspace{0.5cm}
-\texttt{\qquad\qquad by pasch\_on $\neg$COLLINEAR \{B, C, G\} and A,D}
-\vspace{0.5cm}
+Finally, we consider how we might infer when two points are \emph{equal} using our rules. Again, we followed a pattern of argument that showed up in the Isabelle formalisation. Given two collinear sets $S$ and $T$, which have a non-collinear union, we can infer that there intersection must be empty or a singleton. So if the intersection is a set of points $\{P_1,P_2,\ldots,P_n\}$, then we know immediately that these points are identical. This, we noted in the last chapter, is just telling us that distinct lines intersect in at most one point, as per Hilbert's Theorem~1.
 
-Our procedure first identifies the necessary hypotheses needed to apply Pasch's axiom from the two supplied arguments. It then looks up these hypotheses in the step's justifying theorems. Once it has the existential disjunction, it runs a case-split on the two disjuncts, looking for an obvious contradiction using the automated inferencing tool we discuss in \S\ref{sec:DiscoveryImplementation}. It then eliminates the existential to introduce a new point.
-
-\section{Discovery in Idle Time}
-Most of the logic involved in reproducing Hilbert's first three proofs involved finding the triangles which justify the applications of Pasch's axiom. On occasion, it was not obvious that there was enough information in the assumptions of a given construction to derive all of these triangles, or to determine which other triangles could be shown to exist which might yield alternative ways to apply Pasch . Not confident that we could identify the necessary logical steps exhaustively by inspection, we decided that we needed \emph{discovery} algorithms. 
-
-The existing automation available in most theorem provers is invoked on demand by the user when they evaluate individual proof steps. But when a user writes the formal proof for the first time, or comes to edit it later, she will spend most of her time \emph{thinking}, consulting texts, backtracking and typing in individual proof commands. The CPU is mostly idling during this process, and we can exploit this idle time to run automated tools. 
-
-We want to use this idle time for automation that complements the user's own interactive and declarative development of the proof. This automation should try to identify and derive implicit facts which might interest the user, or even solve the goal outright, while she investigates her own chains of deduction independently. She can perhaps focus on high-level strategies that require human insight, while the automation explores lower level mechanical details.
-
-One interesting way we can allow these two independent systems --- the human user and the machine automation --- to \emph{cooperate} is to focus on forward derivations. When the user writes a declarative proof script in an interactive setting, she invokes functions which add facts to a growing proof context. As these facts are added, an automated tool can inspect them and choose whether to use them as part of its own independent derivations. 
-
-The user, in turn, can inspect the facts derived by the automated tool, and choose whether to use them as part of her derivations. The symmetry leads to feedback. The user assists the automated tool by deriving new facts into the proof context, and the automated tool assists the user by outputting its own facts. The user then uses these new facts to derive her own facts into the proof context. And so on. The two systems work continuously in tandem, assisting each other as they drive forward towards the goal theorem.
-
-For now, we want our automated tool to focus on incidence reasoning, basing them on the rules about collinear and planar sets from Section \ref{rules}. To do so, we need to think about a few additional procedures relevant to this domain.
-
-\subsection{Inference Rules and Procedures}
-The rules given in \S\ref{rules} describe how to reason with finite collinear and planar sets, and so can form the basis of a combinatorial algorithm. The idea that Hilbert's implicit reasoning boils down to mechanical combinatorial reasoning with finite sets of points is a theme we shall develop over the rest of this section and Section~\ref{sec:Order}. 
-
-The rules trade in three kinds of fact: assertions about which points are distinct, which points are collinear, which triples are non-collinear, and which points are planar. Any algorithm based on these rules will therefore work with such facts, and so we need to find ways to use the rules to interderive them. These facts will be the domain of our algorithm.
-
-The rules already show how to introduce collinear and planar sets. We need, however, to find ways to derive the inequalities and triangles on which the rules depend. Firstly, we note that any triangle or non-collinear triple implies the mutual distinctness of its three points, giving us one way to introduce point inequalities. Another way to derive inequalities is through simple congruence reasoning: suppose we have a collinear set $S$, and a non-collinear triple sharing two points with $S$. Then the third point of the triple must be distinct from all points in $S$. 
-
-The way we sought to introduce non-collinear triples was based on patterns of reasoning that showed up in our Isabelle formalisation. Suppose we have a collinear set $S$ and a non-collinear triple sharing two points with $S$. Then the third point forms a non-collinear triple with all pairs of points in $S$ known to be distinct.
-
-Finally, we consider how we might infer when two points are \emph{equal} using our rules. Again, we followed a pattern of argument that showed up in the Isabelle formalisation. Given two collinear sets $S$ and $T$, which have a non-collinear union, we can infer that there intersection must be a singleton.
-
-We now summarise these rules and methods for introducing new facts, with additional methods for inferring contradictions:
+We now summarise the rules and methods for introducing new theorems. 
 \begin{itemize}\label{list:Procedures}
-\item Use rule \ref{rule:noncollneq} to infer inequalities from a non-collinear triple.
-\item Use rule \ref{rule:collsubset} to infer inequalities from a collinear set containing two points of a non-collinear triple. For example, 
+\item[$\code{ncolneq}$] Infer inequalities from non-collinear triples:
+\begin{displaymath}
+\neg\code{collinear}\ \{A,B,C\} \implies A \neq B \wedge A \neq C \wedge B \neq C.
+\end{displaymath} (by rule \ref{rule:colltwo});
+\item[$\code{colncolneq}$] Infer inequalities from a collinear set containing two points of a non-collinear triple. 
+\begin{align*}
+  &\code{collinear}\ S \wedge \neg\code{collinear}\ \{A,B,C\}\\
+  &\qquad\wedge A,B\in S \implies \forall S. S \in As \implies C \neq S
+\end{align*}(by rule~\ref{rule:collsubset}). For example, 
 \begin{align*}
 \code{collinear} \{A, B, C, D, E\} \wedge & \neg\code{collinear} \{A, B, P\}\\
-&\longrightarrow C \neq P \wedge D \neq P \wedge E \neq P.
+&\implies C \neq P \wedge D \neq P \wedge E \neq P.
 \end{align*}
-\item Use \ref{rule:collsubset} and \ref{rule:collunion} to equate all points in the intersection of two collinear sets which together include a non-collinear triple. For example:
+\item[$\code{coleq}$]
+Equate points in the intersection of two collinear sets which are jointly non-collinear.
+\begin{align*}
+&\code{collinear}\ S \wedge \code{collinear}\ T \wedge \neg\code{collinear}\ U \wedge U \subseteq S \cup T \\
+&\qquad\qquad\wedge A,B \in S,T \implies A = B
+\end{align*} (by rules~\ref{rule:collsubset} and \ref{rule:collunion}).
+For example,
 \begin{align*}\
 &\code{collinear} \{A, B, C, D, E\} \,\wedge\,\code{collinear} \{A, C, E, X, Y\}\\ 
-&\qquad\, \wedge\,\neg\code{collinear} \{A, B, Y\}\longrightarrow A = C \wedge A = E \wedge C = E.
+&\qquad\, \wedge\,\neg\code{collinear} \{A, B, Y\}\implies A = C \wedge A = E \wedge C = E.
 \end{align*}
-\item Use \ref{rule:collsubset} and \ref{rule:collunion} to derive non-collinear triples from a collinear set and another non-collinear triple, as in each step of Figure \ref{fig:deriveAEH}. For example,
+\item[$\code{colncolncol}$] Infer new non-collinear triples from a collinear set and another non-collinear triple.
+\begin{align*}
+  &\code{collinear}\ S \wedge \neg\code{collinear}\ \{A,B,C\}\\
+  &\qquad\wedge X,Y,A,B \in As \wedge A \neq B\implies \neg\code{collinear}\ \{C,X,Y\}.
+\end{align*} (by rules~\ref{rule:collsubset} and~\ref{rule:collunion}). For example,
 \begin{align*}
 A \neq C \wedge D \neq E &\wedge \code{collinear} \{A, B, C, D, E\} \wedge \neg\code{collinear} \{A, B, P\}\\
-&\longrightarrow \neg\code{collinear} \{A, C, P\} \wedge \neg\code{collinear} \{D, E, P\}.
+&\implies \neg\code{collinear} \{A, C, P\} \wedge \neg\code{collinear} \{D, E, P\}.
 \end{align*}
-\item Use rule \ref{rule:collunion} to show that the union of collinear sets which intersect at more than one point is collinear.
-\item Use rule \ref{rule:planeunion} to show that the union of planar sets intersecting at a non-collinear triple is planar.
-\item Use rule \ref{rule:collplane} to show that a collinear set is planar.
-\item Use rule \ref{rule:collplaneplane} to show that the union of a collinear and planar set intersecting in at least two points is planar.
-\item Use rule \ref{rule:collcollplane} to show that the union of intersecting collinear sets is planar.
-\item Derive $\bot$ from contradictory equalities and inequalities.
-\item Use rule \ref{rule:colltwo} to derive $\bot$ from two element non-collinear sets.
-\item Use rule \ref{rule:collsubset} to derive $\bot$ from a non-collinear triple contained in a collinear set.
+\item[$\code{colcol}$] Use rule \ref{rule:collunion} to show that the union of collinear sets which intersect at more than one point is collinear.
+\item[$\code{planeplane}$] Use rule \ref{rule:planeunion} to show that the union of planar sets intersecting at a non-collinear triple is planar.
+\item[$\code{colplane}$] Use rule \ref{rule:collplane} to show that a collinear set is planar.
+\item[$\code{colplaneplane}$] Use rule \ref{rule:collplaneplane} to show that the union of a collinear and planar set intersecting in at least two points is planar.
+\item[$\code{colcolplane}$] Use rule \ref{rule:collcollplane} to show that the union of intersecting collinear sets is planar.
 \end{itemize}
 
-\subsection{Implementation}\label{sec:DiscoveryImplementation}
-Our automated tool starts from a basic collection of facts, and then applies the procedures of \S\ref{list:Procedures} to expand this set of facts. For these rules, a fix-point is always reached, since our procedures only work against a finite number of points. Once the fix-point is reached, the tool sleeps until the proof context changes.
+We have stated these rules at the object level, and they can be applied exhaustively by just using matching and term-rewriting. However, we have also implemented them directly as ML inference rules. This is preferred for efficiency, since we can be smarter about when a match should fail, and we can alleviate the burden on the rewriter.
 
-There were minor issues we should mention.  Firstly, logical formulas in HOL~Light proof-scripts are converted directly to abstract syntax trees in a preprocessing step, and some of these preprocessing steps interfere with the naming conventions of modules in Ocaml's defacto standard library. We found ourselves having to disable and re-enable the HOL~Light preprocessor every time we wanted to import a library module.
+With hard-coded ML inference rules, we can dispense with sets and represent our theorems as ordinary first-order terms. So $\code{collinear}\ \{A,B,C,D,E\}$ gets expressed directly as the existential produced by unfolding the definition of $\code{collinear}$ and the finite set constructors:
+\begin{displaymath}
+  \exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a\wedge\code{on\_line}\ D\ a\wedge\code{on\_line}\ E\ a.
+\end{displaymath}
+The collinear union rule is now ML code which strips the existential and conjuncts from these formulas, and then directly applies existential rules and Axiom~\ref{eq:g12} to produce a new claim of collinearity of the same form. Our object level rules can serve as a weak sort of verification: after unfolding the predicates $\code{collinear}$ and $\code{planar}$ and unfolding the finite sets, direct matching should behave identically to our hard-coded ML.
 
-Secondly, since we use threads, it might be expected that we can exploit symmetric-multiprocessing as well as concurrency, but unfortunately, Ocaml does not support true parallel threads as of writing. Besides which, HOL~Light has not been developed with multiprocessing support. The \texttt{MESON} tactic, for instance, is not thread-safe, and so we have had to avoid this tactic when implementing our automated tool.
+Besides efficiency, the fact that we stick to first-order means that our declarative proofs are not loaded down having to unfold statements involving $\code{collinear}$ and $\code{planar}$ predicates, nor do they have to perform any set-theoretic reasoning.
 
-Otherwise, HOL~Light turned out to be an excellent platform for our prototype. The HOL~Light proof context is held in an ordinary ML reference, so we can easily check the context periodically for new hypotheses. The hypotheses themselves are represented as HOL theorems rather than mere terms, so the tool can apply regular inference rules against them to produce new theorems.
+\section{N\"{a}ive Implementation}\label{sec:NaiveImplementation}
+Our first prototype was a basic forward-chaining algorithm. Forward-chaining algorithms for automatically producing readable proofs in Hilbert's geometry have recently been investigated by Stojanovic et al~\cite{ForwardChainHilbert}, and they seemed particularly suitable for our use case. We have already noted that some of our proofs were suboptimal, that we believed Hilbert might have made errors in assuming certain incidence relations, and so we wanted a tool which could \emph{explore} the proof space of incidence reasoning surrounding each of Hilbert's proofs. The idea of using forward-chaining in this sort of exploratory way also opened up the possibility of designing an automated tool which could \emph{collaborate} with the user as they develop a proof. Forward-chaining seemed quite apt, since its focus on continually growing a base of facts corresponds well with how a declarative proof is developed by continually growing a proof context. 
 
-Since we are using an LCF style prover, we can ensure that the tool's derivations are fully-expansive. To carry out derivations, the theorem prover applies the same inference rules that are available to the user. These rules produce fully machine-checked theorems, which can then be integrated into the user's own proof script to produce a fully machine-checked proof.
+Our first algorithm worked on \emph{generations} made up of five lists, one for each of the different kinds of fact: point equalities, point inequalities, collinear sets, non-collinear sets, and finally planar sets. The procedures of \S\ref{list:Procedures} were then applied across all relevant combinations of theorems from the five lists, to produce a new generation of lists. In this way, the algorithm produces a sequence of generations, each a superset of its predecessor.
 
-The tool generally tries to reduce wasted effort. If the user backtracks, removing facts from the proof context, it will discharge the derivations it has made which no longer apply and \emph{only those derivations}. A similar point applies when the user completes a case-split, after which the assumptions of the individuals cases no longer apply. Derivations for the particular cases will be discharged, but derivations which are applicable across all cases are retained.
+\subsection{Concurrency}\label{sec:NaiveConcurrency}
+Typically, the automation available in interactive theorem provers is invoked on demand by the user when they evaluate individual proof steps. But when the user writes the formal proof for the first time, or comes to edit it later, they will spend most of their time \emph{thinking}, consulting texts, backtracking and typing in individual proof commands. The CPU is mostly idling during this process, and we can exploit this idle time to run automated tools concurrently.
 
-We should remark that, for now, the system is not designed for \emph{proof replay}, where complete and correct proof scripts are rerun in batch fashion. Here, we might find that a discovery tool run without the abundant idle time available in proof development is too inefficient to be worthwhile. We are still trying to improve this situation, investigating ways to adapt the algorithm to allow efficient proof replay. It is still not clear what sort of data structures are appropriate, nor how such structures can be serialised into the final proof script.
+The Isabelle Theorem prover has capitalised on this with Sledgehammer~\cite{IsabelleSledgehammer}. By invoking this command, the user can continue to work on a proof, while generic first-order tools are fired off as separate background processes, attempting to solve or refute the user's goals independently. If the tools reach a conclusion, the generated proof certificates can be automatically and seamlessly integrated into the user's proof-script. 
 
-Finally, we needed to adapt Mizar~Light so that the user could make use of discovered theorems using appropriate keywords in the proof script. We therefore implemented an \texttt{obviously} primitive. This combinator transforms a declarative proof step into one which picks up the tool's discovered theorems from an ML reference, and adds them to the step's justifying theorems. 
+We argue that we can do one better, since it is almost trivial to turn our algorithm into something of a ``collaborative'' architecture. We are focusing on forward-chaining and declarative proof, and as we remarked, the way that a user builds a declarative proof is by growing a proof context towards a goal, while a forward-chaining algorithm interatively grows a set of facts. These processes are analogous, so why not splice the two? A user's proof script is then a user guided, manually crafted search through the proof space, but now one which has access to the derivations of a forward chaining algorithm. At the same time, the forward chaining algorithm works independently, but can freely incorporate the user's manually obtained deductions into its own base of facts. The two systems, the automation and the human user, can thus be seen as collaborating, sharing data as they both strive towards the goal. 
 
-\section{Stream Discoverers}
-We take it that the overarching purpose of search and discovery is to output one or more theorems. If we think of this output \emph{as} the implementation, then we can unify both search and discovery in terms of a procedure which lazily generates successive elements of a list. Search and discovery are distinguished only according to whether we expect the lists to be finite or whether we expect them to be infinite \emph{streams}. 
+We started with a very simple implementation of this setup. We spawn a thread that is initialised with an empty generation of facts. New generations are produced iteratively through forward-chaining. At the same time, the thread  monitors the proof context, so that each time the user adds a hypothesis by performing a declarative proof step, the hypothesis can be automatically inserted into the current generation and used for further chaining.
 
-For the purposes of this section, we leave unspecified what computations are used to generate the basic streams. It might be that a stream is produced by supplying it with a list of definite theorems; it might be that a stream is generated using input data; it might even be delivered by some other automated tool. We shall focus instead on the \emph{algebra} of transformations on streams, and in how we might lift typical symbolic manipulation used in theorem proving to the level of streams.
+The thread then echoes each generation of facts concurrently to a separate terminal, while the user works on the proof script. We then introduce a variable $\code{the\_facts}$ which is updated so that it always dereferences to the current generation. This variable can be used in a proof script to justify the current step with the automatically inferred facts. 
+
+%When a fixpoint is detected, the user is notified, so that they can decide whether perhaps an assumption is missing, or whether a more sophisticated subproof is needed. In the meantime, the forward-chaining thread will sleep.
+
+Since we are using an LCF style prover~\cite{LCF}, we always ensure that our forward-chaining derivations are \emph{fully-expansive}~\cite{FullyExpansive}. This means that to carry out its derivations, the tool directly applies inference rules to generate fully machine verified lemmas. These lemmas can then be seamlessly integrated into the user's proof script to produce a fully machine-checked proof.
+
+\section{An Implementation in Combinators}\label{sec:DiscoveryAlgebra}
+\subsection{Data-Flow}
+Our prototype implementation was an adequate proof of concept, and enabled us to write some extremely short and clear proofs. We have some examples of these in the next chapter. However, our prototype currently has no theoretical underpinning. The finer details of the implementation are complex, ad-hoc, unlikely to scale, and cannot be easily modified to work on new problems.
+
+Much of the complexity of the ML algorithm comes from the fact that each generation of theorems is partitioned into five types: point equalities, point inequalities, collinear sets, non-collinear sets and planar sets. By partitioning in this way, we greatly reduce the number of combinations of theorems we need to try with each inference rule, but there is still much wasted effort. Every time a new generation is generated, all relevant combinations are applied, \emph{including} the combinations which were applied for the \emph{last} generation. Our simple lists do not help us filter out the repetitious work.
+
+Rather than seeing the problem as simply one of repeating inferences across a succession of generations, we need a way to model the data-flow directly. The flow of data for our problem, according to the rules of \S\ref{list:Procedures}, is given in Figure~\ref{fig:DataFlow}.
+
+\begin{figure}
+\centering\includegraphics[scale=0.5]{automation/DataFlow}
+\caption{Data-flow for incidence reasoning: boxes represent our collections of various kinds of theorem, while triangles represent inference rules}
+\label{fig:DataFlow}
+\end{figure}
+
+Our aim in this section is to find a way to directly express this data-flow in a suitable language. For this, we will need a distinguished set of primitives which can be combined by transformations. Following the examples of tactics and conversions~\cite{Tactics}, the hallmark of the LCF approach to theorem proving, and following a strong staple of strongly typed functional programming~\cite{CombinatorLanguages}, we shall implement our language in \emph{combinators}. The advantage of choosing a combinator language is that it fully integrates with the host programming language, and is therefore easy to integrate with the tactic combinator language and the Mizar~Light combinator language. The user is also free to extend the language and can easily inject computations into it using lambda abstraction.
+
+\subsection{Related Work}
+The idea of an algebraic data-flow language was considered early on by Chen~\cite{ChenForwardChaining}, who gave a specification for a variety of primitives very similar to our own, though without an implementation. Since then, algebras for logic programming, handling unbounded and fair search have been developed~\cite{BacktrackingMonad}. The algebra we shall consider here is related and was originally conceived by Spivey~\cite{SearchAlgebras}. It has more rigorously developed underpinnings, and compared to other search algebras, it places stronger constraints on the order in which the values are generated. We shall be generalising Spivey's ideas somewhat, and also hope to give more a more ``operational'' motivation for the definitions.
+
+\subsection{Streams}\label{sec:Streams}
+Our overarching purpose is to output a stream of theorems, perhaps to a terminal, to a database of facts to be used during a proof, or perhaps to another consumer for further processing. If we think of this output \emph{as} the implementation, then we are dealing with procedures which lazily generate successive elements of a list. These lazy lists, or streams, shall be the primitives of our data-flow algebra. 
+
+For now, we leave unspecified what computations are used to generate the primitive streams. It might be that a stream simply echos a list of precomputed theorems; it might generate theorems using input data; it might generate them from some other automated tool. We shall focus instead on transformations for streams, and in how we might lift typical symbolic manipulation used in theorem proving to the level of streams.
 
 One reason why lists and streams are a good choice is that they are \emph{the} ubiquitous data-structure of ML and its dialects, and have rich interfaces to manipulate them. A second reason why lists are an obvious choice is that they have long been known to satisfy a simple set of algebraic identities and thus to constitute a monad~\cite{MonadWadler}. We can interpret this monad as decorating computations with non-deterministic choice and backtracking search. 
 
-Monads themselves have become a popular and well-understood abstraction in functional programming, and have gained recent interest in other languages. Formally, a monad is a type-constructor $M$ together with three operations 
+Monads themselves have become a popular and well-understood abstraction in functional programming. Formally, a monad is a type-constructor $M$ together with three operations 
 \begin{align*}
 &\code{return} : \alpha \rightarrow M\;\alpha\\
 &\code{fmap} : (\alpha \rightarrow \beta) \rightarrow M\;\alpha \rightarrow M\;\beta\\
@@ -160,12 +155,13 @@ satisfying the algebraic laws given in Figure~\ref{fig:MonadLaws}.
 \label{fig:MonadLaws}
 \end{figure}
 
-However, the list monad uses list concatenation $\code{concat} : [[\alpha]] \rightarrow [\alpha]$ as the join, which makes it unsuitable for non-terminating \emph{discovery}. If the list $xs$ represents unbounded discovery, then we have $xs + ys = xs$\footnote{Here, $+$ is just list append.} for any $ys$, and thus, all items discovered by $ys$ are lost. This is an undesirable property. We want to be able to combine unbounded searches over infinite domains without losing any data.
+The list monad can be used for search, but takes list concatenation $\code{concat} : [[\alpha]] \rightarrow [\alpha]$ for its join operation. This makes it unsuitable for \emph{unbounded} discovery. If the list $xs$ represents one unbounded search, then we have $xs + ys = xs$\footnote{Here, $+$ is just list append.} for any $ys$, and thus, all items found by $ys$ are lost. This is an undesirable property. We want to be able to combine unbounded searches over infinite domains without losing any data.
 
 \subsection{The Stream Monad}\label{sec:StreamMonad}
 There is an alternative definition of the monad for streams (given in Spivey~\cite{SearchAlgebras}) which handles unbounded search. Here, the join function takes a possibly infinite stream of possibly infinite streams, and produces an exhaustive enumeration of \emph{all} elements. We show how to achieve this in Figure~\ref{fig:ShiftGen} using a function $\code{shift}$, which moves each stream one to the ``right'' of its predecessor. We can then exhaustively enumerate every element, by enumerating each column, one-by-one, from left-to-right. 
 
 \begin{figure}
+  \small
   \centering
   \begin{tabular}{rcl}
     shift & &
@@ -179,13 +175,13 @@ There is an alternative definition of the monad for streams (given in Spivey~\ci
     \end{tabular}\\\\
     = & &
     \begin{tabular}{ccccccccccccc}
-      $[[D_{0,0},$ & $D_{0,1},$ & $D_{0,2},$ & $D_{0,3},$ & $D_{0,4},$ & $D_{0,5},$ & $D_{0,6},$ & \colorbox{gray}{$D_{0,7},$} & $D_{0,8},$ & $D_{0,9},$ & $D_{0,10},$ & $\ldots],$\\
-      & $[D_{1,0},$ & $D_{1,1},$ & $D_{1,2},$ & $D_{1,3},$ & $D_{1,4},$ & $D_{1,5},$ & \colorbox{gray}{$D_{1,6},$} & $D_{1,7},$ & $D_{1,8},$ & $D_{1,9},$ & $\ldots],$\\
-      && $[D_{2,0},$ & $D_{2,1},$ & $D_{2,2},$ & $D_{2,3},$ & $D_{2,4},$ & \colorbox{gray}{$D_{2,5},$} & $D_{2,6},$ & $D_{2,7},$ & $D_{2,8},$ & $\ldots],$\\
-      &&& $[D_{3,0},$ & $D_{3,1},$ & $D_{3,2},$ & $D_{3,3},$ & \colorbox{gray}{$D_{3,4},$} & $D_{3,5},$ & $D_{3,6},$ & $D_{3,7},$ & $\ldots],$\\
-      &&&& $[D_{4,0},$ & $D_{4,1},$ & $D_{4,2},$ & \colorbox{gray}{$D_{4,3},$} & $D_{4,4},$ & $D_{4,5},$ & $D_{4,6},$ & $\ldots],$\\
-      &&&&& $[D_{5,0},$ & $D_{5,1},$ & \colorbox{gray}{$D_{5,2},$} & $D_{5,3},$ & $D_{5,4},$ & $D_{5,5},$ & $\ldots],$\\
-      &&&&&& $[D_{6,0},$ & \colorbox{gray}{$D_{6,1},$} & $D_{6,2},$ & $D_{6,3},$ & $D_{6,4},$ & \ldots]\\
+      $[[D_{0,0},$ & $D_{0,1},$ & $D_{0,2},$ & $D_{0,3},$ & $D_{0,4},$ & $D_{0,5},$ & $D_{0,6},$ & \colorbox{gray}{$D_{0,7},$} & $D_{0,8},$ & $\ldots],$\\
+      & $[D_{1,0},$ & $D_{1,1},$ & $D_{1,2},$ & $D_{1,3},$ & $D_{1,4},$ & $D_{1,5},$ & \colorbox{gray}{$D_{1,6},$} & $D_{1,7},$ &  $\ldots],$\\
+      && $[D_{2,0},$ & $D_{2,1},$ & $D_{2,2},$ & $D_{2,3},$ & $D_{2,4},$ & \colorbox{gray}{$D_{2,5},$} & $D_{2,6},$ & $\ldots],$\\
+      &&& $[D_{3,0},$ & $D_{3,1},$ & $D_{3,2},$ & $D_{3,3},$ & \colorbox{gray}{$D_{3,4},$} & $D_{3,5},$ & $\ldots],$\\
+      &&&& $[D_{4,0},$ & $D_{4,1},$ & $D_{4,2},$ & \colorbox{gray}{$D_{4,3},$} & $D_{4,4},$ & $\ldots],$\\
+      &&&&& $[D_{5,0},$ & $D_{5,1},$ & \colorbox{gray}{$D_{5,2},$} & $D_{5,3},$ & $\ldots],$\\
+      &&&&&& $[D_{6,0},$ & \colorbox{gray}{$D_{6,1},$} & $D_{6,2},$ & \ldots]\\
       &&&&&&&         &        & $\vdots$ &           &        &           
     \end{tabular}
   \end{tabular}
@@ -195,17 +191,16 @@ There is an alternative definition of the monad for streams (given in Spivey~\ci
 
 If we understand these streams as the outputs of discoverers, then the outer stream can be understood as the output of a discoverer which \emph{discovers discoverers}. The join function can then be interpreted as \emph{forking} each discoverer at the point of its creation and combining the results into a single discoverer. The highlighted column in Figure~\ref{fig:ShiftGen} is this combined result: a set of values generated \emph{simultaneously} and thus having no specified order (this is required to satisfy Law~\ref{eq:JoinAssoc} in Figure~\ref{fig:MonadLaws}).
 
-However, this complicates our stream type, since we now need additional inner structure to store the combined values. We will refer to instances of this inner structure as \emph{generations}, each of which is a finite collection of simultaneous values discovered at the same level in a breadth-first search. We then need to define the join function, taking care of this additional structure.
+However, this complicates our stream type, since we now need additional inner structure to store the combined values. We will refer to each instance of this inner structure as a \emph{generation}, following our terminology from \S\ref{sec:NaiveImplementation}. Each generation here is a finite collection of simultaneous values discovered at the same level in a breadth-first search. We just need to define the join function, taking care of this additional structure.
 
 Suppose that generations have type $G\;\alpha$ where $\alpha$ is the element type. The manner in which we will define our shift and join functions on discoverers of generations assumes certain algebraic laws on them: firstly, they must constitute a monad; secondly, they must support a sum operation \mbox{$(+):G\;\alpha\rightarrow G\;\alpha\rightarrow G\;\alpha$} with identity $0:G\;\alpha$. The join function for discoverers must then have type $[G\;[G\;\alpha]] \rightarrow [G\;\alpha]$, sending a discoverer of generations of discoverers into a discoverer of generations of their data. 
 
-To see how to define this join function, we denote the $k^{\text{th}}$ element of its argument by $gs_k = \{d_{k,0}, d_{k,1}, \ldots, d_{k,n}\} : G\;[G\;\alpha] $. Each $d_{k,i}$ is, in turn, a discoverer stream $[g^k_{i,0}, g^k_{i,1}, g^k_{i,2}, \ldots] : [G\;\alpha]$. We invert the structure of $gs_k$ using a function $\texttt{transpose}  : M[\alpha]\rightarrow [M\;\alpha]$, which we can define for arbitrary monads $M$. This generality allows us to abstract away from Spivey's bags and consider more exotic inner data-structures. We choose the name ``$\code{transpose}$'' since its definition generalises matrix transposition on square arrays (type $[[\alpha]]\rightarrow[[\alpha]]$):
-
+We now denote the $k^{\text{th}}$ element of the argument to \code{join} by $gs_k = \{d_{k,0}, d_{k,1}, \ldots, d_{k,n}\} : G\;[G\;\alpha] $. Each $d_{k,i}$ is, in turn, a discoverer stream $[g^k_{i,0}, g^k_{i,1}, g^k_{i,2}, \ldots] : [G\;\alpha]$. We invert the structure of $gs_k$ using $\code{transpose}  : M[\alpha]\rightarrow [M\;\alpha]$, which we can define for arbitrary monads $M$. This generality allows us to abstract away from Spivey's bags and consider more exotic inner data-structures. We choose the name ``$\code{transpose}$'', since its definition generalises matrix transposition on square arrays (type $[[\alpha]]\rightarrow[[\alpha]]$):
 \begin{displaymath}
-\code{transpose}\;xs = \code{fmap}\;\texttt{head}\;xs :: \code{transpose}\; (\code{fmap}\;\texttt{tail}\;xs)
+\code{transpose}\;xs = \code{fmap}\;\code{head}\;xs :: \code{transpose}\; (\code{fmap}\;\code{tail}\;xs)
 \end{displaymath}
 
-The transpose produces a stream of generations of generations \linebreak(type $[G\;(G\;\alpha)]$). If we join each of the elements, we will have a stream \linebreak$[D_{k,0}, D_{k,1}, D_{k,2}, \ldots] : [G\;\alpha]$ (see Figure~\ref{fig:Transpose}), and thus, the shift function of Figure~\ref{fig:ShiftGen} will make sense. Each row is shifted relative to its predecessor by prepending the 0 generation, and the columns are combined by taking their sum.
+The transpose produces a stream of generations of generations (type $[G\;(G\;\alpha)]$). If we join each of the elements, we will have a stream $[D_{k,0}, D_{k,1}, D_{k,2}, \ldots] : [G\;\alpha]$ (see Figure~\ref{fig:Transpose}), and thus, the shift function of Figure~\ref{fig:ShiftGen} will make sense. Each row is shifted relative to its predecessor by prepending the 0 generation, and the columns are combined by taking their sum.
 
 \begin{figure}
   \begin{align*}
@@ -228,64 +223,75 @@ The transpose produces a stream of generations of generations \linebreak(type $[
 \label{fig:Transpose}
 \end{figure}
 
-The type of discoverers now constitutes a monad (see Spivey~\cite{SearchAlgebras} for details). The fact that we have a monad affords us a tight integration with the host language in the following sense: we can lift arbitrary functions in the host language to functions on discoverers, and combine one discoverer $d : [G\;\alpha]$ with another discoverer $d' : \alpha \rightarrow [G\;\alpha]$ which depends, via arbitrary computations, on each individual element of $d$. 
+The type of discoverers now constitutes a monad (see Spivey~\cite{SearchAlgebras} for details). The fact that we have a monad affords us a tight integration with the host language in the following sense: we can lift arbitrary functions in the host language to functions on discoverers, and combine one discoverer $d : [G\;\alpha]$ with another discoverer\linebreak $d' : \alpha \rightarrow [G\;\alpha]$ which depends, via arbitrary computations, on each individual element of $d$. 
 
 There is further algebraic structure in the form of a monoid: streams can be summed by summing corresponding generations, an operation whose identity is the infinite stream of empty generations. 
 
-\subsection{Case-analysis}
-Our algebra allows us to partition our domain into discoverers according to our own insight (for instance, in geometry, we saw we should divide the domain into various sorts of incidence relations). We can then compose the discoverers in a way that reflects the typical reasoning patterns found in the domain.
+\section{Case-analysis}
+Our algebra allows us to partition our domain into discoverers according to our own insight into a problem. For incidence reasoning, we divided the domain into five kinds of incidence theorem. We can then compose our discoverers in a way that reflects the typical reasoning patterns found in the domain.
 
 However, when it comes to theorem-proving, the sets of theorems are further partitioned by branches on disjunctive theorems. In proof-search, when we encounter a disjunction, we will want to branch the search and associate discovered theorems in each branch with its own disjunctive hypothesis. 
 
 Ideally, we want to leave such case-splitting as a book-keeping issue in our algebra, and so integrate it into the composition algorithm. Streams must then record a context for all of their theorems, and this context must be respected as discoverers are combined. 
 
-Luckily, we left ourselves room to implement the generations output by our discoverers. To solve the problem of case-analysis, we have chosen to implement the generations as \emph{trees}. We have briefly described a version of this data-structure elsewhere~\cite{ScottComposable}. However, the data-structure has since been simplified and we have now provided a definition of its \texttt{join}.
+Luckily, there is some flexibility in Spivey's search monad. We can choose a data-structure other than bags for the generations. To solve the problem of case-analysis, we have chosen to implement the generations as \emph{trees}. 
 
 \subsection{Trees}
-Each tree represents a discovered generation. Each node is a (possibly empty) conjunction of theorems discovered in that generation. Branches correspond to  case-splits, with each branch tagged for the disjunct on which case-splitting was performed. The branch labels along any root-path therefore provide a context of disjunctive hypotheses for that subtree.
+Each tree represents a generation of discovered theorems and replaces each of Spivey's bags. Each node in a tree is a bag of theorems discovered in that generation under a disjunctive hypothesis. Branches correspond to case-splits, with each branch tagged for the disjunct on which case-splitting was performed. The branch labels along any root-path therefore provide a context of disjunctive hypotheses for that subtree. Our goal is to discover theorems which hold when the case-splits are eliminated.
 
-Thus, the tree in Figure~\ref{fig:Tree} can be thought as representing the formula:
-\begin{multline*}
-\cforms{\phi}\wedge\left(P\rightarrow\cforms{\psi}\right)
-\wedge(Q\rightarrow\cforms{\chi}\\
-\wedge\left(R\rightarrow\cforms{\alpha}\right)\wedge\left(S\rightarrow\cforms{\beta}\right))
-\end{multline*}
+Thus, the tree in Figure~\ref{fig:BasicTreeExample} might represent a formula made by case-analysing\linebreak \mbox{$P \vee (Q \wedge (R \vee S))$}:
+\begin{align*}
+\phi_1 \wedge \phi_2 \wedge \cdots \wedge \phi_n &\wedge (P \implies \psi_1 \wedge \psi_2 \wedge \cdots \wedge \psi_n)\\
+&\wedge \left(\begin{aligned} Q \implies \chi_1 \wedge \chi_2 \wedge \cdots \chi_n &\wedge (R \implies \alpha_1 \wedge \alpha_2 \wedge \cdots \wedge \alpha_n)\\ &\wedge (S \implies \beta_1 \wedge \beta_2 \wedge \cdots \wedge \beta_n)\end{aligned}\right).
+\end{align*}
 
+\subsubsection{Combining Trees}\label{fig:CombiningTrees}
 \begin{figure}
-% \centering
-%   \Tree[0.5]{
-%                                 & \K{$\left[\forms{\phi}\right]$}\B{dl}_P\B{dr}^Q \\
-% \K{$\left[\forms{\psi}\right]$} &        & \K{$\left[\forms{\chi}\right]$}\B{dl}_R\B{dr}^S\\
-%                                 & \K{$\left[\forms{\alpha}\right]$} & & \K{$\left[\forms{\beta}\right]$}}
-%   \caption{Tagged Proof-trees}
-  \label{fig:Tree}
+\centering\includegraphics[scale=0.7]{automation/BasicTreeExample}
+\caption{A Simple Tree Branching on Case-splits}
+\label{fig:BasicTreeExample}
 \end{figure}
 
-The principal operation on trees is a sum function which is analogous to the append function for lists, combining all values from two trees. We combine case-analyses by nesting them, replacing the leaf nodes of one tree with copies of the other tree. For definiteness, we always nest the right tree in the left.
-
-To keep the trees from growing indefinitely, we consider the following  simplifications: firstly, we prune subtrees which contain no data; secondly, if a case is introduced whose context is larger than a parallel case further up the tree, it can be dropped, since any theorem which can be eliminated in the stronger branch will have to be discovered again under weaker assumptions further up the tree; finally, if a branch label is introduced which appears further up the root path, then all sibling branches are dropped, while the subtree is summed with its parent --- a move which corresponds to weakening. We illustrate these rules in Figure~\ref{fig:CombineExample}.
+The principal operation on trees is a sum function which is analogous to the append function for lists, combining all values from two trees. The simplest way to combine two trees, one which yields a monad, has us nest one tree in the other. That is, we replace the leaf nodes of one tree with copies of the other tree, and then flatten. For definiteness, and to ensure associativity, we always nest the right tree in the left. See Figure~\ref{fig:TreeNesting}.
 
 \begin{figure}
-% \centering
-%   \Tree[-1]{
-%       & & & \K{$xs$}\B{dll}_P\B{drr}^Q \\
-% & \K{$ys$}\B{dl}_R\B{dr}^{S} & & &  & \K{$zs$}\B{dl}_T\B{dr}^U & \K[5]{$+$}\\
-% \K{$ts$} & & \K{$us$} & & \K{$vs$} & & \K{$ws$}\QS{2,1}{3,3}}
-%   \Tree[-1]{
-%       & & & \K{$xs'$}\B{dll}_X\B{drr}^{P} \\
-% & \K{$ys'$}\B{dl}_T\B{dr}^Q & & &  & \K{$zs'$}\B{dl}_R\B{dr}^S\\
-% \K{$ts'$} & & \K{$us'$} & & \K{$vs'$} & & \K{$ws'$}\QS{2,5}{3,7}}\\
-%   \Tree[-1]{
-% &     & & & & \K{$xs+xs'$}\B{dll}_P\B{drr}^Q \\
-%  \K[-3]{$=$} & & & \K{$ys+zs'$}\B{dl}_R\B{dr}^S & & &  & \K{$zs$}\B{dl}_T\B{dr}^U \\
-% & & \K{$ts+vs'$} & & \K{$us+ws'$} & & \K{$vs$}\B{dl}_X & & \K{$ws$}\B{dr}^X \\
-% & &                  & &                  & \K{$ys'+ts'+us'$} & & & & \K{$ys'+us'$}
-% \QS{2,2}{3,6}}
-\caption{Proof tree combination and simplification. The highlighted subtrees are combined applying simplification rules which yield a subtree with the same topology.}
-\label{fig:CombineExample}
+\centering\includegraphics[scale=0.7]{automation/FullSimpTree1}
+\caption{Combining Trees by Nesting}
+\label{fig:TreeNesting}
 \end{figure}
 
-Finally, we allow trees to be empty, containing a single empty root node. This is the identity of our sum function. From these, we can define a \emph{join} analogous to list concatenation. Suppose we are given a tree $t$ whose nodes are themselves trees (so the type is $\\code{Tree}\;(\\code{Tree}\; \alpha)$). Denote the inner trees by $t_0$, $t_1$, $t_2$, $\ldots$, $t_n : \\code{Tree}\;\alpha$. We now replace every node of $t$ with an empty conjunction, giving a new tree $t'$ with the \emph{new} type $\\code{Tree}\;\alpha$. We can now form the sum 
+Even if we only had a constant number of case-splits, successive combining in this manner would yield trees of arbitrarily large topology, which is clearly not desirable. As such, we need some way to simplify the resulting trees. Our hard constraint is that we must not lose any information: if a theorem is deleted from the tree, it must be because it is trivially implied by other theorems in the tree. Our weaker and more wooly constraint is that the topologies should represent a reasonably efficient partitioning of the proof-space according to the combination of case-analyses. 
+
+Our first means of simplification is a form of weakening. If we have tree $t$ which branches on a disjunctive hypothesis and which contains a subtree $t'$ branching on that same hypothesis, then the root path is of the form $P \implies \cdots \implies P \implies \phi$. We eliminate the redundant antecedent by folding $t'$ into its immediate parent. Any siblings of $t'$ whose branch labels are not duplicated along the root path are then discarded. They will be left in the other branches of $t$.
+
+The situation is shown in Figure~\ref{fig:TreeWeakening}, where we have coloured duplicate hypotheses along root paths. In the result, we fold the marked subtrees into their parents, and discard the siblings. Notice that, at this stage, no theorems have been lost.
+
+\begin{figure}
+\centering\includegraphics[scale=0.7]{automation/FullSimpTree2}
+\caption{Weakening}
+\label{fig:TreeWeakening}
+\end{figure}
+
+Our next simplification allows us to delete a subtree $t$ if its branch case is already considered by an uncle $t'$. All theorems of $t$ will appear in $t'$ where the topology will have been simplified in our weakening step. The situation is shown in Figure~\ref{fig:TreeRedundantSplits}. The $P$ branch on on the left-hand side is uncle to the $P$ branches on the right. These latter branches are therefore pruned.
+
+\begin{figure}
+\centering\includegraphics[scale=0.7]{automation/FullSimpTree3}
+\caption{Removing Redundant Case-splits}
+\label{fig:TreeRedundantSplits}
+\end{figure}
+
+Finally, we can promote data that appears at all branches. In Figure~\ref{fig:TreeRedundantSplits}, the $xs'$ bag of theorems appears in every node at the same level, and so can be promoted into the parent, corresponding to disjunction elimination. 
+
+Our final tree is shown in Figure~\ref{fig:TreePromoting}. Though we describe our simplification in several steps, they can in fact be combined into a single pass of the left hand tree. There is a limitation of the algorithm, in that it cannot promote all data. If it could, the replicated $us'$ bag in the bottom right branches of the tree could be promoted into the $Q$ branch. We will not elaborate on this implementation issue.
+
+\begin{figure}
+\centering\includegraphics[scale=0.7]{automation/FullSimpTree4}
+\caption{Promoting Common Data}
+\label{fig:TreePromoting}
+\end{figure}
+
+\subsubsection{Joining Trees}
+Our function which combines trees is a sum function, which has an identity in the empty tree containing a single empty root node. This is enough structure to define a \emph{join} function analogous to list concatenation. Suppose we are given a tree $t$ whose nodes are themselves trees (so the type is $\code{Tree}\;(\code{Tree}\; \alpha)$). Denote the inner trees by $t_0$, $t_1$, $t_2$, $\ldots$, $t_n : \code{Tree}\;\alpha$. We now replace every node of $t$ with an empty conjunction, giving a new tree $t'$ with the \emph{new} type $\code{Tree}\;\alpha$. We can now form the sum 
 
 \begin{displaymath}
 t' + t_0 + t_1 + t_2 + \cdots + t_n
@@ -294,77 +300,104 @@ t' + t_0 + t_1 + t_2 + \cdots + t_n
 The resulting tree will then contain discovered theorems which respect disjunctive hypotheses from their place in $t$ and from their respective inner-trees.
 
 \section{Additional Primitives and Derived Discoverers}\label{sec:Additional}
-As we described in \S\ref{sec:StreamMonad}, discovery constitutes a monoid. The sum function can be understood as a simple way to compose two discoverers by effectively running them in parallel, respecting their case-splits. Composing with the identity discoverer, which generates nothing but empty generations, yields the same discoverer as before.
+Once we replace Spivey's bags with our trees, we have a stream data-type to represent a theorem discoverer searching a space of theorems which have been partitioned according to case-splits. In fact, discoverers generalise over whatever type of values they are discovering, and so we give them the polymorphic type $\code{discoverer}\ \alpha$.  
+
+As we described in \S\ref{sec:StreamMonad}, these discoverers form a monoid. Operationally, the sum function runs two discoverers in parallel, respecting their mutual case-splits, while our identity discoverer generates nothing but empty generations.
 
 \subsection{Case-splitting}
-Case-splits are introduced by $\code{disjuncts}$, which is a discoverer parameterised on arbitrary theorems. Here, $\code{disjuncts}\left(\vdash P_0 \vee P_1 \vee \cdots \vee P_n\right)$ outputs a single tree with $n$ branches from the root node. The $i^{th}$ branch is labelled with the term $P_i$ and contains the single theorem $P_i \vdash P_i$. This process can be undone by flattening trees using $\code{flatten}$, which discharges all tree labels and adds them as explicit antecedents on the theorems of the respective subtrees. 
+Case-splits are introduced by $\code{disjuncts}$, which is a discoverer parameterised on arbitrary theorems. Here, $\code{disjuncts}\left(\vdash P_0 \vee P_1 \vee \cdots \vee P_n\right)$ outputs a single tree with $n$ branches from the root node. The $i^{th}$ branch is labelled with the term $P_i$ and contains the single theorem $P_i \vdash P_i$. This process can be undone by flattening trees using $\code{flatten}$, which discharges all tree labels and adds them as explicit antecedents on the theorems of the respective subtrees.
 
-\subsection{Filtering}
+\subsection{Delaying}
+A generated value can be ``put off'' to a later generation using the function $\code{delay}$. In terms of streams, this function has the trivial definition
+\begin{displaymath}
+  \code{delay}\ xs = \cons{\emptyset}{xs}.
+\end{displaymath}
+The use of this function is actually essential when writing mutually recursive streams. If values of type $\alpha$ are generated in a stream from values of type $\beta$ in another stream, and \emph{vice-versa}, then one of the two streams must be delayed to avoid deadlock.
+
+\subsection{Filtering}\label{sec:Filtering}
 In many cases, we will not be interested in all the outputs generated by a discoverer. Fortunately, filtering is a library function for monads with a zero element, and can be defined as:
 \begin{align*}
 xs >>= f &= \code{join}\;(\code{fmap}\;f\;xs) \\
-\code{filter}\;p\;xs &= xs >>= (\lambda x.\;\texttt{if } p\;x \texttt{ then } \code{return}\;x \texttt { else } 0)
+\code{filter}\;p\;xs &= xs >>= (\lambda x.\;\code{if } p\;x \code{ then } \code{return}\;x \code { else } 0)
 \end{align*}
 
 More challenging is a function to perform something akin to \emph{subsumption}. The idea here is that when a theorem is discovered which ``trivially'' entails a later theorem, the stronger theorem should take the place of the weaker. This is intended only to improve the performance of the system by discarding redundant search-paths. 
 
-We can generalise the idea to arbitrary data-types, and parameterise the filtering by any partial-ordering on the data, subject to suitable constraints. One intuitive constraint is that a stronger item of data should only replace a weaker item so long as we don't ``lose'' anything from later discovery. Formally, we require that any function $f$ used as the first argument to \texttt{fmap} is monotonic with respect to the partial-order. That is, if $x \leq y$ then $f\,x \leq f\,y$. 
+We can generalise the idea to arbitrary data-types, and parameterise the filtering by any partial-ordering on the data, subject to suitable constraints. One intuitive constraint is that a stronger item of data should only replace a weaker item so long as we don't ``lose'' anything from later discovery. Formally, we require that any function $f$ used as the first argument to \code{fmap} is monotonic with respect to the partial-order. That is, if $x \leq y$ then $f\,x \leq f\,y$. 
 
-We then implement a ``subsumption'' function in the form of the transformation \texttt{maxima}. This transforms a discoverer into one which does two things: firstly, it transforms every individual generation into one containing only maxima of the partial-order. Secondly, it discards data in generations that is strictly weaker than some item of data from an earlier generation. Note that the partial-ordering is automatically refined to cope with case-splits, so that data higher up a case-splitting tree is always considered stronger than data below it (since it carries fewer case-splitting assumptions).
+We then implement a ``subsumption'' function in the form of the transformation \code{maxima}. This transforms a discoverer into one which does two things: firstly, it transforms every individual generation into one containing only maxima of the partial-order. Secondly, it discards data in generations that is strictly weaker than some item of data from an earlier generation. To handle case-splits, we assert that data higher up a case-splitting tree is always considered stronger than data below it (since it carries fewer case-splitting assumptions).
 
-% There are two pieces of missing functionality here. Firstly, suppose we have theorems $\vdash \phi$ and $\vdash \psi$ where $\vdash \phi < \;\vdash \psi$. Suppose further that we have a discoverer $xs = \left[\{\vdash \phi\}, \{\vdash \psi\}\right].$ That is, $xs$ is a discoverer which produces two generations of theorems. In the first generation is the single theorem $\vdash \phi$ and in the second is the single theorem $\vdash \psi$. Now suppose we have a monotonic function $f$ which takes a theorem $\vdash \chi$ and produces an extremely \emph{slow} discoverer which eventually outputs $\left[\{\},\{\}, \vdash \chi^{*}\right]$. 
+\subsubsection{More Sophisticated Filtering}
+There are two pieces of missing functionality. Suppose we have theorems $\vdash \phi$ and $\vdash \psi$ where $\vdash \phi \leq \;\vdash \psi$ and a discoverer $xs = \left[\{\vdash \phi\}, \{\vdash \psi\}\right].$ That is, $xs$ is a discoverer which produces two generations of theorems. In the first generation is the single theorem $\vdash \phi$ and in the second is the single theorem $\vdash \psi$. Now suppose we have a monotonic function $f$ which happens to have the mappings
+\begin{align*}
+\vdash\phi &\mapsto \vdash \left[\{\},\{\},\{\},\{\},\{\phi^{*}\}\right]\\
+\vdash\psi &\mapsto \vdash \left[\{\psi^{*}\},\{\}\right]
+\end{align*}
 
-%% This example is wrong. $f$ should swap the order of the \phi and \psi in order to cause real problems.
+Here, $\psi$ is sent immediately to a new value $\psi^{*}$, while the image $\phi^{*}$ of $\phi$ takes some time to generate, represented here by a succession of four empty generations. Thus,
+\begin{displaymath}
+xs >>= f = \left[\{\psi^{*}\}, \{\}, \{\}, \{\}, \{\phi^{*}\}\right].
+\end{displaymath}
 
-% \begin{displaymath}
-% xs >>= f = \left[\{\}, \{\}, \{\phi^{*}\}, \{\psi^{*}\}\right].
-% \end{displaymath}
+What happens when we want to take the maxima of this result? To do this, $f$ must be monotonic, and to verify this, we need some way to partially order the images of $f$, which means knowing more generally how to partially order discoverers.
 
-% Now let us consider another sensible constraint on the partial order used for taking \texttt{maxima}. When we have two discoverers $xs$ and $ys$ such that $xs \leq ys$, what can we say about the ordering of the items discovered by each? We should be able to say at least this much: for every $x$ in the first $n$ generations of $xs$, there should exist some $y$ in the first $n$ generations of $ys$ such that $x \leq y$. Thus, $ys$ generates facts which are at least as strong as those of $xs$, and does so at least as efficiently in terms of number of generations.
+In general, if two discoveres $xs$ and $ys$ are such that $xs \leq ys$, what should we say this implies about the ordering of the items discovered by each? We should be able to say at least this much: for every $x$ in the first $n$ generations of $xs$, there should exist some $y$ in the first $n$ generations of $ys$ such that $x \leq y$. Thus, $ys$ generates facts which are at least as strong as those of $xs$, and does so at least as early in terms of the number of generations.
 
-% From this, we can deduce that $\vdash\phi^{*} < \;\vdash\psi^{*}$, and thus, that if we compute the \texttt{maxima} of $xs >>= f$ we are left with $\left[\{\}, \{\}, \{\}, \{\psi^{*}\}\right]$. In other words, the extremely slow computation of $\vdash \phi^{*}$ was wasted. In fact, once $\vdash \psi$ was discovered, further expansion of the discoverer which depends on $\vdash \phi$ could have halted.
+Thus, if by monotonicity we require that $\left[\{\},\{\},\{\},\{\},\{\phi^{*}\}\right] \leq \left[\{\psi^{*}\},\{\}\right]$, then we further require that $\phi^{*} \leq \psi^{*}$. Therefore:
+\begin{displaymath}
+\code{maxima}\ xs >>= f = \code{maxima}\ \left(\left[\{\psi^{*}\}, \{\}, \{\}, \{\}, \{\phi^{*}\}\right]\right) = \left[\{\psi^{*}\}, \{\}, \{\}, \{\}, \{\}\right].
+\end{displaymath}
+And here we have a problem: the delayed and potentially slow computation of $\vdash \phi^{*}$ was wasted. Once $\vdash \psi$ was discovered, further expansion of the discoverer which depends on $\vdash \phi$ should have been halted. This does not happen in our implementation, and leads to a great deal of wasted effort. Consider the fact that every time we successfully apply rule~\ref{rule:collunion} to take the union of sets $S$ and $T$, all further discovery based on $S$ and $T$ should be abandoned in favour of discovery using $S \cup T$. A similar issue applies to the discovery of equalities: as new equalities are discovered, ongoing discovery based on any unnormalised term should be abandoned.
 
-% A second piece of missing functionality is a form of \emph{memoisation}. Suppose two generations of a discoverer are evaluated to $[\{\phi\}, \{\psi\}]$ where $\phi < \psi$. With $\psi$ evaluated, we would probably prefer any reevaluation of this discoverer to actually \emph{replace} $\phi$, yielding $[\{\psi\}, \{\}$. We leave such side-effecting functionality to further work.
+A second piece of missing functionality is a form of \emph{memoisation}. Suppose two generations of a discoverer are evaluated to $[\{\phi\}, \{\psi\}]$ where $\phi \leq \psi$. With $\psi$ evaluated, we would probably prefer any reevaluation of this discoverer to actually \emph{replace} $\phi$, yielding $[\{\psi\}, \{\}]$. 
 
-% \subsection{Accumulating}
-% We supply an accumulation function which is similar to the usual \texttt{fold} function on lists and streams. This threads a two-argument function through the values of a stream, starting with a base-value, and folding each generation down to a single intermediate value. Thus, we have:
+This additional functionality has not yet been implemented, and might well require significantly modifying the underlying data-structures for our streams. We leave such possibilities to future work.
 
-% \begin{align*}
-% \texttt{accum}\;(+)\;0\;[\{1,2\}, \{3,4\}, \{5\}, \{6,7,8\}] 
-% &= [\{0 + 3\}, \{3 + 7\}, \{10 + 5\}, \{15 + 21\}]\\
-% &= [\{3\}, \{10\}, \{15\}, \{36\}]
-% \end{align*}
+\subsection{Accumulating}
+We supply an accumulation function which is similar to the usual \code{fold} function on lists and streams. This threads a two-argument function through the values of a stream, starting with a base-value, and folding each generation down to a single intermediate value. Thus, we have:
 
-% One useful case of this allows us to gather up all facts discovered so far in a single collection. If the collection is lists, we just use $\texttt{accum}\;(\lambda xs\;x.\;x :: xs)\;[\,]$.
+\begin{align*}
+\code{accum}\;(+)\;0\;[\{1,2\}, \{3,4\}, \{5\}, \{6,7,8\}] 
+&= [\{0 + 3\}, \{3 + 7\}, \{10 + 5\}, \{15 + 21\}]\\
+&= [\{3\}, \{10\}, \{15\}, \{36\}]
+\end{align*}
+
+One useful case of this allows us to gather up all facts discovered so far in a single collection. If the collection is lists, we just use $\code{accum}\;(\lambda xs\;x.\;x :: xs)\;[\,]$.
 
 % \subsection{Normalisation}
 % For efficiency, it will be useful to normalise with respect to any discovered equalities and simple rewrite rules. 
 
 \subsection{Deduction}
-Direct deduction, or Modus Ponens, is the basis of forward-chaining and we provide two main ways to reproduce it for discoverers. In our theorem-prover, the Modus Ponens inference rule can throw an exception, so we first redefine \texttt{fmap} to filter thrown exceptions out of the discovery. Then we can define functions $\texttt{fmap2}'$ and $\texttt{fmap3}'$ which lift two and three-argument functions up to the level of discoverers.
+Direct deduction, or Modus Ponens, is the basis of forward-chaining and we provide two main ways to lift it into the type of discoverers. In our theorem-prover, the Modus Ponens inference rule can throw an exception, so we first redefine \code{fmap} to filter thrown exceptions out of the discovery. It is generally undesirable to let exceptions to propagate upwards, since this would lead to an entire discoverer being halted. 
+
+With \code{fmap} redefined as \code{fmap'}, we can define functions $\code{fmap2}'$ and $\code{fmap3}'$ which lift two and three-argument functions up to the level of discoverers, also filtering for exceptions.
 \begin{align*}
-\texttt{fmap}'\;f\;xs &= xs >>= (\lambda x.\;\texttt{try}\; \code{return}\;(f\;x)  \texttt{ with \_ } \rightarrow 0)\;xs\\
-\texttt{fmap2}'\;f\;xs\;ys &= \texttt{fmap}\;f\;xs >>= (\lambda f.\;\texttt{fmap}'\;f\;ys)\\
-\texttt{fmap3}'\;f\;xs\;ys\;zs &= \texttt{fmap}\;f\;xs >>= (\lambda f.\;\texttt{fmap2}'\;f\;ys\;zs)
+\code{fmap}'\;f\;xs &= xs >>= (\lambda x.\;\code{try}\; \code{return}\;(f\;x)  \code{ with \_ } \rightarrow 0)\;xs\\
+\code{fmap2}'\;f\;xs\;ys &= \code{fmap}\;f\;xs >>= (\lambda f.\;\code{fmap}'\;f\;ys)\\
+\code{fmap3}'\;f\;xs\;ys\;zs &= \code{fmap}\;f\;xs >>= (\lambda f.\;\code{fmap2}'\;f\;ys\;zs)
 \end{align*}
 With these, we can define the following forward-deduction functions:
 \begin{align*}
-\texttt{chain1}\;imp\;xs &= \texttt{fmap2}'\; \texttt{MATCH\_MP}\; (\texttt{return}\;imp)\;xs \\
-\texttt{chain2}\;imp\;xs\;ys &= \texttt{fmap2}'\; \texttt{MATCH\_MP}\; (\texttt{chain1}\; imp\;xs)\;ys\\
-\texttt{chain3}\;imp\;xs\;ys\;zs &= \texttt{fmap2}'\; \texttt{MATCH\_MP}\; (\texttt{chain2}\;imp\;xs\;ys)\;zs\\
-\texttt{chain}\;imps\;xs &= imps >>= (\lambda imp.\;\texttt{if is\_imp } imp\\ &\texttt{then } \texttt{chain}\;(\texttt{fmap}\;(\texttt{MATCH\_MP}\;imp)\;thms)\;thms\\
-&\texttt{else } \code{return}\; imp)
+\code{chain1}\;imp\;xs &= \code{fmap2}'\; \code{MATCH\_MP}\; (\code{return}\;imp)\;xs \\
+\code{chain2}\;imp\;xs\;ys &= \code{fmap2}'\; \code{MATCH\_MP}\; (\code{chain1}\; imp\;xs)\;ys\\
+\code{chain3}\;imp\;xs\;ys\;zs &= \code{fmap2}'\; \code{MATCH\_MP}\; (\code{chain2}\;imp\;xs\;ys)\;zs\\
+\code{chain}\;imps\;xs &= imps >>= (\lambda imp.\;\code{if is\_imp } imp\\ &\code{then } \code{chain}\;(\code{fmap}\;(\code{MATCH\_MP}\;imp)\;thms)\;thms\\
+&\code{else } \code{return}\; imp)
 \end{align*}
 
-The function \texttt{is\_imp} returns true if its argument is an implication, while $\texttt{MATCH\_MP}\;imp$ is a function which attempts to match the antecedent of $imp$ with its argument. Thus, \texttt{chain1} applies a rule of the form $P \rightarrow Q$ across a discoverer of antecedents. The function \texttt{chain2} applies a rule of the form $P \rightarrow Q \rightarrow R$ across two discoverers of antecedents. The function \texttt{chain3} applies a rule of the form $P \rightarrow Q \rightarrow R \rightarrow S$ across three discoverers of antecedents. The final, more general function, \emph{recursively} applies rules with arbitrary numbers of curried antecedents from the discoverer \texttt{imps} across all possible combinations of theorems from the discoverer $xs$.%, reproducing the behaviour of \sec{sec:Example}.
+The function \code{is\_imp} returns true if its argument is an implication, while $\code{MATCH\_MP}\;imp$ is a function which attempts to match the antecedent of $imp$ with its argument. Thus, \code{chain1} applies a rule of the form $P \implies Q$ across a discoverer of antecedents. The function \code{chain2} applies a rule of the form $P \implies Q \implies R$ across two discoverers of antecedents. The function \code{chain3} applies a rule of the form $P \implies Q \implies R \implies S$ across three discoverers of antecedents. The final, more general function, \emph{recursively} applies rules with arbitrary numbers of curried antecedents from the discoverer \code{imps} across all possible combinations of theorems from the discoverer $xs$.%, reproducing the behaviour of \sec{sec:Example}.
+
+Note that the discoverers \code{chain1}, \code{chain2}, \code{chain3} will not necessarily try all combinations of theorems from their arguments. They fail opportunistically, attempting Modus Ponens on each theorem from the first argument, and \emph{only if it succeeds}, attempting Modus Ponens on facts from the second argument. This is a happy feature of the data-driven semantics of monads (but see \S\ref{sec:Applicative} for its drawbacks). 
+
+It is therefore sensible to order the antecedents of the implication according to how likely they are to succeed. Antecendents which rarely succeed should appear early to guarantee a quick failure.
 
 % CHAIN_MP, CHAIN1, CHAIN2, CHAIN3
 
-% Not listed are functions based on Modus Ponens (\texttt{mp}). These functions we have called \texttt{chain1}, \texttt{chain2}, \texttt{chain3}, and so on, each written in one line of code in terms of its predecessor. The function \texttt{chain\_n} takes an implicational rule with $n$ antecedents, and yields a function which takes $n$ antecedent discoverers to produce a conclusion discoverer. 
+% Not listed are functions based on Modus Ponens (\code{mp}). These functions we have called \code{chain1}, \code{chain2}, \code{chain3}, and so on, each written in one line of code in terms of its predecessor. The function \code{chain\_n} takes an implicational rule with $n$ antecedents, and yields a function which takes $n$ antecedent discoverers to produce a conclusion discoverer. 
 
 % Our implementation allows for some interesting control of the search when discoveres are combined in this way. Antecedents in the original rule are matched one at a time, and conjunctions are split after each match. By carefully ordering and interleaving antecedents in the original rule around conjunctions, the user can control the search strategy. For example, suppose we create functions of three chains by applying 
 
-% \noindent\texttt{   chain3 : thm $\rightarrow$ thm chain $\rightarrow$ thm chain $\rightarrow$ thm chain $\rightarrow$ thm chain} 
+% \noindent\code{   chain3 : thm $\rightarrow$ thm chain $\rightarrow$ thm chain $\rightarrow$ thm chain $\rightarrow$ thm chain} 
 
 % \noindent to the equivalent rules:
 % \begin{align*}
@@ -379,18 +412,35 @@ The function \texttt{is\_imp} returns true if its argument is an implication, wh
 
 % This completes our overview of the discovery language. A user can now build discovery engines directly from these functions and primitives. This is very much in the spirit of HOL~Light and its LCF~\cite{LCF} foundation, where inference rules, tactic languages and rewrite engines are ordinary functions and combinator languages~\cite{Tactics}. Shallow-embedded tools can be a challenge for new users, but they offer enormous expressive power in a rich programming language, and allow different parts of the system to seamlessly integrate. 
 
-\subsection{Integration}
-Finally, we consider how our discoverers integrate with term-rewriting, declarative proof and tactics. Integrating term-rewriting is trivial: we simply lift rewriting functions with \texttt{fmap} and its derivatives. 
+\section{Integration}
+It is straightforward to integrate our discoverers with the rest of HOL~Light's proof tools. We can, for example, lift term-rewriting to the level of discoverers simply by lifting the rewriting functions with \code{fmap} and its derivatives. 
 
-To use our discoverers in declarative proofs, we introduce a keyword \linebreak\texttt{obviously}. This keyword can be used to augment any step in a declarative proof and takes an arbitrary function mapping discoverers to discoverers. When the keyword is encountered in the evaluation of a proof script, all intermediate facts inferred up to that point in the proof are fed into the function, and search is evaluated to a maximum depth. Afterwards, discovered facts are added as justification for the augmented step.
-
-Tactics can also readily make use of discovery. We provide a tactic \texttt{chain\_tac} which, again, takes a function mapping discoverers to discoverers, and also takes a tactic which depends on a list of theorems. The tactic \texttt{chain\_tac} takes a goal, feeds its hypotheses through the discovery function and evaluates search to a maximum depth. The discovered theorems are then fed to the list dependent tactic, which attempts to simplify the goal. For example, the tactic 
+To use our discoverers in declarative proofs, we introduce two Mizar~Light primitives. The first, \code{obviously}, is used to assist any step in a declarative proof via a discoverer.
 \begin{displaymath}
-\texttt{chain\_tac by\_incidence REWRITE\_TAC} 
+  obviously\;:\;(\code{discoverer}\ \alpha\rightarrow\code{discoverer}\ \alpha) \rightarrow step \rightarrow step.
 \end{displaymath}
-feeds a goal's hypotheses into an incidence discoverer, and then rewrites the goal using the discovered theorems.
 
-We finally supply a primitive discoverer \texttt{monitor} which discovers theorems concurrently during proof development. We have made this discoverer the basis for a more \emph{collaborative} discovery framework, which we describe elsewhere~\cite{ScottComposable}.
+The expression \code{obviously f} transforms a step into one which lifts the step's justifying theorems into a discoverer, applies the transformation f to this discoverer, and then retrieves all discovered theorems to a certain depth. These are then used to supplement the theorem's justification.
+
+The use of a function $f$ of type $\code{discoverer}\ \alpha\rightarrow\code{discoverer}\ \alpha$ allows us to easily give a discovery pipeline via function composition to justify a declarative step. To give an example, later on in our formal development we will introduce an incidence discoverer $\code{by\_incidence}$. We also have a function $\code{split}$  which recursively breaks conjunctions and splits disjunctions and, finally, we have a function $\code{add\_triangles}$ which introduces non-collinearity claims from theorems about points inside and outside triangles. The three functions can be pipelined in a single step by writing
+\begin{displaymath}
+\code{obviously}\ (\code{by\_incidence}\circ \code{add\_triangles}\circ \code{split}) \ldots.
+\end{displaymath}
+
+Next, we introduce a keyword $\code{clearly}$. This has the same type as $\code{obviously}$, but rather than collecting all theorems generated by a discoverer, it searches specifically for the theorem that the user is trying to justify in the current step (in the case of a $\code{qed}$ step, this is just the goal theorem). The keyword will not help in proofs unless the user knows the form of theorems produced by the discoverer, but when it can be used, it leaves the basic Mizar~light justification tactic with a trivial proof.
+
+Finally, we have introduced a theorem-tactic \code{discover\_tac} with type
+\begin{displaymath}
+\code{discover\_tac}\;:\;(\code{discoverer}\ \alpha\rightarrow\code{discoverer}\ \alpha) \rightarrow [\code{thm}] \rightarrow \code{tactic}.
+\end{displaymath}
+As with $\code{obviously}$ and $\code{clearly}$, we take a transformation of discoverers. Then when we apply $\code{discover\_tac}\ f\ tac$,  all goal hypotheses are fed to $f$. The resulting discovered facts are then supplied to the function $tac$ (often just $\code{MESON}$).
+
+\subsection{Concurrency}
+In \S\ref{sec:NaiveConcurrency}, we described how we could easily exploit concurrency with our n\"{a}ive forward-chaining algorithm. Things are even better for our discovery algebra. Since we are using lazy lists pervasively, theorems can be output to the terminal one-by-one as they are generated, without having to wait for an entire generation at once.
+
+It is also trivial to define a new primitive discoverer $\code{monitor}$ which can monitor the proof-state. As we stated in our introduction in \S\ref{sec:Streams}, primitive discoverers can generate their outputs in whatever manner they want. Our $\code{monitor}$ just regularly examines the proof context and outputs its hypotheses. We ensure that only unique hypotheses are ever generated by using the function $\code{maxima}$.
+
+To complete the architecture, we supply basic commands that handle the thread communication necessary to tell an existing concurrent discoverer to pause, resume, or to change to an alternative theorem discoverer.
 
 % \begin{figure}
 % {\scriptsize\input{incidence}}
@@ -398,164 +448,124 @@ We finally supply a primitive discoverer \texttt{monitor} which discovers theore
 % \label{fig:MLEngine}
 % \end{figure}
 
-\section{The Problem Revisited}\label{sec:Solution}
-We now return to our original geometry problem. In Figure~\ref{fig:Engine}, we capture the complex network from Figure~\ref{fig:EngineDiagram}. Each of the five kinds of theorem depicted corresponds to the definition of a new discoverer, and the mutual dependencies of the network are captured by mutual recursion\footnote{The inference rule \texttt{CONJUNCTS} sends a conjunctive theorem to list of its conjuncts.}.
+\subsection{Dependency Tracking}
+While writing a proof, we would normally start an incidence discoverer concurrently, which could generate theorems as we worked. The discoverer would consider \emph{all} of our goal hypotheses, and would typically find a large number of theorems. Most of these theorems are not needed in the proof. Of those which are needed, we would like to know the specific subset of hypotheses from which they are derived. This is desirable when it comes to proof-replay, when we would like the discoverer to work more efficiently with just the hypotheses it needs. But it is also desirable in terms of writing \emph{declarative} proofs: we want to write the dependent hypotheses directly into the proof script, so they are apparent to the reader. To achieve this, we need our discoverers to  \emph{track} hypotheses.
+
+A nice feature of monads in functional programming is that, when defined in the form of a \emph{transformer}, the extra book-keeping can be added in a clean and modular way. In this case, we create a generic \emph{writer transformer}.
+
+\emph{Writer} is a monad with extra functions for \emph{writing} values from any monoid in a computation, and for running computations to retrieve the final written values. It can be seen as a modular way to introduce things such as \emph{logging} into computations. So if we have a computation which writes the value \code{"Hello"} and returns the value 1, and another computation which writes the value \code{" world!"} and returns the value 2, then when we lift addition over the two computations we have a computation which returns the value 3 and writes \code{"Hello world!"}. The monoid here is strings with the append operation.
+
+Writer can easily be defined as a transformer which, when applied, is made to write values \emph{inside} any other monad. We made our writer work on a monoid of hypotheses sets with the union operation. These sets contain the dependent hypotheses for every discovered theorem, and they automatically accumulate as theorems are combined. We do not need to write any special logic for this. All the details are handled generically by the writer transformer.
+
+All we need do is extend the $\code{monitor}$ discoverer to initialise the dependent hypotheses sets. That is, every time $\code{monitor}$ pulls a hypothesis from the goal context, it must also \emph{write} the hypothesis as a dependency on further computation. The dependencies then automatically propagate. 
+
+\section{Implementation Details}
+The following section describes some technical challenges we faced. We include it for the sake of honesty, since the presentation of the ideas so far ignores all the bumps that thwart a nice clean implementation in Ocaml. We assume some knowledge of the Ocaml language here.
+
+We have implemented a general monad library in Ocaml, providing a signature for the minimal implementation of an arbitrary monad, and a functor to turn this minimal implementation into a richer monad interface with derived functions. Monad transformers are functors between minimal implementations of monads. The stream monad itself is a transformer from an arbitrary monad of generations. If we want to use Spivey's original implementation, we can just supply a module of bags to this transformer. If we want to use our case-splitting implementation, we supply our module of trees. 
+
+These transformations can be stacked. In fact, in our final implementation, we first apply our writer transformer to a monoid of hypotheses sets. The writer transformer is then applied to our tree monad. Finally, the tree monad is applied to our stream monad to produce a stream which discovers theorems, handles case-splits and tracks dependent hypotheses. \footnote{Our code, including our revisions of Ocaml's lazy list library can be made available. It comes with Ocamldoc and can be installed with the \code{Ocamlfind} toolchain. Please contact \url{phil.scott@ed.ac.uk}.}
+
+\subsection{Implementation Issues}
+As of writing, HOL~Light relies heavily on modifications to Ocaml's preprocessor, one of which forces Ocaml's lexer to treat any lexeme which contains more than one upper-case letter as being a ``lower-case identifier''. This plays havoc with the CamelCase naming convention now being adopted in Ocaml's standard library, since Ocaml's parser expects all module names to be uppercase. To circumvent this, we supply our own preprocessor which allows for lower-case identifiers in module names. This is only intended as a hack over a hack until a more robust solution presents itself.
+
+We have stressed ``concurrency'' in this chapter, rather than ``parallelisation'', since Ocaml only supports the former. This means we get no speed improvements by using threads. This should not be seen as a significant drawback, since such multithreading is inherently dangerous in a language such as Ocaml which allows for uncontrolled side-effects. HOL~Light itself was not developed with multiprocessing support in mind. Its basic \code{MESON} tactic, for instance, is not thread-safe. Even without parallelisation, the tactic must be avoided when implementing discoverers.
+
+Another issue with threading concerns UNIX signals. The standard way to interact with HOL~Light is to run semi-decidable decision procedures on problems. If these procedures fail, the user interrupts them at the Ocaml top-level by sending \code{SIGINT}. If the user is running a concurrent discoverer when they send this signal, it might interrupt the wrong thread, possibly leaving the discoverer with dangling resources. As a quick hack around this behaviour, we trap SIGINT in the discovery thread and simply discard it.
+
+Finally, Ocaml's lazy list library has some unexpected implementation choices. For instance, the list concatenation function $concat\;:\;[[\alpha]]\rightarrow[\alpha]$ is \emph{strict} in its outer list, while the $\code{take}$ function which takes a certain sized prefix of a given lazy list will always force the values in the prefix. These behaviours are generally inappropriate for lazy data-structures, and their use often leads to infinite looping when we come to write recursive functions which generate lazy lists. We have had to rewrite many of them.
+
+Besides these issues, the syntax for lazy lists in Ocaml is extremely cumbersome. Primitive list functions have to explicitly force lazy constructors, while recursive lazy lists must be wrapped with a \code{lazy} keyword. One benefit, however, of Ocaml's lazy list implementation is that it detects when a recursive definition requires forcing a vicious circularity. These actually arise quite easily when writing discoverers in our framework, and are fixed with choice uses of the $\code{delay}$ function.
+
+\section{Applicative Functors}\label{sec:Applicative}
+An idiom or applicative functor~\cite{Applicative} $F$ is a generalisation of the monad, which could be thought of as providing at least the ability to lift values $\alpha \rightarrow F\ \alpha$ and to lift a two argument function as we do with 
+\begin{displaymath}
+\code{fmap2}\;:\;(\alpha\rightarrow\beta\rightarrow\gamma)\rightarrow F\ \alpha \rightarrow F\ \beta \rightarrow F\ \gamma.
+\end{displaymath}
+
+This is actually quite limiting compared to the monad (see \cite{IdiomsArrowsMonads} for a detailed analysis). We can no longer write data-driven computations, such as our $\code{chain}$ functions which automatically fail at the first non-matching antecedent.
+
+That said, because it does not allow data-driven computation, an implementation of the applicative functor interface can potentially be more efficient than the implementation it derives as a generalisation of a monad. This was something we spotted when fixing a performance issue with our trees.
+
+In Figure~\ref{fig:ApplicativeSimp}, we show what happens when we lift a two argument function $f$ over two trees with the same topology. The result is correctly simplified, so that it appears that the function $f$ is evaluated exactly five times. But, bizarrely, when we came to profile our code, we found that the function $f$ was evaluated \emph{nine} times, once for each possible combination of values in the two trees. The results were discarded in simplification, but only after they were evaluated. This completely breaks the intended purpose of the trees, which is to partition the values so that the discarded computations never take place.
+
 \begin{figure}
-\scriptsize
-\begin{align*}
-&\hspace{-2.55cm}\code{ssum} = \code{foldr}\;(+)\; 0\circ \code{map}\;\code{return}\\\\
-\texttt{by\_incidence}\;thms = \\
-\quad \texttt{let rec}\;collinear &= \texttt{maxima}\;(\texttt{filter}\;\texttt{is\_collinear}\;thms\\
-&\qquad + \texttt{fmap3'}\;\texttt{col\_union}\;(\texttt{delay}\;collinear)\;(\texttt{delay}\;collinear)\;neqs)\\
-\texttt{and}\;non\_collinear &= \texttt{maxima}\;(\texttt{filter}\;\texttt{is\_non\_collinear}\;thms\\
-&\quad + \texttt{fmap3'}\;\texttt{triangle}\;collinear\;(\texttt{delay}\;non\_collinear)\;neqs)\\
-\texttt{and}\;eqs &= \texttt{filter}\;\texttt{is\_eq}\;thms\\
-&\quad\qquad+ \texttt{maxima} (\texttt{sum}\;(\texttt{fmap3'}\;\texttt{intersect}\\
-&\quad\;collinears\;collinear\;non\_collinear))\\
-\texttt{and}\;neqs &= \texttt{maxima} (\texttt{filter}\;\texttt{is\_neq}\;thms\\
-&\quad + \texttt{sum}\;(\texttt{fmap2'}\;\texttt{colncolneq}\;collinear\;(\texttt{delay}\;non\_collinear))\\
-&\quad + \texttt{sum}\;(\texttt{fmap'}\;\texttt{CONJUNCTS}\;(\texttt{rule1}\;\texttt{ncol\_neq}\;non\_collinear)))\\
-\texttt{and}\;planes &= \texttt{maxima}\;(\texttt{filter}\;is\_plane\;thms\\
-&\quad + \texttt{fmap3'}\;\texttt{plane\_union}\;(\texttt{delay}\;planes)\;(\texttt{delay}\;planes)\\
-&\qquad\qquad\qquad\;non\_collinear\\
-&\quad + \texttt{fmap3'}\;\texttt{colplaneplane}\;collinear\;(\texttt{delay}\;planes)\;neqs\\
-&\quad+ \texttt{fmap2'}\;\texttt{colcolplane}\;collinear\;collinear\\
-&\quad+ \texttt{fmap'}\;\texttt{colplane}\;collinear\\
-&\quad+ \texttt{fmap'}\;\texttt{ncolplane}\;non\_collinear)\\
-\quad \texttt{in}\,collinear + &non\_collinear + eqs + neqs + planes
-% &\texttt{collinear}\;thms = \texttt{fix}\;(\lambda cs.\; \texttt{chain3}\;\texttt{col\_union}\;(\texttt{not\_eqs}\;thms)\;cs\;cs)\;\\ &\quad(\texttt{filter}\;\texttt{is\_collinear}\;thms + (0 :: \texttt{rewrite}\;eqs\;(\texttt{collinear}\;thms)))\\
-% \\
-% &\texttt{planar}\;thms = \texttt{chain2}\;\texttt{colcol\_plane}\;(\texttt{collinear}\; thms)\;(\texttt{collinear}\;thms)\\
-% &\quad + \texttt{fix}\;(\lambda ps.\;\texttt{chain3}\;\texttt{plane\_union}\;(\texttt{not\_collinear}\;thms)\;ps\;ps\\
-% &\qquad + \texttt{chain3}\;\texttt{colplaneplane}\;(\texttt{not\_eqs}\;thms)\;(\texttt{collinear}\;thms)\;ps)\\
-% &\quad + (\texttt{filter}\;\texttt{is\_planar}\;thms + (0 :: \texttt{rewrite}\;eqs\;(\texttt{planar}\;thms)))
-\end{align*}
-\caption{Incidence Discovery}
-\label{fig:Engine}
+\centering\includegraphics[scale=0.7]{automation/BasicTreeSimp}
+\caption{Applicative Simplification}
+\label{fig:ApplicativeSimp}
 \end{figure}
 
-Search can now be further refined. For instance, the network in Figure~\ref{fig:EngineDiagram} has some redundancy: point-inequalities delivered from non-collinear sets cannot be used to infer \emph{new} non-collinear sets. This redundancy can be eliminated by splitting \texttt{neqs} into two discoverers, \texttt{neqs} and \texttt{neqs'}. The latter is used only to derive non-collinear sets, while the sum of both is used for all other inference.
+The inefficiency is actually unavoidable with the monad implementation. A computation in a monad produces structure dependent on \emph{data} within another structure. When we lift a two argument function over two structures, it happens that the structure of the final value is independent of this data, but the independence cannot be guaranteed by the type system.
 
-\subsection{Results}\label{sec:Results}
-A relatively simple description of a discoverer can now systematically recover the implicit incidence-reasoning in Hilbert's \emph{Foundations of Geometry}. We show its results through part of an example proof. Here, we are trying to prove a transitivity property of Hilbert's three-place \emph{between} relation on points: if $B$ lies between $A$ and $C$, and $C$ between $B$ and $D$, then $C$ lies between $A$ and $D$.
+This is the advantage of the applicative functor. In defining it, we are not allowed to ``peek'' at the data inside our structures, so when lifting a two argument function, the type system can guarantee that the final structure can only depend on the structures of the two inputs. 
 
-\vspace{0.2cm}
-\noindent\fbox{\begin{minipage}{11.9cm}
-\footnotesize\texttt{prove between A B C $\wedge$ between B C D $\Longrightarrow$ between A C D}
+For our trees in Figure~\ref{fig:ApplicativeSimp}, we know, without looking at the data, what the topology of the final result should be. We know, in advance, what simplifications should come in, and we therefore know, in advance, how many times the function $f$ will be applied. But this knowledge is only guaranteed for applicative functors. When we use the derived monad implementation, $f$ must be applied across all computations and only \emph{then}, when all dependencies on the data have been take into account,  can simplification take place.
 
-\texttt{assume between A B C $\wedge$ between B C D at 0}
-\texttt{consider E such that such that \ttriangle{A}{B}{E} from 0 by II,1 and triangle}
-\end{minipage}}
-\vspace{0.1cm}
+A simple fix is to provide an explicit applicative implementation which will override the derived monad implementation. The resulting overrided interface is identical from the perspective of client code, but now, when the client does not require data driven computations, such as with the applicative functions $\code{fmap2}$, $\code{fmap3}$ and so on, the more efficient implementation is used.
 
-The \texttt{assume} step adds the goal's antecedent to the current hypotheses, while the \texttt{consider} step introduces a non-collinear point $E$ using one of Hilbert's axioms and a lemma \texttt{triangle} (see Appendix~\ref{app:axioms}). These hypotheses form the context for our discoverer. They are automatically picked up by \texttt{monitor} and then fed through our incidence network to produce the following theorems within 0.31 seconds:\footnote{We have tested this on an Intel Core 2 2.53GHz machine.}
+\section{The Problem Revisited}\label{sec:Solution}
+We now return to our original data-flow problem. In Figure~\ref{fig:IncidenceDiscoveryCode}, we use our stream algebra to capture the complex data-flow network from Figure~\ref{fig:DataFlow}. The five kinds of theorem now correspond to five primitive discoverers. Inference rules are applied across the theorems by lifting them into the type of discoverers, and mutual dependencies of the network are captured by mutual recursion\footnote{The inference rule \code{CONJUNCTS} sends a conjunctive theorem to list of its conjuncts.}.
+\begin{figure}
+\small
+\begin{align*}
+&\hspace{-2.55cm}\code{ssum} = \code{foldr}\ (+)\  0\circ \code{map}\ \code{return}\\\\
+\code{by\_incidence}\ thms = \\
+\quad \code{let rec}\ collinear &= \code{maxima}\ (\code{filter}\ \code{is\_collinear}\ thms\\
+&\qquad + \code{fmap3'}\ \code{colcol}\ (\code{delay}\ collinear)\ (\code{delay}\ collinear)\ neqs)\\
+\code{and}\ non\_collinear &= \code{maxima}\ (\code{filter}\ \code{is\_non\_collinear}\ thms\\
+&\quad + \code{fmap3'}\ \code{colncolncol}\ collinear\ (\code{delay}\ non\_collinear)\ neqs)\\
+\code{and}\ eqs &= \code{filter}\ \code{is\_eq}\ thms\\
+&\quad\qquad+ \code{maxima} (\code{sum}\ (\code{fmap3'}\ \code{coleq}\\
+&\quad\ collinears\ collinear\ non\_collinear))\\
+\code{and}\ neqs &= \code{maxima} (\code{filter}\ \code{is\_neq}\ thms\\
+&\quad + \code{sum}\ (\code{fmap2'}\ \code{colncolneq}\ collinear\ (\code{delay}\ non\_collinear))\\
+&\quad + \code{sum}\ (\code{fmap'}\ \code{CONJUNCTS}\ (\code{chain1}\ \code{ncolneq}\ non\_collinear)))\\
+\code{and}\ planes &= \code{maxima}\ (\code{filter}\ is\_plane\ thms\\
+&\quad + \code{fmap3'}\ \code{planeplane}\ (\code{delay}\ planes)\ (\code{delay}\ planes)\\
+&\qquad\qquad\qquad\ non\_collinear\\
+&\quad + \code{fmap3'}\ \code{colplaneplane}\ collinear\ (\code{delay}\ planes)\ neqs\\
+&\quad+ \code{fmap2'}\ \code{colcolplane}\ collinear\ collinear\\
+&\quad+ \code{fmap'}\ \code{colplane}\ collinear\\
+&\quad+ \code{fmap'}\ \code{ncolplane}\ non\_collinear)\\
+\quad \code{in}\,collinear + &non\_collinear + eqs + neqs + planes
+% &\code{collinear}\ thms = \code{fix}\ (\lambda cs.\  \code{chain3}\ \code{col\_union}\ (\code{not\_eqs}\ thms)\ cs\ cs)\ \\ &\quad(\code{filter}\ \code{is\_collinear}\ thms + (0 :: \code{rewrite}\ eqs\ (\code{collinear}\ thms)))\\
+% \\
+% &\code{planar}\ thms = \code{chain2}\ \code{colcol\_plane}\ (\code{collinear}\  thms)\ (\code{collinear}\ thms)\\
+% &\quad + \code{fix}\;(\lambda ps.\;\code{chain3}\;\code{plane\_union}\;(\code{not\_collinear}\;thms)\;ps\;ps\\
+% &\qquad + \code{chain3}\;\code{colplaneplane}\;(\code{not\_eqs}\;thms)\;(\code{collinear}\;thms)\;ps)\\
+% &\quad + (\code{filter}\;\code{is\_planar}\;thms + (0 :: \code{rewrite}\;eqs\;(\code{planar}\;thms)))
+\end{align*}
+\caption{Incidence Discovery}
+\label{fig:IncidenceDiscoveryCode}
+\end{figure}
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize\texttt{A$\neq$E, B$\neq$E, between A B C, between B C D, A$\neq$B, A$\neq$C, B$\neq$C, B$\neq$D,}\\
-\texttt{C$\neq$D, \ttriangle{A}{B}{E},\ttriangle{A}{C}{E},}\\
-\texttt{\ttriangle{B}{C}{E}, C$\neq$E,}\\
-\texttt{\collinearfour{A}{B}{C}{D},}\\
-\texttt{\ttriangle{B}{D}{E}, \ttriangle{C}{D}{E},}\\
-\texttt{\planarfive{A}{B}{C}{D}{E}, D$\neq$E}
-\end{minipage}}
-\vspace{0.1cm}
+One advantage of our algebra is that it is almost trivial to refine the discovery system. For instance, we noticed that the network in Figure~\ref{fig:DataFlow} has some redundancy: point-inequalities delivered from non-collinear sets by the rule $\code{ncolneq}$ should not be used to try to infer \emph{new} non-collinear sets. We eliminated this redundancy by splitting \code{neqs} into two discoverers, \code{neqs} and \code{neqs'}. 
+\begin{align*}
+non\_collinear &= \code{maxima}\ (\code{filter}\ \code{is\_non\_collinear}\ thms\\
+&\quad + \code{fmap3'}\ \code{colncolncol}\ collinear\ (\code{delay}\ non\_collinear)\ neqs')\\
+\code{and}\ neqs &= \code{maxima}\ (\code{neqs'}\\
+& + \code{fmap'}\ (\code{sum}\ (\code{CONJUNCTS}\ (\code{chain1}\ \code{ncolneq}\ (\code{delay}\ non\_collinear))))\\
+\code{and}\ neqs' &= \code{maxima}\ (\code{filter}\ \code{is\_neq}\ thms\\
+&\quad + \code{sum}\ (\code{fmap2'}\ \code{colncolneq}\ collinear\ (\code{delay}\ non\_collinear))\\
+&\quad + \code{sum}\ (\code{fmap'}\ \code{CONJUNCTS}\ (\code{chain1}\ \code{ncolneq}\ (\code{filter}\ \code{is\_neq}\ thms))))
+\end{align*}
 
-The \texttt{obviously} keyword picks up these theorems, and from $C\neq E$ we are able to find a point $F$:
+\section{Conclusion}
+In this chapter, we began by looking for a way to implement an automated incidence tool, suitable for use with declarative proof. We began with a n\"{a}ive approach, and implemented a simple forward-chaining algorithm. While very basic, the advantage of this algorithm was that it makes it almost trivial to implement a collaborative and concurrent proof system, where the user and theorem prover progress in the same direction towards the goal by sharing theorems.
 
-\vspace{0.2cm}
-\noindent\fbox{\begin{minipage}{11.9cm}
-\footnotesize\texttt{obviously by\_incidence consider F such that between C E F by II,2 at 1}
-\end{minipage}}
-\vspace{0.1cm}
+To correct the various deficiencies and the ad-hoc nature of our implementation, we implemented a discovery algebra based on Spivey's stream monad. The advantages of using monads is that, firstly, they are a well-established pattern in functional programming, and secondly, they use combinators so that the defined languages integrate easily with the host language.
 
-The next set of discovered theorems are found within 1.21 seconds:
+We showed how to integrate our algebra into the rest of HOL~Light, providing interfaces to the basic rewriter, the tactics and the Mizar~Light combinators. Finally, we showed how to express our complex data-flow for forward-chaining incidence reasoning using our combinators in what we hope is a reasonably clear manner.
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize\texttt{between C E F, \collinearthree{C}{E}{F}, C$\neq$F, E$\neq$F,}\\
-\footnotesize\texttt{\planarsix{A}{B}{C}{D}{E}{F},}\\
-\footnotesize\texttt{A$\neq$F, B$\neq$F, D$\neq$F}\\
-\footnotesize\texttt{\ttriangle{A}{C}{F}, \ttriangle{A}{E}{F},}\\
-\footnotesize\texttt{\ttriangle{B}{C}{F}, \ttriangle{B}{E}{F},}\\
-\footnotesize\texttt{\ttriangle{C}{D}{F}, \ttriangle{D}{E}{F},}\\
-\footnotesize\texttt{\ttriangle{A}{B}{F}, \ttriangle{B}{D}{F},}
-\end{minipage}}
-\vspace{0.1cm}
+We leave the detailed evaluation of our incidence reasoner to the next chapter, where we shall apply it against some proofs from Hilbert's text.
 
-The rest of the proof consists of repeatedly applying a complex axiom due to Pasch. The axiom says that if a line enters one side of a triangle then it leaves by one of the other two sides. By cleverly applying this axiom, it is possible to prove our original theorem (this is not a trivial matter, and the proof had eluded Hilbert in the first edition of \emph{Foundations~of~Geometry} where the theorem was an axiom; the proof was later supplied by Moore~\cite{MooreProof}). 
+\section{Further Work}
+The theoretical underpinnings of our tree data structure still need some investigation. The correctness of our simplification algorithm needs to be explored and ideally formally verified. For now, we regard this as beyond the scope of our current work. We still need to devise a way to integrate proper subsumption into our algebra as mentioned in \S\ref{sec:Filtering}. A particular challenge here is finding an effective way to integrate normalisation with respect to derived equalities. We suspect any solutions here will require modifying our basic tree data-structures, and so it is perhaps premature to start working on proofs for our algebra. The most that we can say for now is that our incidence reasoner has been extensively tested on non-trivial problems.
 
-The challenge, however, lies in verifying when all the preconditions on Pasch's Axiom have been met, something we handle by adding a discover \texttt{by\_pasch} to our existing incidence discovery (we omit the definition for space). It reveals the following additional theorems, found within 2.82 seconds.
+Our discovery language does not yet provide functions for more powerful first-order and higher-order reasoning. Our domain was a relatively simple combinatorial space of concrete incidence claims, but in the future, we would like to be able to apply the system to inductive problems, having it speculate inductive hypotheses and infer universals. Since the basic discovery data-type is polymorphic and not specific to theorem-proving, we hope that lemma speculation will just be a matter of defining appropriate search strategies. We would also like to handle existential reasoning automatically, and we are still working on a clean way to accomplish this. 
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize
-\texttt{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G C $\vee$ between A G F)}\\ 
-\texttt{$\exists$G. \collinearthree{A}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}\\
-\texttt{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G F $\vee$ between C G F)}\\
-\texttt{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between C G D $\vee$ between D G F)}\\
-\texttt{$\exists$G. \collinearthree{B}{F}{G} $\wedge$ (between A G E $\vee$ between C G E)}\\
-\texttt{$\exists$G. \collinearthree{D}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}
-\end{minipage}}
-\vspace{0.1cm}
 
-Further exploration of the proof involves applying one of these theorems. We can, for instance, try the penultimate instance with the step
-
-\vspace{0.2cm}
-\noindent\fbox{\begin{minipage}{11.9cm}
-\footnotesize\texttt{obviously by\_pasch consider G such that \collinearthree{B}{F}{G}\\
-$\wedge$ (between A G E $\vee$ between C G E)}
-\end{minipage}}
-\vspace{0.1cm}
-
-% The discoverer is now faced with a case-split, but in the right-branch, it infers $\texttt{between C G E} \rightarrow \bot$, after which further discovery stops. In the left branch, we obtain the following:
-
-The \texttt{monitor} now picks up the disjunction and creates a tree to represent a case-split. As this feeds into the discoverer, our combinators will automatically partition the search on the two assumptions. Our discoverer then produces three sets of theorems in 9.58 seconds \footnote{Note that the outputs from the three sets are interleaved, and are not generated simultaneously. While the full set of theorems requires 9.58 seconds, most of the theorems shown here are actually generated in under 1 second. The theorem required to advance the proof, \texttt{between C G E $\rightarrow$ F = G} is generated in 6.19 seconds.}
-
-The first set of theorems are proven independently of the case-split:
-
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize
-\texttt{\planarseven{A}{B}{C}{D}{E}{F}{G}}\\
-\texttt{C$\neq$G $\wedge$ E$\neq$G $\wedge$ A$\neq$G $\wedge$ D$\neq$G}
-\end{minipage}}
-\vspace{0.1cm}
-
-The next set of theorems are discovered in a branch on the assumption of \texttt{between A G E}:
-
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize
-\texttt{between A G E, \collinearthree{A}{G}{E}, B$\neq$G, F$\neq$G,}\\
-\texttt{\ttriangle{A}{B}{G}, \ttriangle{B}{E}{G}}\\
-\texttt{\ttriangle{A}{C}{G}, \ttriangle{C}{E}{G}}\\
-\texttt{\ttriangle{E}{F}{G}, \ttriangle{B}{D}{G}}\\
-\texttt{\ttriangle{C}{D}{G}, \ttriangle{C}{F}{G}}\\
-\texttt{\ttriangle{D}{F}{G}}
-\end{minipage}}
-\vspace{0.1cm}
-
-The final set of theorems are discovered in a branch on the assumption of \texttt{between C G E}:
-
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize
-\texttt{between C G E, \collinearfour{C}{E}{F}{G}, B$\neq$G,}\\
-\texttt{\ttriangle{A}{C}{G}, \ttriangle{A}{E}{G}}\\
-\texttt{\ttriangle{B}{C}{G}, \ttriangle{B}{E}{G}}\\
-\texttt{\ttriangle{C}{D}{G}, \ttriangle{D}{E}{G}}\\
-\texttt{\ttriangle{A}{B}{G}, \ttriangle{B}{D}{G}}\\
-\texttt{F = G, between C F E}
-\end{minipage}}
-\vspace{0.1cm}
-
-The \texttt{obviously} step collapses the stream of trees, pushing the branch labels into the theorems as antecedents, and then uses the resulting lemmas to justify the step. Thus, the fact \texttt{F = G} becomes \texttt{between C G E $\rightarrow$ F = G}. This fact is sufficient to derive a contradiction with \texttt{between C E F} and thus eliminate the case-split:
-
-\vspace{0.2cm}
-\noindent\fbox{\begin{minipage}{11.9cm}
-\footnotesize\texttt{obviously by\_incidence have between A G E from 1 by II,3}
-\end{minipage}}
-\vspace{0.1cm}
-
-The rest of the proof proceeds similarly. While the prose proof has 9 steps and our earlier formalisation without discovery runs to over 80 steps, the new formalisation has just 17 steps. We found this roughly 80\% reduction in proof length across all 18 theorems from our earlier formalisation, with the new formalisations comparing much more favourably with the prose.
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../thesis"
+%%% End: 

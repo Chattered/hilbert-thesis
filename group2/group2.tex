@@ -1,5 +1,49 @@
 % MAKE SURE YOU MENTION ORDERED GEOMETRY HERE See paper notes
 \chapter{Group II}\label{chapter:Group2}
+\section{Pasch's Axiom}
+The first of Hilbert's \emph{proofs} appear in Group~II, and they make extensive use of an axiom due to Pasch. This axiom asserts that any line $a$ which enters a triangle $ABC$ on one side must leave by one of the other two sides, such as in the case depicted in Figure \ref{PaschDiagram}.
+
+\begin{figure}\label{PaschDiagram}
+% \begin{pspicture}(-2,0)(5,3.5)
+% \psset{xunit=0.75cm}
+% \psset{yunit=0.5cm}
+% \put(1.3,0.2){\parbox{5cm}{$A$}}
+% \put(6,0.2){\parbox{5cm}{$B$}}
+% \put(5.2,2.6){\parbox{5cm}{$C$}}
+% \put(4.3,0){\parbox{5cm}{$a$}}
+% \psline[linewidth=0.15mm](2,1)(8,1)
+% \psline[linewidth=0.15mm](2,1)(7,5)
+% \psline[linewidth=0.15mm](7,5)(8,1)
+% \psline[linewidth=0.25mm](5.5,0)(8,6)
+% \end{pspicture}
+% \caption{Axiom II,4}
+\end{figure}
+
+This is a complex axiom to apply. The claim that a line cannot intersect any of the triangle's vertices cashes out as three claims of \emph{non-incidence}, and as we explained in \S\ref{NonIncidenceTriangle}, a claim of non-incidence just asserts that three points form a triangle. Together with the triangle that is being intersected, this means we need to find four triangles every time we apply Pasch's axiom. The matter was formalised when we derived the following version of the axiom:
+
+\begin{align*}
+&\neg\code{collinear}\{A, B, C\}\\
+\wedge\,&\neg\code{collinear}\{A, D, E\}\\
+\wedge\,&\neg\code{collinear}\{B, D, E\}\\
+\wedge\,&\neg\code{collinear}\{C, D, E\}\\
+&\quad\rightarrow\between\,A\,B\,C \\
+&\qquad\rightarrow\exists F.\; \code{collinear} \{D, E, F\} \wedge (\between\,A\,F\,C \vee \between\,B\,F\,C).
+\end{align*}
+
+The axiom is further complicated by its existential and disjunctive conclusion. Every time this axiom is applied in Hilbert's proofs, at least one of the disjuncts must be eliminated, by deriving a falsehood on its assumption. We are then left with an existential, which is often eliminated by showing that the point in question has already been constructed. In all but one case, Hilbert elides the case-splitting and the existential elimination. In our Isabelle formalisation, this elided reasoning turned into often complicated incidence arguments based on point sets.
+
+\subsection{Pasch as a Tactic}
+When Hilbert draws the reader's attention to an application of Pasch's axiom, he generally does so in the following way:
+\begin{quote}By an application of Axiom~II,4 to the triangle $BCG$ and to the line $AD$....\end{quote}
+
+The wording here suggests that Pasch is not being treated as a mere axiom, but as a two-argument \emph{procedure}, taking a triangle and a line (in this case, $BCG$ and $AD$). We followed up this idea by implementing our own two argument Pasch procedure, allowing us to write proof steps in the form
+
+\vspace{0.5cm}
+\texttt{\qquad\qquad by pasch\_on $\neg$COLLINEAR \{B, C, G\} and A,D}
+\vspace{0.5cm}
+
+Our procedure first identifies the necessary hypotheses needed to apply Pasch's axiom from the two supplied arguments. It then looks up these hypotheses in the step's justifying theorems. Once it has the existential disjunction, it runs a case-split on the two disjuncts, looking for an obvious contradiction using the automated inferencing tool we discuss in \S\ref{sec:DiscoveryImplementation}. It then eliminates the existential to introduce a new point.
+
 \section{Analysis}
 In this subsection, we discuss what we have learned about incidence reasoning with point sets based on our discovery tool. We then discuss two proofs which required significant effort to formalise in Isabelle, and show what their formalisation looks like when written in tandem with our discovery tool. We compare these new proofs with their prose counterparts, suggest weaknesses of the prose, and discuss an alternative proof which the automation allowed us to explore.
 
@@ -361,3 +405,127 @@ We \emph{do} have a good deal to say about the final part of the proof, which in
 
 % \texttt{qed}}
 % \vspace{0.5cm}
+
+\subsection{Results}\label{sec:Results}
+A relatively simple description of a discoverer can now systematically recover the implicit incidence-reasoning in Hilbert's \emph{Foundations of Geometry}. We show its results through part of an example proof. Here, we are trying to prove a transitivity property of Hilbert's three-place \emph{between} relation on points: if $B$ lies between $A$ and $C$, and $C$ between $B$ and $D$, then $C$ lies between $A$ and $D$.
+
+\vspace{0.2cm}
+\noindent\fbox{\begin{minipage}{11.9cm}
+\footnotesize\code{prove between A B C $\wedge$ between B C D $\Longrightarrow$ between A C D}
+
+\code{assume between A B C $\wedge$ between B C D at 0}
+\code{consider E such that such that \ttriangle{A}{B}{E} from 0 by II,1 and triangle}
+\end{minipage}}
+\vspace{0.1cm}
+
+The \code{assume} step adds the goal's antecedent to the current hypotheses, while the \code{consider} step introduces a non-collinear point $E$ using one of Hilbert's axioms and a lemma \code{triangle} (see Appendix~\ref{app:axioms}). These hypotheses form the context for our discoverer. They are automatically picked up by \code{monitor} and then fed through our incidence network to produce the following theorems within 0.31 seconds:\footnote{We have tested this on an Intel Core 2 2.53GHz machine.}
+
+\vspace{0.2cm}
+\noindent\doublebox{\begin{minipage}{11.9cm}
+\footnotesize\code{A$\neq$E, B$\neq$E, between A B C, between B C D, A$\neq$B, A$\neq$C, B$\neq$C, B$\neq$D,}\\
+\code{C$\neq$D, \ttriangle{A}{B}{E},\ttriangle{A}{C}{E},}\\
+\code{\ttriangle{B}{C}{E}, C$\neq$E,}\\
+\code{\collinearfour{A}{B}{C}{D},}\\
+\code{\ttriangle{B}{D}{E}, \ttriangle{C}{D}{E},}\\
+\code{\planarfive{A}{B}{C}{D}{E}, D$\neq$E}
+\end{minipage}}
+\vspace{0.1cm}
+
+The \code{obviously} keyword picks up these theorems, and from $C\neq E$ we are able to find a point $F$:
+
+\vspace{0.2cm}
+\noindent\fbox{\begin{minipage}{11.9cm}
+\footnotesize\code{obviously by\_incidence consider F such that between C E F by II,2 at 1}
+\end{minipage}}
+\vspace{0.1cm}
+
+The next set of discovered theorems are found within 1.21 seconds:
+
+\vspace{0.2cm}
+\noindent\doublebox{\begin{minipage}{11.9cm}
+\footnotesize\code{between C E F, \collinearthree{C}{E}{F}, C$\neq$F, E$\neq$F,}\\
+\footnotesize\code{\planarsix{A}{B}{C}{D}{E}{F},}\\
+\footnotesize\code{A$\neq$F, B$\neq$F, D$\neq$F}\\
+\footnotesize\code{\ttriangle{A}{C}{F}, \ttriangle{A}{E}{F},}\\
+\footnotesize\code{\ttriangle{B}{C}{F}, \ttriangle{B}{E}{F},}\\
+\footnotesize\code{\ttriangle{C}{D}{F}, \ttriangle{D}{E}{F},}\\
+\footnotesize\code{\ttriangle{A}{B}{F}, \ttriangle{B}{D}{F}},
+\end{minipage}}
+\vspace{0.1cm}
+
+The rest of the proof consists of repeatedly applying a complex axiom due to Pasch. The axiom says that if a line enters one side of a triangle then it leaves by one of the other two sides. By cleverly applying this axiom, it is possible to prove our original theorem (this is not a trivial matter, and the proof had eluded Hilbert in the first edition of \emph{Foundations~of~Geometry} where the theorem was an axiom; the proof was later supplied by Moore~\cite{MooreProof}). 
+
+The challenge, however, lies in verifying when all the preconditions on Pasch's Axiom have been met, something we handle by adding a discover \code{by\_pasch} to our existing incidence discovery (we omit the definition for space). It reveals the following additional theorems, found within 2.82 seconds.
+
+\vspace{0.2cm}
+\noindent\doublebox{\begin{minipage}{11.9cm}
+\footnotesize
+\code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G C $\vee$ between A G F)}\\ 
+\code{$\exists$G. \collinearthree{A}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}\\
+\code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G F $\vee$ between C G F)}\\
+\code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between C G D $\vee$ between D G F)}\\
+\code{$\exists$G. \collinearthree{B}{F}{G} $\wedge$ (between A G E $\vee$ between C G E)}\\
+\code{$\exists$G. \collinearthree{D}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}
+\end{minipage}}
+\vspace{0.1cm}
+
+Further exploration of the proof involves applying one of these theorems. We can, for instance, try the penultimate instance with the step
+
+\vspace{0.2cm}
+\noindent\fbox{\begin{minipage}{11.9cm}
+\footnotesize\code{obviously by\_pasch consider G such that \collinearthree{B}{F}{G}\\
+$\wedge$ (between A G E $\vee$ between C G E)}
+\end{minipage}}
+\vspace{0.1cm}
+
+% The discoverer is now faced with a case-split, but in the right-branch, it infers $\code{between C G E} \rightarrow \bot$, after which further discovery stops. In the left branch, we obtain the following:
+
+The \code{monitor} now picks up the disjunction and creates a tree to represent a case-split. As this feeds into the discoverer, our combinators will automatically partition the search on the two assumptions. Our discoverer then produces three sets of theorems in 9.58 seconds \footnote{Note that the outputs from the three sets are interleaved, and are not generated simultaneously. While the full set of theorems requires 9.58 seconds, most of the theorems shown here are actually generated in under 1 second. The theorem required to advance the proof, \code{between C G E $\rightarrow$ F = G} is generated in 6.19 seconds.}
+
+The first set of theorems are proven independently of the case-split:
+
+\vspace{0.2cm}
+\noindent\doublebox{\begin{minipage}{11.9cm}
+\footnotesize
+\code{\planarseven{A}{B}{C}{D}{E}{F}{G}}\\
+\code{C$\neq$G $\wedge$ E$\neq$G $\wedge$ A$\neq$G $\wedge$ D$\neq$G}
+\end{minipage}}
+\vspace{0.1cm}
+
+The next set of theorems are discovered in a branch on the assumption of \code{between A G E}:
+
+\vspace{0.2cm}
+\noindent\doublebox{\begin{minipage}{11.9cm}
+\footnotesize
+\code{between A G E, \collinearthree{A}{G}{E}, B$\neq$G, F$\neq$G,}\\
+\code{\ttriangle{A}{B}{G}, \ttriangle{B}{E}{G}}\\
+\code{\ttriangle{A}{C}{G}, \ttriangle{C}{E}{G}}\\
+\code{\ttriangle{E}{F}{G}, \ttriangle{B}{D}{G}}\\
+\code{\ttriangle{C}{D}{G}, \ttriangle{C}{F}{G}}\\
+\code{\ttriangle{D}{F}{G}}
+\end{minipage}}
+\vspace{0.1cm}
+
+The final set of theorems are discovered in a branch on the assumption of \code{between C G E}:
+
+\vspace{0.2cm}
+\noindent\doublebox{\begin{minipage}{11.9cm}
+\footnotesize
+\code{between C G E, \collinearfour{C}{E}{F}{G}, B$\neq$G,}\\
+\code{\ttriangle{A}{C}{G}, \ttriangle{A}{E}{G}}\\
+\code{\ttriangle{B}{C}{G}, \ttriangle{B}{E}{G}}\\
+\code{\ttriangle{C}{D}{G}, \ttriangle{D}{E}{G}}\\
+\code{\ttriangle{A}{B}{G}, \ttriangle{B}{D}{G}}\\
+\code{F = G, between C F E}
+\end{minipage}}
+\vspace{0.1cm}
+
+The \code{obviously} step collapses the stream of trees, pushing the branch labels into the theorems as antecedents, and then uses the resulting lemmas to justify the step. Thus, the fact \code{F = G} becomes \code{between C G E $\rightarrow$ F = G}. This fact is sufficient to derive a contradiction with \code{between C E F} and thus eliminate the case-split:
+
+\vspace{0.2cm}
+\noindent\fbox{\begin{minipage}{11.9cm}
+\footnotesize\code{obviously by\_incidence have between A G E from 1 by II,3}
+\end{minipage}}
+\vspace{0.1cm}
+
+The rest of the proof proceeds similarly. While the prose proof has 9 steps and our earlier formalisation without discovery runs to over 80 steps, the new formalisation has just 17 steps. We found this roughly 80\% reduction in proof length across all 18 theorems from our earlier formalisation, with the new formalisations comparing much more favourably with the prose.

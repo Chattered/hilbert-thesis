@@ -214,7 +214,7 @@ After splitting conjunctions, we find that there are ten axioms in Hilbert's fir
 
 This appears to directly contradict a claim made by Weyl that the deductions in Hilbert's geometry contain no \emph{gaps}~\cite{TableChairMug}. Indeed, taking this claim at face-value, we would agree with Meikle and Fleuriot that Hilbert's arguments are full of missing assumptions and lemmas. But we do not believe Hilbert ever made this claim. Given that he is happy to elide whole proofs, it seems to us that whatever his standards of rigour, they were never intended to coincide with the extremely pedantic standards of formal logic. Perhaps the only standard we want to hold Hilbert to is that his deductions are logical consequences of previous ones, and that he has made a reasonable balance in his presentation, carefully elucidating only the particularly tricky proofs. So far, we have confirmed that all of his deductions are indeed valid. It is less clear whether his presentation is balanced, as we shall discuss over the remaining chapters.
 
-Actually, there is one axioms which Hilbert \emph{is} careful to cite. This is Axiom~I,3 (or more precisely in our formalisation, Axiom~\ref{eq:g13b}). We might suppose Hilbert cites this axiom because it is usually used to \emph{introduce} points. In an informal geometry proof, where the goal is to \emph{obtain} a geometric figure, one would not want to leave these sorts of introduction steps implicit. 
+Actually, there is one axioms which Hilbert \emph{is} careful to cite. This is Axiom~I, 3 (or more precisely in our formalisation, Axiom~\ref{eq:g13b}). We might suppose Hilbert cites this axiom because it is usually used to \emph{introduce} points. In an informal geometry proof, where the goal is to \emph{obtain} a geometric figure, one would not want to leave these sorts of introduction steps implicit. 
 
 For many of the other axioms whose citations are missing, we might still excuse Hilbert by noting again that almost all of his proofs are \emph{planar}. In effect, Hilbert makes a pervasive ``without-loss-of-generality'' assumption, which is justified because the axioms he invokes will always force the objects considered to lie in the same plane. This makes his life substantially easier, since it means he is effectively working with just Axioms~\ref{eq:g11}, \ref{eq:g12} and \ref{eq:g13a}. 
 
@@ -274,7 +274,7 @@ In this sense, Rule~\ref{rule:colltwo} must assert that the points $A$ and $B$ a
 
 Similarly, Rule~\ref{rule:planethree} tells us that $A$, $B$ and $C$ are incident with the plane $ABC$ while Rule~\ref{rule:planeunion} asserts that the expression ``the plane $ABC$'' is well-defined, or more generally, that a plane is uniquely determined by any of its non-collinear subsets.
 
-Rule~\ref{rule:collplaneplane} is a stronger version of Axiom~\ref{eq:g16}. To see this, we again think of our lines and planes as maximal collinear and planar sets. Axiom~I,6 says ``[i]f two points $A$, $B$ of a line $a$ lie in a plane $\alpha$ then every point of $a$ lies in the plane $\alpha$.'' Here, we take the line $a$ to be a maximal collinear set $S$ and $\alpha$ to be a maximal planar set $T$. According to \ref{rule:collplane}, $S$ is also planar, and according to \ref{rule:collplaneplane}, so is $S \cup T$. But $T$ is maximal, so we must have $S \cup T = T$ and thus $S \subseteq T$. In other words, all points of the line $S$ lie in the plane $T$.
+Rule~\ref{rule:collplaneplane} is a stronger version of Axiom~\ref{eq:g16}. To see this, we again think of our lines and planes as maximal collinear and planar sets. Axiom~I, 6 says ``[i]f two points $A$, $B$ of a line $a$ lie in a plane $\alpha$ then every point of $a$ lies in the plane $\alpha$.'' Here, we take the line $a$ to be a maximal collinear set $S$ and $\alpha$ to be a maximal planar set $T$. According to \ref{rule:collplane}, $S$ is also planar, and according to \ref{rule:collplaneplane}, so is $S \cup T$. But $T$ is maximal, so we must have $S \cup T = T$ and thus $S \subseteq T$. In other words, all points of the line $S$ lie in the plane $T$.
 
 Our final rule, Rule~\ref{rule:collcollplane}, tells us that, once we understand lines to be maximal collinear sets, then intersecting lines lie in a plane. But if these lines are distinct, their union must be non-collinear, since otherwise they would not be maximal sets. Thus, the two lines lie in a unique plane, which is exactly the claim made in Hilbert's Theorem~2. 
 
@@ -330,7 +330,7 @@ We now give the remaining axioms.
 
 Axiom~II, 2 can be compared to Euclid's second postulate: ``To produce a finite straight line continuously in a straight line.'' Here, Hilbert is telling us that we can extend the segment $AC$ to a point $B$ in the direction $\overrightarrow{AC}$. This axiom is absolutely key in building up geometrical figures.
 
-Axiom~II, 3 is akin to an anti-symmetry property for linear ordering. With Axiom~I,1, it also shows that from $\between{A}{B}{C}$ we can infer that $A$, $B$ and $C$ are mutually distinct. 
+Axiom~II, 3 is akin to an anti-symmetry property for linear ordering. With Axiom~I, 1, it also shows that from $\between{A}{B}{C}$ we can infer that $A$, $B$ and $C$ are mutually distinct. 
 
 Axiom~II, 4 is Pasch's axiom. So far, it is the most complex axiom we have to apply, being a planar axiom with numerous preconditions and a disjunctive conclusion wrapped in an existential. The complexity can be measured by comparing the size of the formalisation in Appendix~\ref{app:Group2} with that for the other axioms.
 
@@ -339,16 +339,16 @@ In fact, most of the effort we found in our earlier work was expended trying to 
 
 \begin{figure}
 \centering\includegraphics{axioms/Pasch}
-\caption{Axiom II,4}
+\caption{Axiom II, 4}
 \label{fig:PaschDiagram}
 \end{figure}
 
-Our preconditions can now be expressed in terms of non-collinear and planar sets. We do this by deriving the following alternative formulation of Axiom~II,4:\footnote{Thanks to Laura Meikle for spotting that we only need to assume three triangles here.}
+Our preconditions can now be expressed in terms of non-collinear and planar sets. We do this by deriving the following alternative formulation of Axiom~II, 4:\footnote{Thanks to Laura Meikle for spotting that we only need to assume three triangles here.}
 \begin{align}\label{eq:PaschPointSet}
   &\neg\code{collinear}\ \{A,B,C\}\wedge\neg\code{collinear}\ \{A,D,E\}\wedge\neg\code{collinear}\ \{C,D,E\}\\
   &\wedge\code{planar}\ \{A,B,C,D,E\}\wedge\between{A}{D}{B}\\
   &\implies\exists F. \code{collinear}\ \{D,E,F\} \wedge (\between{A}{F}{C}\vee\between{B}{F}{C}).
-\end{align}
+\end{align} 
 
 It is now perhaps clearer how the rules from \S\ref{sec:PointSets} are needed when reasoning about incidence in Hilbert's proofs. Most of his theorems in Group~II require reasoning about order in the plane by applying Pasch's Axiom. Each time the axiom is applied, we must verify the preconditions of the axiom, which according to Theorem~\ref{eq:PaschPointSet}, means we must find three triangles and a planar set. 
 

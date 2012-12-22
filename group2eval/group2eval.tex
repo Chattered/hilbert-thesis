@@ -1,531 +1,637 @@
-% MAKE SURE YOU MENTION ORDERED GEOMETRY HERE See paper notes
-\chapter{Group II}\label{chapter:Group2Eval}
-\section{Pasch's Axiom}
-The first of Hilbert's \emph{proofs} appear in Group~II, and they make extensive use of an axiom due to Pasch. This axiom asserts that any line $a$ which enters a triangle $ABC$ on one side must leave by one of the other two sides, such as in the case depicted in Figure \ref{PaschDiagram}.
+\chapter{Elementary Consequences in Group~II}\label{chapter:Group2Eval}
+In this chapter, we look at the first three theorems of Group~II, which happen to be the only theorems in the group which have prose proofs. Each proof makes extensive use of Axiom~~\ref{eq:g24}. In Chapter~\ref{chapter:Axiomatics}, we explained how this axiom had been particularly difficult to apply in our earlier work~\cite{ScottMScThesis} and the work of Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}. Each time the axiom is applied, many preconditions about incident points must be established, and we usually have to discard a disjunct in the conclusion, again appealing to incidence reasoning. 
 
-\begin{figure}\label{PaschDiagram}
-% \begin{pspicture}(-2,0)(5,3.5)
-% \psset{xunit=0.75cm}
-% \psset{yunit=0.5cm}
-% \put(1.3,0.2){\parbox{5cm}{$A$}}
-% \put(6,0.2){\parbox{5cm}{$B$}}
-% \put(5.2,2.6){\parbox{5cm}{$C$}}
-% \put(4.3,0){\parbox{5cm}{$a$}}
-% \psline[linewidth=0.15mm](2,1)(8,1)
-% \psline[linewidth=0.15mm](2,1)(7,5)
-% \psline[linewidth=0.15mm](7,5)(8,1)
-% \psline[linewidth=0.25mm](5.5,0)(8,6)
-% \end{pspicture}
-% \caption{Axiom II,4}
-\end{figure}
+In the last chapter, we described some automation to handle this complex incidence reasoning. An aim of this chapter is to see how much this automation can help us explore proofs, and help us shorten our verifications and make them easier to develop. 
 
-This is a complex axiom to apply. The claim that a line cannot intersect any of the triangle's vertices cashes out as three claims of \emph{non-incidence}, and as we explained in \S\ref{NonIncidenceTriangle}, a claim of non-incidence just asserts that three points form a triangle. Together with the triangle that is being intersected, this means we need to find four triangles every time we apply Pasch's axiom. The matter was formalised when we derived the following version of the axiom:
+For an ancillary aim, we consider to what extent computer-aided verification, supplemented with appropriate domain-specific automation, can be used as an \emph{analytical tool} with which to inspect informal arguments. For this chapter only, we shall be looking at Hilbert's prose proofs at a very fine detail. With the aid of machine-checked and faithful verifications of the prose, we can reason at this level of detail with confidence.
 
+\section{Theorem~3}\label{sec:Theorem3}
+Hilbert's first theorem tells us that there is a point between any two others, or as Pasch would have phrased it, that every segment contains a point.
+
+\begin{quotation}
+THEOREM 3. For two points $A$ and $C$ there always exists at least one point $D$ on the line $AC$ that lies between $A$ and $C$.
+
+PROOF. By Axiom~I, 3 there exists a point $E$ outside the line $AC$ and by Axiom~II, 2 there exists on $AE$ a point $F$ such that $E$ is a point of the segment $AF$. By the same axiom and by Axiom~II, 3 there exists on $FC$ a point $G$ that does not lie on the segment $FC$. By Axiom II, 4 the line $EG$ must then intersect the segment $AC$ at a point $D$.
+
+\centering\includegraphics{group2eval/Three}
+\end{quotation}
+
+The only incidence axiom Hilbert appeals to in this proof is Axiom~I, 3, and the only order axioms are Axiom~II, 2 and Axiom~II, 4. This is consistent with a claim we made in Chapter~\ref{chapter:Axiomatics}: Hilbert mostly appeals to axioms which \emph{introduce} points, because the most important steps of synthetic geometry are those which obtain our diagrams. Here, we have Axiom I, 3 which can be used (indirectly) to obtain points off of arbitrary lines, in this case the point $F$. We have Axiom~II, 2 which is our ``line-extension axiom'', used here to obtain the point $F$, and we have Axiom~II, 4 which finds ``exit points'' of a line passing through a triangle, in this case, the point $D$.
+
+Theorem~3 was an axiom in the first edition of the \emph{Foundations of Geometry}. It was perhaps quite a surprise that such linear axioms could be derived from a simpler one-dimensional order axiom \eqref{eq:g22} and the two-dimensional Pasch axiom \eqref{eq:g24}. This is the situation in all three proofs we consider in this chapter. We will be proving one-dimensional results by obtaining \emph{two-dimensional} figures and applying Pasch's axiom.
+
+\subsection{Verification}
+Our verification is shown in Figure~\ref{fig:ThreeVerification}. Our earlier declarative Isabelle verification~\cite{ScottMScThesis} ran to twenty-two steps. Here, we have just five steps, and are \emph{very} close to Hilbert's prose. We have just one extra step: our final \code{qed} eliminates the unwanted disjunct from Pasch's axiom. 
+
+\begin{boxedfigure}
+  \begin{align*}
+    &\code{assume}\ A\neq C\\
+    &\code{so consider}\ E \code{ such that }\ \Triangle{a}{A}{C}{E}\\
+    &\qquad\code{by}\ \eqref{eq:g12},\eqref{eq:g13b}& 0\\
+    &\code{obviously}\ \code{by\_neqs}\ \code{consider}\ F\ \code{such that}\ \between{A}{E}{F}\ \code{from}\ 0\ \code{by}\ \eqref{eq:g22} & 1\\
+    &\code{obviously}\ \code{by\_neqs}\ \code{so consider}\ G\ \code{such that}\ \between{F}{C}{G}\\&\qquad \code{from}\ 0\ \code{by}\ \eqref{eq:g22} & 2\\
+    &\code{obviously by\_incidence so consider}\ D\ \code{such that}\\
+    &\qquad(\exists a. \code{on\_line}\ E\ a \wedge \code{on\_line}\ G\ a \wedge \code{on\_line}\ D\ a)\\
+    &\qquad \wedge (\between{A}{D}{C}\vee\between{F}{D}{C})\\
+    &\qquad \code{using K (MATCH\_MP\_TAC \eqref{eq:PaschPointSetUnfold}) from}\ 0,1\\
+    &\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,1,2\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}
+  \end{align*}
+\caption{Verification of Theorem~3}
+\label{fig:ThreeVerification}
+\end{boxedfigure}
+
+We also cite two extra axioms. We mentioned that Axiom~I, 3 can only be used \emph{indirectly} to find a point off an arbitrary line. Strictly speaking, one must also appeal to Axiom~\eqref{eq:g12} as we have done. We have also cited Axiom~II, 1. This is only needed for the trivial matter of switching the order of the outer arguments to the \code{between} relation. 
+
+We reference three separate discoverers in our proof: \code{by\_incidence}, \code{by\_neqs}, and \code{by\_eqs}. The first discoverer collects all incidence theorems considered in the last chapter into a single discoverer, while the latter two just discover theorems of particular kinds. The semantics of laziness takes care of making this a genuine optimisation: if we only pull theorems from the \code{by\_neqs} discoverer, no theorems will be pulled from the \code{by\_eqs} or \code{by\_planes} discoverers, as we can see by looking again at the dependencies in our data-flow diagram (Figure~\ref{fig:DataFlow}).
+
+Finally, we have used \code{MATCH\_MP} to apply a version the Pasch Axiom~\eqref{eq:PaschPointSetUnfold} phrased in terms of point sets. This is just there to help the default prover at this step. We do not break the declarative style, since \code{MATCH\_MP} has no side-effects on the proof context, and we still explicitly mention the theorem that we have matched against. Even so, such matching is an irritation, since the free variables in the matched theorem must be lined up with those in the goal, and it is easy to get the order mixed up. We shall deal with this matter in \S\ref{sec:PaschDiscoverer}.
+
+\subsection{The Outer and Inner Pasch Axioms}
+As we said earlier, Theorem~3 was an axiom of the first edition of \emph{Foundations of Geometry}. The full investigation of these redundancies can be credited to Veblen and his supervisor E.H. Moore, who investigated ordered geometry based on axioms very similar to Hilbert's. However, if we look at Veblen's work~\cite{Veblenphd}, we see he chose a different rendering of the Pasch Axiom.
+
+\begin{quotation}
+AXIOM VIII \emph{(Triangle traversal axiom). If three distinct points $A$, $B$, $C$ do not lie on the same line, and $D$ and $E$ are two points in the order $BCD$ and $CEA$, then a point $F$ exists in the order $AFB$, and such that $D$, $E$, $F$ lie on the same line.}
+\end{quotation}
+
+This form of the axiom, known as the \emph{Outer Pasch Axiom}, is due to Peano. It is strong enough to replace Hilbert's own version, and has an important advantage in terms of incidence reasoning: it carries fewer incidence preconditions at the expense of one extra order condition, and the conclusion is not disjunctive, so we are saved the effort of eliminating an offending case.
+
+A related axiom (which turns out to be weaker \cite{PaschForms}), is also due to Peano. This is the \emph{Inner Pasch Axiom}, which exchanges the roles of $E$ and $F$ in the Outer Pasch Axiom. It can be formalised as:
+\begin{multline}\label{eq:InnerPaschWeak}
+  \Triangle{a}{A}{B}{C} \wedge \between{B}{C}{D} \wedge \between{A}{E}{B}\\ \implies \exists F a.  \code{on\_line}\ D\ a \wedge \code{on\_line}\ E\ a \wedge \code{on\_line}\ F \wedge \between{A}{F}{C}
+\end{multline}
+
+It can now be seen that the diagram obtained in Hilbert's proof of Theorem~3 is just obtaining the assumptions of this Inner Pasch axiom. So when we derive Inner Pasch as a theorem and use it as an alternative to Axiom~\ref{eq:g24}, we get a verification which does not need the final step we had before. In fact, had we spotted the factoring in our Isabelle formalisation, we would have only needed an eight rather than twenty-two step Isabelle verification.
 \begin{align*}
-&\neg\code{collinear}\{A, B, C\}\\
-\wedge\,&\neg\code{collinear}\{A, D, E\}\\
-\wedge\,&\neg\code{collinear}\{B, D, E\}\\
-\wedge\,&\neg\code{collinear}\{C, D, E\}\\
-&\quad\rightarrow\between\,A\,B\,C \\
-&\qquad\rightarrow\exists F.\; \code{collinear} \{D, E, F\} \wedge (\between\,A\,F\,C \vee \between\,B\,F\,C).
+&\code{assume}\ A\neq C\\
+&\code{so consider}\ E \code{ such that }\ \Triangle{a}{A}{C}{E}\\
+&\qquad\code{by}\ \eqref{eq:g12},\eqref{eq:g13b}& 0\\
+&\code{obviously}\ \code{by\_neqs}\ \code{consider}\ F\ \code{such that}\ \between{A}{E}{F}\ \code{from}\ 0\ \code{by}\ \eqref{eq:g22} & 1\\
+&\code{obviously}\ \code{by\_neqs}\ \code{so consider}\ G\ \code{such that}\ \between{F}{C}{G}\ \code{from}\ 0\ \code{by}\ \eqref{eq:g22} & 2\\
+&\code{obviously by\_ncols so consider}\ D\ \code{qed from}\ 0,1\ \code{by}\ \eqref{eq:g21},\eqref{eq:InnerPaschWeak}
 \end{align*}
 
-The axiom is further complicated by its existential and disjunctive conclusion. Every time this axiom is applied in Hilbert's proofs, at least one of the disjuncts must be eliminated, by deriving a falsehood on its assumption. We are then left with an existential, which is often eliminated by showing that the point in question has already been constructed. In all but one case, Hilbert elides the case-splitting and the existential elimination. In our Isabelle formalisation, this elided reasoning turned into often complicated incidence arguments based on point sets.
+For comparison, here is Veblen's proof of the same theorem. The two are exactly analogous. Veblen's diagram just replaces the Inner Pasch axiom with the Outer Pasch axiom:
+\begin{quotation}\label{sec:VeblenThree}
+TH~6 [...]. Between every two distinct points there is a third point.
 
-\subsection{Pasch as a Tactic}
-When Hilbert draws the reader's attention to an application of Pasch's axiom, he generally does so in the following way:
-\begin{quote}By an application of Axiom~II,4 to the triangle $BCG$ and to the line $AD$....\end{quote}
+Proof. Let $A$ and $B$ be the given points [figure]. By theorem~5 there is a point $E$ not lying on the line $AB$. By [the line extension axiom] points $C$ and $D$ exist, satisfying the order-relations $AEC$ and $BCD$. Hence, by [the Outer Pasch Axiom], $F$ exists in the order $AFB$.
 
-The wording here suggests that Pasch is not being treated as a mere axiom, but as a two-argument \emph{procedure}, taking a triangle and a line (in this case, $BCG$ and $AD$). We followed up this idea by implementing our own two argument Pasch procedure, allowing us to write proof steps in the form
+\centering\includegraphics{group2eval/OuterPasch}
+\end{quotation}
+In conclusion, if we judge Hilbert's argument for Theorem~3 to be gappy because of missing incidence reasoning, then we can bring it up to the more pedantic standards of Veblen. Before Theorem~3, we suggest one first derive the Inner Pasch axiom~\eqref{eq:InnerPaschWeak}, after which the proof of Theorem~3 follows more fluidly. This observation will be worth bearing in mind when we come to Theorem~5 in \S\ref{sec:Theorem5}.
 
-\vspace{0.5cm}
-\texttt{\qquad\qquad by pasch\_on $\neg$COLLINEAR \{B, C, G\} and A,D}
-\vspace{0.5cm}
+\section{Theorem~4}
+In this section, we shall review more carefully how we can use our discovery tool in an exploratory fashion, as we examine Hilbert's Theorem~4. In the first edition of \emph{Foundations of Geometry}, Hilbert had incorporated this theorem into Axiom~\ref{eq:g23}:
+\begin{quotation}
+  II, 3. \emph{Of any three points situated on a straight line, there is always one and only one which lies between the other two.}
+\end{quotation}
 
-Our procedure first identifies the necessary hypotheses needed to apply Pasch's axiom from the two supplied arguments. It then looks up these hypotheses in the step's justifying theorems. Once it has the existential disjunction, it runs a case-split on the two disjuncts, looking for an obvious contradiction using the automated inferencing tool we discuss in \S\ref{sec:DiscoveryImplementation}. It then eliminates the existential to introduce a new point.
+The ``only one'' direction is all that is retained in the Tenth Edition. The other direction was given in a proof which Hilbert credits to Wald.
+\begin{quotation}
+  THEOREM~4. Of any three points $A$, $B$, $C$ on a line there always is one that lies between the other two.
 
-\section{Analysis}
-In this subsection, we discuss what we have learned about incidence reasoning with point sets based on our discovery tool. We then discuss two proofs which required significant effort to formalise in Isabelle, and show what their formalisation looks like when written in tandem with our discovery tool. We compare these new proofs with their prose counterparts, suggest weaknesses of the prose, and discuss an alternative proof which the automation allowed us to explore.
+  PROOF. Let $A$ not lie between $B$ and $C$ and let also $C$ not lie between $A$ and $B$. Join a point $D$ that does not lie on the line $AC$ with $B$ and choose by Axiom~II, 2 a point $G$ on the connecting line such that $D$ lies between $B$ and $G$. By an application of Axiom~II, 4 to the triangle $BCG$ and to the line $AD$ it follows that the lines $AD$ and $CG$ intersect at a point $E$ that lies between $C$ and $G$ . In the same way, it follows that the lines $CD$ and $AG$ meet at a point $F$ that lies between $A$ and $G$.
 
-\subsection{Idle-Time Discoveries}\label{sec:IdleTimeDiscoveries}
-We first describe some of the combinatorial details of the incidence reasoning. We implemented our tool with book-keeping, retaining information about which rules had been applied when and in what order, as it derived all the discovered facts. The results revealed fairly complicated chains of inference. 
+If Axiom~II, 4 [(Pasch's axiom)] is applied now to the triangle $AEG$ and to the line $CF$ it becomes evident that $D$ lies between $A$ and $E$, and by an application of the same axiom to the triangle $AEC$ and to the line $BG$ one realizes that $B$ lies between $A$ and $C$.
 
-\begin{figure}
-  % \mbox{\subfigure[Replace $E$ with $G$]{
-  %     \begin{pspicture}(-1,0)(5,3)
-  %       \psset{yunit=0.5cm}
-  %       \psset{xunit=0.5cm}
-  %       \put(0.2,0.2){\parbox{5cm}{\scriptsize$A$}}
-  %       \put(1.8,0.2){\parbox{5cm}{\scriptsize$B$}}
-  %       \put(4.3,0.2){\parbox{5cm}{\scriptsize$D$}}
-  %       \put(2.7,2.5){\parbox{5cm}{\scriptsize$E$}}
-  %       \put(2.1,2){\parbox{5cm}{\scriptsize$G$}}
-  %       \put(3.4,1.3){\parbox{5cm}{\scriptsize$H$}}
-  %       \psline[linewidth=0.25mm](\ptfvA)(\ptfvD)
-  %       \psline[linewidth=0.25mm](\ptfvD)(\ptfvG)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvA)(\ptfvB)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvB)(\ptfvG)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvG)(\ptfvA)
-  %       \psline[linestyle=dashed,linewidth=0.25mm](\ptfvB)(\ptfvE)
-  %       \psline[linestyle=dashed,linewidth=0.25mm](\ptfvG)(\ptfvE)
-  %     \end{pspicture}\label{fig:deriveAEH1}}}
-  % \quad
-  % \mbox{\subfigure[Replace $B$ with $D$]{
-  %     \begin{pspicture}(0,0)(5,3)
-  %       \psset{yunit=0.5cm}
-  %       \psset{xunit=0.5cm}
-  %       \put(0.2,0.2){\parbox{5cm}{\scriptsize$A$}}
-  %       \put(1.8,0.2){\parbox{5cm}{\scriptsize$B$}}
-  %       \put(4.3,0.2){\parbox{5cm}{\scriptsize$D$}}
-  %       \put(2.1,2){\parbox{5cm}{\scriptsize$G$}}
-  %       \put(3.4,1.3){\parbox{5cm}{\scriptsize$H$}}
-  %       \psline[linewidth=0.25mm](\ptfvA)(\ptfvD)
-  %       \psline[linestyle=dashed,linewidth=0.25mm](\ptfvA)(\ptfvB)
-  %       \psline[linestyle=dashed,linewidth=0.25mm](\ptfvB)(\ptfvG)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvA)(\ptfvD)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvD)(\ptfvG)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvG)(\ptfvA)
-  %     \end{pspicture}}}
+\centering \includegraphics{group2eval/Four}
+\end{quotation}
 
-  % \mbox{\subfigure[Replace $D$ with $H$]{
-  %     \begin{pspicture}(-1,0)(5,3)
-  %       \psset{yunit=0.5cm}
-  %       \psset{xunit=0.5cm}
-  %       \put(0.2,0.2){\parbox{5cm}{\scriptsize$A$}}
-  %       \put(4.3,0.2){\parbox{5cm}{\scriptsize$D$}}
-  %       \put(2.1,2){\parbox{5cm}{\scriptsize$G$}}
-  %       \put(3.4,1.3){\parbox{5cm}{\scriptsize$H$}}
-  %       \psline[linewidth=0.25mm](\ptfvA)(\ptfvD)
-  %       \psline[linestyle=dashed,linewidth=0.25mm](\ptfvD)(\ptfvH)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvA)(\ptfvG)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvG)(\ptfvH)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvH)(\ptfvA)
-  %     \end{pspicture}}}
-  % \quad
-  % \mbox{\subfigure[Replace $G$ with $E$]{
-  %     \begin{pspicture}(0,0)(5,3)
-  %       \psset{yunit=0.5cm}
-  %       \psset{xunit=0.5cm}
-  %       \put(0.2,0.2){\parbox{5cm}{\scriptsize$A$}}
-  %       \put(2.7,2.5){\parbox{5cm}{\scriptsize$E$}}
-  %       \put(2.1,2){\parbox{5cm}{\scriptsize$G$}}
-  %       \put(3.4,1.3){\parbox{5cm}{\scriptsize$H$}}
-  %       \psline[linestyle=dashed,linewidth=0.25mm](\ptfvA)(\ptfvG)
-  %       \psline[linestyle=dashed,linewidth=0.25mm](\ptfvG)(\ptfvH)
-  %       \psline[linestyle=dashed,linewidth=0.25mm](\ptfvH)(\ptfvA)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvA)(\ptfvE)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvE)(\ptfvH)
-  %       \psline[linestyle=dashed,linewidth=0.4mm](\ptfvH)(\ptfvA)
-  %     \end{pspicture}}}
-\caption{Finding $AEH$ from $AEG$}
-\label{fig:deriveAEH}
-\end{figure}
+\subsection{Discovering Applications of Pasch}\label{sec:PaschDiscoverer}
+With Axiom~\ref{eq:g24} used a total of four times in this theorem, and with the symmetry that is obvious in the diagram, we wanted to explore this proof a bit more using our automated discoverers. One drawback of our discoverers is that, even though they tell us various incidence relations implied by our assumptions, and thus help us discharge preconditions on Axiom~\ref{eq:g24}, they do not tell us which instantiations of this axiom are possible.
 
-There was one fact needed during a proof which particularly interested us, because in our proposal, we erroneously stated that \emph{it could not be derived}. The example comes from a step in the proof of Theorem~5, where we must infer that three points $A$, $E$ and $H$ form a triangle. The derivations are depicted in Figure \ref{fig:deriveAEH}. Each step corresponds to an application of our triangle introduction rule and can be understood as substituting points of a non-collinear triple one-at-a-time, until we have rewritten the initial triangle $ABE$ to $AEH$.
+We cannot simply define a new discoverer which finds possible applications of Axiom~\ref{eq:g24} by using our simple forward-chaining primitives $\code{chain1}$, $\code{chain2}$, $\code{chain3}$. The problem is that our version of this axiom in point sets~\eqref{eq:PaschPointSet} has five free variables but its antecedents involving triangles and betweenness only fix three variables at a time. The remaining two variables can only be fixed by matches up to associativity and commutativity, which \code{MATCH\_MP} does not support.
 
-It might seem that we can just replace the point $B$ with the point $H$ to rewrite $ABE$ to $AEH$, but the triangle introduction rule requires a hypothesis about an appropriate collinear set and an appropriate point inequality. So the inference is more indirect. At first, we can substitute $E$ for $G$ using the line $AGE$. We then substitute $B$ for $D$ using the line $ABD$, and then $D$ for $H$ using the line $DGH$. Finally, we must use our point-inequality introduction rule to show that $E$ and $H$ are distinct on the basis of the triangle $AGH$ and the line $AGE$, after which we can substitute $G$ for $H$ using the line $AGE$.
+Instead, we defined a new discoverer \code{by\_pasch} with a combination of ML and monad library functions. We filter for betweenness theorems from an existing discoverer and use these to discharge one of the preconditions of Axiom~\ref{eq:g24}. We then reuse the discoverer \code{by\_ncols} to discharge the triangle preconditions, manually handling the ordering of the free variables each time a precondition is eliminated. 
 
-We had not been able to realise this chain of argument manually in the Isabelle formalisation, though we had written many like it. In some of these other arguments, we would have to experiment with different starting triangles to get the right conclusions, and manually determine the instantiations for the point variables in our rules. But once we had our automated tool, the inferences could be discovered for us, and we were relieved of the complex combinatorial steps on which they depend.
+This discoverer outputs theorems which are the conclusions of Axiom~\ref{eq:g24}, which therefore tell us where Axiom~II, 4 can be applied. At the point in Hilbert's proof where Axiom~\ref{eq:g24} is first used, the discoverer only finds two possibilities. Hilbert uses both of them.
+\begin{gather*}
+\begin{split}
+&\exists F. (\exists a. \code{on\ line}\ C\ a \wedge \code{on\ line}\ D\ a \wedge \code{on\ line}\ F\ a)\\
+&\qquad \between{A}{F}{B} \vee \between{A}{F}{G} 
+\end{split}\\
+\begin{split}
+&\exists F. (\exists a. \code{on\ line}\ A\ a \wedge \code{on\ line}\ D\ a \wedge \code{on\ line}\ F\ a)\\
+&\qquad \between{B}{F}{C} \vee \between{C}{F}{G} 
+\end{split}
+\end{gather*}
 
-\subsection{Assisted Formalisations in Group II}\label{sec:FormalisationAnalysis}
-The opening theorems in Group~II, Theorems~3, 4 and 5 (see Appendix~\ref{app:GroupII}), are the first theorems Hilbert explicitly proves in the tenth edition. This group is concerned with \emph{order}. Theorem~3 tells us that given two points, we can put a third point in between them. It was absent in the first edition, instead paired with Axiom~II,2. Similarly, Theorem~4 was originally part of Axiom~II,3. Originally, this axiom stated that given three points on a line, exactly one lies between the other two. This was weakened by the tenth edition to merely say \emph{no more than one} lies between the other two. Finally, Theorem~5 was an additional axiom in Group~II verbatim. The derivations of these axioms was not just due to Hilbert. As he mentions in the footnotes to the tenth edition, it was respectively Wald and Moore who derived Theorems~4 and~5.
-
-The fact that Hilbert originally assumed these theorems were unprovable can be taken as evidence that they are non-trivial. After all, Hilbert did not want redundant axioms --- the second chapter of \emph{Foundations of Geometry} is concerned in part with their mutual independence. Moreover, according to our Isabelle formalisation, these arguments were further complicated by a great deal of fussy incidence reasoning. In any case, we argue that they are a suitable test-bed for our tool's effectiveness, both in deferring implicit reasoning to automation, and in exploring and analysing the logic of the proofs.
-
-\subsubsection{Analysis of Theorem~4}
-We give the prose version of the proof as it appears in the tenth edition:
+After Hilbert applies the first of these, another three possibilities arise, depicted in Figure~\ref{fig:FourPossibilities}
+\begin{gather*}
+\begin{split}\text{(a)}\qquad
+&\exists F. (\exists a. \code{on\ line}\ C\ a \wedge \code{on\ line}\ D\ a \wedge \code{on\ line}\ F\ a)\\
+&\qquad \between{B}{F}{E} \vee \between{E}{F}{G} 
+\end{split}\\
+\begin{split}\text{(b)}\qquad
+&\exists F. (\exists a. \code{on\ line}\ B\ a \wedge \code{on\ line}\ E\ a \wedge \code{on\ line}\ F\ a)\\
+&\qquad \between{A}{F}{C} \vee \between{A}{F}{G} 
+\end{split}\\
+\begin{split}\text{(c)}\qquad
+&\exists F. (\exists a. \code{on\ line}\ B\ a \wedge \code{on\ line}\ E\ a \wedge \code{on\ line}\ F\ a)\\
+&\qquad \between{C}{F}{D} \vee \between{D}{F}{G} 
+\end{split}\\
+\end{gather*}
 
 \begin{figure}
-  % \begin{pspicture}(-1,0)(5,7)
-  %   \put(0.8,0.6){\parbox{5cm}{\scriptsize$A$}}
-  %   \put(3.8,0.6){\parbox{5cm}{\scriptsize$B$}}
-  %   \put(7.0,0.6){\parbox{5cm}{\scriptsize$C$}}
-  %   \put(4.4,2.6){\parbox{5cm}{\scriptsize$D$}}
-  %   \put(5.6,3.8){\parbox{5cm}{\scriptsize$E$}}
-  %   \put(3.2,3.7){\parbox{5cm}{\scriptsize$F$}}
-  %   \put(4.7,5.2){\parbox{5cm}{\scriptsize$G$}}
-    
-  %   \psline[linewidth=0.25mm](\ptfrA)(\ptfrC)
-  %   \psline[linewidth=0.25mm](\ptfrB)(\ptfrG)
-  %   \psline[linewidth=0.25mm](\ptfrA)(\ptfrE)
-  %   \psline[linewidth=0.25mm](\ptfrC)(\ptfrF)
-  %   \psline[linewidth=0.25mm](\ptfrA)(\ptfrG)
-  %   \psline[linewidth=0.25mm](\ptfrC)(\ptfrG)
-  % \end{pspicture}
-\caption{Proof of Theorem~4}
+  \includegraphics[scale=0.9]{group2eval/FourPossibilities}
+  \caption{Three Possible Applications of Axiom~II, 4}
+  \label{fig:FourPossibilities}
 \end{figure}
 
-\begin{quote}
-THEOREM 4. Of any three points $A$, $B$, $C$ on a line there always is one that lies between the other two.
+Cases (a) and (c) of Figure~\ref{fig:FourPossibilities} obtain the exact same point $F$, but in case (a) we should conclude that $F$ is between $B$ and $E$ while in (b) we should conclude that $F$ is between $C$ and $D$. If we apply both cases of the axiom, we will know that $F$ is between $B$ and $E$ and simultaneously between $C$ and $D$. Either of these cases yields an alternative proof of the theorem which we describe in \S\ref{sec:FourAlternative}.
 
-Let $A$ not lie between $B$ and $C$ and let also $C$ not lie between $A$ and $B$. Join a point $D$ that does not lie on the line $AC$ with $B$ and choose by Axiom~II,2 a point $G$ on the connecting line such that $D$ lies between $B$ and $G$. By an application of Axiom~II,4 to the triangle $BCG$ and to the line $AD$ it follows that the lines $AD$ and $CG$ intersect at a point $E$ that lies between $C$ and $G$ . In the same way, it follows that the lines $CD$ and $AG$ meet at a point $F$ that lies between $A$ and $G$.
+It would be surprising if case (b) got us \emph{anywhere}. The only valid disjunct in its conclusion should put the point $F$ between $A$ and $C$, from which we could immediately conclude that $B = F$ and thus complete the proof. But this is all too easy. The truth of the matter is that incidence reasoning alone, according to our discoverer, cannot reject the offending disjunct in the axiom's conclusion.
 
-If Axiom~II,4 [(Pasch's axiom)] is applied now to the triangle $AEG$ and to the line $CF$ it becomes evident that $D$ lies between $A$ and $E$, and by an application of the same axiom to the triangle $AEC$ and to the line $BG$ one realizes that $B$ lies between $A$ and $C$.
-\end{quote}
+\subsection{Verifying Hilbert's Proof}
+We verified this theorem declaratively in Isabelle, where it ran to sixty-nine steps. In such a long proof, the structure of the basic prose argument is buried by incidence arguments which do not illuminate anything. They are mostly applications of our point set rules given in \S\ref{fig:PointSets} with manual variable instantiations. We tried to use comments to show how the prose translated into the formal proof steps, but in the end, the hope of using verification \emph{analytically} had been lost.
 
-The original Isabelle proof ran to sixty-nine steps. Most of the steps were unilluminating, consisting of a complex combination of tactics and picky variable instantiations. We had to use comments judiciously to show how the prose translated into the formal proof steps. But our new proof has just thirteen lines, each readily understandable, and matching the prose in an almost one-to-one fashion (the formalisation of theorems \texttt{construct\_triangle} and \texttt{g22} are given in Appendix~\ref{app:GroupIIFormalisations}).
+But with our incidence automation, we have a HOL~Light proof in just thirteen lines, each readily understandable, and matching the prose very closely. In fact, in earlier work~\cite{ScottExploring}, we matched the prose one-one, but only by using our much more ad-hoc automation based on our na\"{i}ve approach from \S\ref{sec:NaiveImplementation}. 
 
-\vspace{0.5cm}
-\begin{minipage}{\linewidth}
-  \footnotesize 
-  \noindent\texttt{prove collinear \{A, B, C\} $\wedge$ A $\neq$ B $\wedge$ A $\neq$ C $\wedge$ B $\neq$ C}
+In our current verification shown in Figure~\ref{fig:FourVerification}, we limit the automation to the \code{by\_pasch} discoverer, and are satisfied that we are close enough to Hilbert's prose. Unlike the more ad-hoc automation, this discoverer will not automatically discharge case-splits in the conclusion of Axiom~\ref{eq:g24}. The elimination of the disjunct, and any identification of the point obtained with an existing point, is performed using the \code{by\_eqs} discoverer in a subproof.
 
-  \texttt{\qquad\qquad$\neg$ between A C B $\wedge$ $\neg$between B A C $\Longrightarrow$ between A B C}
+\begin{boxedfigure}
+\begin{align*}
+& \code{assume}\ \exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a & 0\\
+& \code{assume}\ A\neq B \wedge A\neq C \wedge B \neq C & 1,2,3\\
+& \code{assume}\ \neg\between{A}{C}{B} \wedge \neg\between{B}{A}{C} & 4\\
+& \code{consider}\ D\ \code{such that}\ \Triangle{a}{A}{B}{D}\\
+& \qquad\code{from}\ 1\ \code{by}\ \eqref{eq:g12},\eqref{eq:g13b}& 5\\
+& \code{obviously by\_neqs}\ \code{so consider}\ G\ \code{such that}\ \between{B}{D}{G}\ \code{by}\ \eqref{eq:g22} & 6\\
+& \code{consider}\ E\ \code{such that}\ (\exists a. \code{on\_line}\ A\ a\wedge \code{on\_line}\ D\ a\wedge \code{on\_line}\ E\ a) & 7\\
+& \qquad\qquad\qquad\qquad\qquad\qquad \wedge\between{C}{E}{G}\ \code{proof} & 8\\
+&\qquad \code{clearly by\_pasch consider}\ E\ \code{such that}\\
+&\qquad\qquad (\exists a. \code{on\_line}\ A\ a\wedge \code{on\_line}\ D\ a\wedge \code{on\_line}\ E\ a)\\
+&\qquad\qquad \wedge (\between{B}{E}{C} \vee \between{C}{E}{G})\ \code{by}\ \eqref{eq:g21}\ \code{from}\ 0,2,3,5,6\\
+&\qquad\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,3,4,5\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}\\
+& \code{consider}\ F\ \code{such that}\ (\exists a. \code{on\_line}\ C\ a\wedge \code{on\_line}\ D\ a\wedge \code{on\_line}\ F\ a) & 9\\
+&\qquad[...]\\
+%& \qquad\qquad\qquad\qquad\qquad\qquad \wedge\between{A}{F}{G}\ \code{proof} & 10\\
+%&\qquad \code{clearly by\_pasch consider}\ F\ \code{such that}\\
+%&\qquad\qquad (\exists a. \code{on\_line}\ C\ a\wedge \code{on\_line}\ D\ a\wedge \code{on\_line}\ F\ a)\\
+%&\qquad\qquad \wedge (\between{A}{F}{B} \vee \between{A}{F}{G})\ \code{by}\ \eqref{eq:g21}\ \code{from}\ 0,2,3,5,6\\
+%&\qquad\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,4,5\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}\\
+&\code{have}\ \between{A}{D}{E}\ \code{proof}\\
+&\qquad\code{obviously by\_ncols so consider}\ D'\ \code{such that}\\
+&\qquad\qquad\between{C}{D'}{F}\wedge\between{E}{D'}{A}\\
+&\qquad\qquad\code{using K (MATCH\_MP\_TAC \eqref{eq:InnerPasch})}\ \code{from}\ 0,2,5,6,8,10\ \code{by}\ \eqref{eq:g21}\\
+&\qquad\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,2,5,7,9\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}\\
+&\code{obviously by\_ncols so consider}\ B'\ \code{such that}\\
+&\qquad\between{G}{D}{B'}\wedge\between{C}{B'}{A}\\
+&\qquad\code{using K (MATCH\_MP\_TAC \eqref{eq:OuterPasch})}\ \code{from}\ 0,2,5,7,\ \code{by}\ \eqref{eq:g21}\\
+&\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,2,5,6\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}\\
+\end{align*}
+\caption{Verification of Theorem~4}
+\label{fig:FourVerification}
+\end{boxedfigure}
 
-  \texttt{assume collinear \{A, B, C\} $\wedge$ A $\neq$ B $\wedge$ A $\neq$ C $\wedge$ B $\neq$ C}
+At the start of the verification, we have set our ultimate goal conclusion to be
+\begin{multline*}
+(\exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a) \\\implies\between{A}{B}{C}\vee\between{B}{A}{C}\vee\between{A}{C}{B}.
+\end{multline*}
 
-  \texttt{\qquad\qquad $\neg$ between A C B $\wedge$ $\neg$between B A C}
+We then get to \code{assume}, just as Hilbert does, that $C$ is neither between $A$ or $B$ nor $A$ between $B$ or $C$. This is a very natural way to express one's assumptions mathematically. It goes through because of the way Mizar~Light implements the \code{assume} primitive: it first tries to prove the goal under the negation of our assumption. If this is successful, the assumption is used to rewrite the goal before being placed into the goal hypotheses. The upshot is that our goal conclusion becomes just
+\begin{displaymath}
+(\exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a) \implies\between{A}{B}{C}.
+\end{displaymath}
 
-  \texttt{so consider D such that $\neg$collinear \{A, B, D\} by construct\_triangle}
+Next, we look at the first two applications of Axiom~II, 4. In our verification, we have not been able to apply this axiom in either the inner or outer forms, since we have only one order hypothesis. This means we are faced having to eliminate a disjunct in the conclusion of Axiom~\ref{eq:g24}. To do this, we find point equalities via the composed discoverer $\code{by\_eqs}\circ\code{split}$, which tells us that, in the offending cases, the point $A$ lies between $B$ and $C$ or $C$ lies between $A$ and $B$. We have explicitly hypothesised against these two possibilities, and thus, the disjuncts can be eliminated.
 
-  \texttt{obviously consider G such that between B D G by g22}
+In these two applications of Axiom~\ref{eq:g24}, we have used our \code{clearly} keyword to search for a specific conclusion of the axiom. Exploiting our discoverer in this way makes things more robust than if we use \code{MATCH\_MP\_TAC} as we did in \S\ref{sec:Theorem3}. With matching, we have to be careful that all the variables in the axiom line up with our desired conclusion. When we use the discoverer, we know that its outputs are always lexicographically normalised, so there is only one conclusion we could possibly be after. That conclusion can even be copied directly from the results of a concurrent run of the discoverer.
 
-  \texttt{obviously consider E such that collinear \{A, D, E\} $\wedge$ between C E G}
+The third and fourth applications of the Pasch axiom can take the inner~\eqref{eq:InnerPasch} and outer~\eqref{eq:OuterPasch} forms respectively. This gives us our second recommendation for a useful lemma to insert in Hilbert's theory: we should have the Outer Pasch axiom.
 
-  \texttt{\qquad\qquad by pasch\_on $\neg$collinear \{B, C, G\} and A,D}
+\subsection{Alternative Proof}\label{sec:FourAlternative}
+When we were still using our more ad-hoc discovery tool, we decided to try applying Axiom~II, 4 non-deterministically. The purpose of the tool was to search for alternative proofs of Theorem~4, and hopefully find one which required less than four applications of the axiom. This defined a search limit for the problem: once four applications were found, it stopped searching in the relevant branch. 
 
-  \texttt{obviously consider F such that collinear \{C, D, F\} $\wedge$ between A F G}
+The tool found several ``alternatives'', but most of these yield symmetries of the original proof. In some cases, two independent applications of Pasch's axioms were applied in reverse order. In other cases, the proof was identical to the original up to a symmetric relabelling of the points involved in the diagram. Only one new proof was revealed up to symmetry, and it corresponds to case (a) and (c) of Figure~\ref{fig:FourPossibilities}. We give it now in a prose formulation with an accompanying diagram.
 
-  \texttt{\qquad\qquad by pasch\_on $\neg$collinear \{A, B, G\} and C,D}
+\begin{theorem}
+Between points $A$ and $C$ is a third point $B$.
+\end{theorem}
+\begin{proof}Assume $A$, $B$ and $C$ are collinear, with $A$ not between $B$ or $C$ and $C$ not between $A$ or $B$. We find a point $D$ off the line $AC$ and extend it to $G$ using Axiom~II, 2. We then use Axiom~II, 4 on the triangle $BCG$ and the line $AD$ to find the point $E$ between $C$ and $G$. We use Axiom~II, 4 on the triangle $BEG$ and the line $CD$ to find the point $F$ between $B$ and $E$. We use the axiom again on the triangle $ABE$ and the line $CF$ to show that $D$ lies between $A$ and $E$. Finally, we can use the axiom on the triangle $ACE$ and the line $BG$ to find $B$ between $A$ and $C$.
+\end{proof}
+\begin{center}\includegraphics{group2eval/FourAlt}
+\end{center}
 
-  \texttt{obviously consider H such that collinear \{C, F, H\} $\wedge$ between A H E}
-
-  \texttt{\qquad\qquad by pasch\_on $\neg$collinear \{A, E, G\} and C,F}
-
-  \texttt{obviously have H $=$ D}
-
-  \texttt{obviously consider I such that COLLINEAR \{B, D, I\} $\wedge$ between A I C}
-
-  \texttt{\qquad\qquad by pasch\_on $\neg$COLLINEAR \{A, C, E\} and B,G}
-
-  \texttt{obviously have I $=$ B}
-
-  \texttt{qed}
-\end{minipage}
-\vspace{0.5cm}
-
-Notice that we mention points $H$ and $I$ in our proof. This is because our Pasch tactic always introduces a fresh variable when eliminating the existential conclusion of Pasch's axiom. We intend to correct this flaw. If the Pasch tactic can prove that the new point is equal to an existing point, then the existential hypothesis can be eliminated entirely. Rather than write
-
-\vspace{0.5cm}
-\begin{minipage}{\linewidth}
-  \footnotesize
-  \texttt{obviously consider H such that COLLINEAR \{C, F, H\} $\wedge$ between A H E}
-
-  \texttt{\qquad\qquad by pasch\_on $\neg$COLLINEAR \{A, E, G\} and C,F}
-
-  \texttt{obviously have H $=$ D}
-\end{minipage}
-\vspace{0.5cm}
-
-\noindent we can instead give a more direct formalisation which is more faithful to the prose, and does not involve unnecessary labels for points in the construction:
-
-\vspace{0.5cm}
-\begin{minipage}{\linewidth}
-  \footnotesize
-  \texttt{obviously have COLLINEAR \{C, D, F\} $\wedge$ between A D E}
-
-  \texttt{\qquad\qquad by pasch\_on $\neg$COLLINEAR \{A, E, G\} and C,F}
-\end{minipage}
-\vspace{0.5cm}
-
-\subsubsection{An Alternative Proof of Theorem 4}\label{sec:Theorem4Alt}
-Having reproduced this theorem, we extended our automated discovery tool to apply the Pasch tactic non-deterministically. The tool searched through all ways to make four or fewer successive applications of Pasch's axiom, as in the original proof, looking for alternative ways to prove the theorem.
-
-The tool found several ``alternatives'', but most of these yield symmetries of the original proof. In some cases, two independent applications of Pasch's axioms were applied in reverse order. In other cases, the proof was identical to the original up to a symmetric relabelling of the points involved in the construction. Only one new proof was revealed up to symmetry. We give it now in a prose formulation with an accompanying diagram (Figure \ref{fig:Theorem4Alt}).
-
-\begin{figure}
-  % \begin{pspicture}(-1.5,0)(5,7)
-  %   \psset{xunit=0.75cm}
-
-  %   \put(0.5,0.8){\parbox{5cm}{\scriptsize$A$}}
-  %   \put(1.5,3.0){\parbox{5cm}{\scriptsize$B$}}
-  %   \put(2.8,5.1){\parbox{5cm}{\scriptsize$C$}}
-  %   \put(3.3,2.2){\parbox{5cm}{\scriptsize$D$}}
-  %   \put(5.0,3.4){\parbox{5cm}{\scriptsize$E$}}
-  %   \put(3.3,3.3){\parbox{5cm}{\scriptsize$F$}}
-  %   \put(8.0,0.8){\parbox{5cm}{\scriptsize$G$}}
-    
-  %   \psline[linewidth=0.25mm](\ptaA)(\ptaC)
-  %   \psline[linewidth=0.25mm](\ptaC)(\ptaG)
-  %   \psline[linewidth=0.25mm](\ptaB)(\ptaG)
-  %   \psline[linewidth=0.25mm](\ptaA)(\ptaE)
-  %   \psline[linewidth=0.25mm](\ptaC)(\ptaD)
-  %   \psline[linewidth=0.25mm](\ptaB)(\ptaE)
-  % \end{pspicture}
-\caption{Alternative Proof of Theorem~4}
-\label{fig:Theorem4Alt}
-\end{figure}
-
-\begin{quote}
-Assume $A$, $B$ and $C$ are collinear, with $A$ not between $B$ or $C$ and $C$ not between $A$ or $B$. We find a point $D$ off the line $AC$ and extend it to $G$ using Axiom~II,2. We then use Axiom~II,4 on the triangle $BCG$ and the line $AD$ to find the point $E$ between $C$ and $G$. We use Axiom~II,4 on the triangle $BEG$ and the line $CD$ to find the point $F$ between $B$ and $E$. We use the axiom again on the triangle $ABE$ and the line $CF$ to show that $D$ lies between $A$ and $E$. Finally, we can use the axiom on the triangle $ACE$ and the line $BG$ to find $B$ between $A$ and $C$.
-\end{quote}
-
-In some sense, the basic strategy of our alternative proof is the same as the original. We first construct a point $D$ off the line $AC$ and extend the line $BD$ to $G$. This tells us that $D$ lies between $B$ and $G$, which gives us our first opportunities to use Pasch's axiom. In both cases, our goal is to use this axiom in order to place the point $D$ between $A$ and $E$, so that a final application of Pasch's axiom to the triangle $ACE$ and the line $BG$ will place $B$ between $A$ and $C$. The two proofs only differ in how they construct the point $F$, and how they use $F$ to place $D$ between $A$ and $E$.
+In some sense, the basic strategy of our alternative proof is the same as the original. We first construct a point $D$ off the line $AC$ and extend the line $BD$ to $G$. This tells us that $D$ lies between $B$ and $G$, which gives us our first opportunities to use a Pasch's axiom~\eqref{eq:g24}. In both cases, our goal is to use this axiom in order to place the point $D$ between $A$ and $E$, so that a final application of a Pasch axiom to the triangle $ACE$ and the line $BG$ will place $B$ between $A$ and $C$. The two proofs only differ in how they construct the point $F$, and how they use $F$ to place $D$ between $A$ and $E$.
 
 In Hilbert's proof, $F$ is found on the edge of the outer triangle $ACG$, and is placed symmetrically with $E$. Indeed, the proof is valid when exchanging all references of $E$ and $F$, whereas in our proof, $F$ is placed in the interior of $ACG$ while $E$ lies asymmetrically on the triangle's edge. 
 
 So Hilbert's proof has a lot of symmetry: $E$ could be replaced with $F$; and it is clear that the third application of Pasch could be made on the triangle $CFG$ and the line $AE$, instead of $AEG$ and the line $CF$. Our proof makes it clear that, while $E$ and $F$ can be constructed symmetrically and independently, only one of these points is distinguished in the final few steps. 
 
-It is worth drawing some attention to the subtlety of the incidence reasoning here. We could have applied Pasch differently to find the point $F$, using the triangle $CDG$ and the line $BE$. This would tell us that $F$ lies on the line $BE$ between $C$ and $D$ (before, it told us that $F$ lies on the line $CD$ between $B$ and $E$). Now it might seem that we can use a symmetrical application of Pasch on the same line $BE$ and the triangle $ACD$, which would solve the goal putting $B$ between $A$ and $C$. But at this stage in the proof, we must consider the possibility that $BF$ exits the triangle $ACD$ between $A$ and $D$. This possibility is not yet eliminable by incidence reasoning alone.
+It is worth drawing some attention to the subtlety of the incidence reasoning here. We could have applied Axiom~II, 4 differently to find the point $F$, using the triangle $CDG$ and the line $BE$. This would tell us that $F$ lies on the line $BE$ between $C$ and $D$ (before, it told us that $F$ lies on the line $CD$ between $B$ and $E$). Now it might seem that we can use a symmetrical application of Pasch on the same line $BE$ and the triangle $ACD$, which would solve the goal putting $B$ between $A$ and $C$. But at this stage in the proof, we must consider the possibility that $BF$ exits the triangle $ACD$ between $A$ and $D$. This possibility is not yet eliminable by incidence reasoning alone. It really does appear we need at least \emph{four} applications of Axiom~II, 4 to get this theorem.
 
-This observation is not apparent in the proof. In his eleven uses of Pasch across Theorems~3, 4 and 5, Hilbert only considers the case-split implied by the axiom twice. And yet it takes up a significant amount of combinatorial reasoning about incidence. It is difficult to justify leaving this complexity implicit, when it has consequences on the shape of the proof which we find difficult to argue as \emph{obvious}. The reasoning may be laborious, but we demand rigour when Hilbert's geometrical intuition is supposed to have been replaced by uninterpreted symbolic reasoning. So it is not clear whether these incidence proof steps can be justified as being left implicit. Of course, with machine-checked automation, we can now be safely confident in the correctness of the implicit steps.
+Observations such as these are not apparent in Hilbert's proof. In his eleven uses of Axiom~II, 4 across Theorems~3, 4 and 5, Hilbert only considers the case-split implied by the axiom twice. And yet it takes up a significant amount of combinatorial reasoning about incidence. It is difficult to justify leaving this complexity implicit, when it has consequences on the shape of the proof which we find difficult to argue as \emph{obvious}. The reasoning may be laborious, but as we have seen, the situation can sometimes be improved by first proving stronger variants of Axiom~II, 4.
 
-\subsubsection{Analysis of Theorem~5}\label{sec:Theorem5}
-Theorem~5 is the most complex of the three theorems, taking up almost an entire page of the English translation. Effectively, the theorem gives a transitivity property for point ordering. It is split into three parts. 
+\section{Theorem~5}\label{sec:Theorem5}
+For the final theorem we shall consider in this chapter, we shall see once again how much we gain when we think in terms of the inner and outer form of the Pasch axiom, and we will look under the hood to see what our discoverers are actually up to.
 
-% \begin{pspicture}(0,0)(8,8)
-%   \put(0.8,0.6){\parbox{5cm}{\scriptsize$A$}}
-%   \put(3.8,0.6){\parbox{5cm}{\scriptsize$B$}}
-%   \put(7.0,0.6){\parbox{5cm}{\scriptsize$C$}}
-%   \put(9.0,0.6){\parbox{5cm}{\scriptsize$D$}}
-%   \put(6.2,5.0){\parbox{5cm}{\scriptsize$E$}}
-%   \put(5.5,7.2){\parbox{5cm}{\scriptsize$F$}}
-%   \put(4.4,4.1){\parbox{5cm}{\scriptsize$G$}}
-%   \put(6.6,2.8){\parbox{5cm}{\scriptsize$H$}}
-%   \psline[linewidth=0.25mm](\ptfvA)(\ptfvD)
-%   \psline[linewidth=0.25mm](\ptfvD)(\ptfvG)
-%   \psline[linewidth=0.25mm](\ptfvA)(\ptfvE)
-%   \psline[linewidth=0.25mm](\ptfvB)(\ptfvF)
-%   \psline[linewidth=0.25mm](\ptfvC)(\ptfvF)
-% \end{pspicture}
+Theorem~5 is the most complex of the three theorems, taking up almost an entire page of the English translation. Like the proceeding two theorems, it was originally an axiom in the first edition of Hilbert's text. The proof here is credited to E.H. Moore who proved it for projective geometry. Effectively, the theorem gives a transitivity property for point ordering. The proof is divided into three parts, though as observed by Dehlinger et al~\cite{DehlingerFOG}, it makes sense to leave the third part to the generalisation of Theorem~6. We leave this until the next chapter.
 
+\subsection{Part 1 of Theorem~5}
 \begin{quote}
 THEOREM 5. Given any four points on a line, it is always possible to label them $A$, $B$, $C$, $D$ in such a way that the point labeled $B$ lies between $A$ and $C$ and also between $A$ and $D$, and furthermore, that the point labeled $C$ lies between $A$ ad $D$ and also between $B$ and $D$.
 
 PROOF. Let $A$, $B$, $C$, $D$ be four points on a line $g$. The following will now be shown:
 
-1. If $B$ lies on the segment $AC$ and $C$ lies on the segment $BD$ then the points $B$ and $C$ also lie on the segment $AD$. By Axioms~I,3 and II,2 choose a point $E$ that does not lie on $g$, [and] a point $F$ such that $E$ lies between $C$ and $F$. By repeated applications of Axioms~II,3 and II,4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment $GD$ at a point $H$. Since $H$ thus lies on the segment $GD$ and since, however, by Axiom~II,3, $E$ does not lie on the segment $AG$, the line $EH$ by Axiom~II,4 meets the segment $AD$, i.e. $C$ lies on the segment $AD$. In exactly the same way one shows analogously that $B$ also lies on this segment.
+1. If $B$ lies on the segment $AC$ and $C$ lies on the segment $BD$ then the points $B$ and $C$ also lie on the segment $AD$. By Axioms~I, 3 and II, 2 choose a point $E$ that does not lie on $g$, [and] a point $F$ such that $E$ lies between $C$ and $F$. By repeated applications of Axioms~II, 3 and II, 4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment $GD$ at a point $H$. Since $H$ thus lies on the segment $GD$ and since, however, by Axiom~II, 3, $E$ does not lie on the segment $AG$, the line $EH$ by Axiom~II, 4 meets the segment $AD$, i.e. $C$ lies on the segment $AD$. In exactly the same way one shows analogously that $B$ also lies on this segment.
+
+\centering\includegraphics{group2eval/Five}
 \end{quote}
 
-\subsubsection{Formalisation of Theorem 5}
-We have given the first part of Hilbert's proof. We now give its formalisation. Again, the formalisations of named theorems are given in Appendix~\ref{app:GroupIIFormalisations}.
+\subsubsection{Our Isabelle Verification}
+Our Isabelle verification of this proof runs to approximately 135 lines of often complicated formal proof steps. As we should expect by now, most of these steps were used to derive the preconditions needed for Axiom~\ref{eq:g24}, all of which have been eliminated in the HOL~Light verification. 
 
-\vspace{0.5cm}
-\begin{minipage}{\linewidth}
-  \footnotesize 
-  \texttt{prove between A B C $\wedge$ between B C D $\Longrightarrow$ between A C D}
+In Isabelle, the complexity of the inferences had got the better of us. We were not able to verify Hilbert's final application of Axiom~\ref{eq:g24} with the line $EH$ and the triangle $ADG$. This requires knowing that the line $EH$ does not intersect any vertex of $A$, $D$, $G$, which requires, in particular, knowing that $AEH$ is a triangle.
 
-  \texttt{assume between A B C $\wedge$ between B C D}
+We began to speculate that this matter was unprovable. In fact, we had produced a sketch argument that the derivation of $E\neq H$ was impossible (thankfully, the derivation turned out to be invalid), and we hoped that our discoverers would help confirm this.
 
-  \texttt{so have A$\neq$D by swap\_order and no\_between\_permute}
+Instead, our discoverers refuted it. By tracking the path of inferences via a writer (see \S\ref{sec:WriterMonad}), we found that $\triangle AEH$ is derived at the end of a chain of discovered triangles starting from $\triangle ABE$. The rule linking each is $\code{colncolncol}$ from \S\ref{list:Procedures}, which can be understood as \emph{substituting} points of a non-collinear triple one-at-a-time, until we have rewritten the initial triangle $\triangle ABE$ to $\triangle AEH$. We briefly discuss how.
 
-  \texttt{obviously consider E such that $\neg$collinear \{A, B, E\} by}
+It might seem that we can just replace the point $B$ with the point $H$ to rewrite $\triangle ABE$ to $\triangle AEH$, but the triangle introduction rule requires a hypothesis about an appropriate collinear set and an appropriate point inequality. The inference is less direct, and is shown in Figure~\ref{fig:FindingAEH}. At first, we can substitute $G$ for $E$ using the line $AGE$, producing $\triangle ABG$ from $\triangle ABE$. We then substitute $D$ for $B$ using the line $ABD$. This gives us a triangle $ADG$. Next, we substitute $H$ for $D$ using the line $DGH$, giving us $\triangle AHG$. Finally, $E$ and $H$ are shown distinct on the basis of $\triangle AGH$ and the line $AGE$, after which we can substitute $H$ for $G$ using the line $AGE$, thus obtaining $\triangle AEH$.
 
-  \texttt{$\qquad\qquad$ construct\_triangle}
+\begin{figure}
+\centering\includegraphics{group2eval/FindingAEH}
+\caption{Finding $\triangle AEH$}
+\label{fig:FindingAEH}
+\end{figure}
 
-  \texttt{obviously consider F such that collinear \{C, E, F\} by g22}
+\subsubsection{Strengthening Inner and Outer Pasch}
+We have a verification of Theorem~5 using Axiom~\ref{eq:g24} directly via \code{by\_pasch}. Incidence reasoning implicitly dominates this verification, but our discoverers take on the labour. We can avoid much of this implicit reasoning though, and so in another verification, we exploit the Inner and Outer Pasch axioms, whose preconditions have only one incidence assumption: namely that the triangle on which the axiom applies exists. By using this form of the axiom, a much cleaner proof can be obtained, one which needs much less automation. Furthermore, we do not need to write any subproofs to identify points in the figure, nor eliminate disjuncts.
 
-  \texttt{obviously consider G such that collinear \{B, F, G\} $\wedge$ between A G E}
+Our versions of Inner and Outer Pasch are strengthened from their axiomatic form. Consider Veblen's Outer Pasch Axiom, which we can formalise as
+\begin{multline}
+  \Triangle{a}{A}{B}{C} \wedge \between{B}{C}{D} \wedge \between{A}{E}{C}\\ \implies \exists F a.  \code{on\_line}\ D\ a \wedge \code{on\_line}\ E\ a \wedge \code{on\_line}\ F \wedge \between{A}{F}{B}
+\end{multline}
+We can say something stronger in the conclusion here. We know that $D$, $E$ and $F$ are not merely collinear. The point $E$ must lie between $D$ and $F$ (see the diagram accompanying Veblen's proof in \S\ref{sec:VeblenThree}). This is an important corollary, as evidenced by the fact that it is the very first theorem Veblen proves after stating the axiom. Formally, both inner and outer Pasch axioms can be derived in strengthened forms:
+\begin{equation}\label{eq:OuterPasch}
+  \begin{split}
+    &\Triangle{a}{A}{B}{C} \wedge \between{B}{C}{D} \wedge \between{A}{E}{C}\\ 
+    &\qquad\implies \exists F. \between{D}{E}{F} \wedge \between{A}{F}{B}
+  \end{split}
+\end{equation}
+\begin{equation}\label{eq:InnerPasch}
+  \begin{split}
+    &\Triangle{a}{A}{B}{C} \wedge \between{B}{C}{D} \wedge \between{A}{E}{B}\\ 
+    &\qquad\implies \exists F. \between{D}{F}{E} \wedge \between{A}{F}{C}.
+  \end{split}
+\end{equation}
 
-  \texttt{$\qquad\qquad$ by pasch\_on $\neg$collinear \{A, C, E\} and B,F}
+\subsubsection{Verification}
+With these new axioms and some of our automation, we obtain the formalisation in Figure~\ref{fig:FiveVerification1}, which is very close to the prose. We have two steps which Hilbert does not make explicit. Firstly, we note that $A\neq D$, a fact which follows from our assumptions and Axiom~II, 3, and without which we would not be able to show the existence of $\triangle ADG$ for our final application of a Pasch axiom.
 
-  \texttt{obviously consider G2 such that collinear \{A, E, G2\} $\wedge$}
+The other extra step is somewhat of an irritation. Instead of applying our Pasch axioms to conclude that $C$ is between $A$ and $D$, we must instead obtain a new point $C'$ and then use incidence reasoning via \code{by\_eqs} to identify it with $C$. 
 
-  \texttt{$\qquad\qquad$ BETWEEN B G2 F by pasch\_on $\neg$collinear \{B, C, F\} and A,E}
+\begin{boxedfigure}
+\scriptsize
+  \begin{align*}
+    &\code{assume}\ \between{A}{B}{C} \wedge \between{B}{C}{D} & 0,1\\
+    &\code{consider}\ E\ \code{such that}\ \Triangle{a}{A}{B}{E}\\
+    &\qquad\code{from}\ 0\ \code{by}\ \eqref{eq:g12},\eqref{eq:g13b},\eqref{eq:g21} & 2\\
+    &\code{obviously by\_neqs so consider}\ F\ \code{such that}\\
+    &\qquad\between{C}{E}{F}\ \code{from}\ 0\ \code{by}\ \eqref{eq:g22} & 3\\
+    &\code{obviously by\_ncols so consider}\ G\ \code{such that}\\ 
+    &\qquad\between{A}{G}{E} \wedge \between{B}{G}{F}\ \code{from}\ 0,2,3\ \code{by}\
+    \eqref{eq:g21},\eqref{eq:InnerPasch}& 4,5\\    
+    &\code{obviously by\_ncols so consider}\ H\ \code{such that}\\ 
+    &\qquad\between{C}{H}{F} \wedge \between{D}{H}{G}\ \code{from}\ 0,1,2,3,5\ \code{by}\ \eqref{eq:g21},\eqref{eq:InnerPasch}& 6\\
+    &\code{have}\ A\neq D\ \code{from}\ 0,1\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}\\
+    &\code{obviously by\_ncols}\ \code{so consider}\ C'\ \code{such that}\\
+    &\qquad\between{E}{H}{C'}\wedge\between{A}{C'}{D}\ \code{from}\ 0,1,2,4,6,7\ \code{by}\ \eqref{eq:OuterPasch},\eqref{eq:g21}\\
+    &\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,1,2,3,6,7
+  \end{align*}
+  \caption{Theorem~5 Verification, Part 1}
+  \label{fig:FiveVerification1}
+\end{boxedfigure}
 
-  \texttt{obviously have G $=$ G2}
-
-  \texttt{obviously consider H such that collinear \{C, E, H\} $\wedge$ between D H G}
-
-  \texttt{$\qquad\qquad$ by pasch\_on $\neg$collinear \{B, D, G\} and C,F}
-
-  \texttt{obviously consider I such that collinear \{E, H, I\} $\wedge$ between A I D}
-
-  \texttt{$\qquad\qquad$ by pasch\_on $\neg$collinear \{E, H, I\} and E,H}
-
-  \texttt{obviously have C $=$ I}
-
-  \texttt{qed}
-\end{minipage}
-\vspace{0.5cm}
-
-\subsubsection{A Comparison with the Isabelle Formalisation}
-In our Isabelle formalisation, the proof of Theorem~5 runs to approximately 135 lines of often complicated formal proof steps. Most of these steps are required to derive the non-degeneracy conditions needed for Pasch's axiom, and all of them have been eliminated in the HOL~Light formalisation. 
-
-The complexity of the original Isabelle formalisation had got the better of us. As we mentioned in \S\ref{sec:IdleTimeDiscoveries}, we had not been able to show that $E \neq H$, a fact which is needed for the final application of Pasch in the above proof. In fact, in our proposal, we had suggested its derivation was \emph{impossible}, and we had expected our algorithm to confirm this. It refuted it! After inspecting its history of inferences, we found that the algorithm derived $E\neq H$ after step (c) in Figure \ref{fig:deriveAEH}. At this step, we know that $AGH$ forms a triangle while $AEG$ is a line. Hence, $E$ and $H$ must be distinct.
-
-This takes us back to a recurring question. While we have shown that Hilbert's prose proof is logically valid, we must ask \emph{is it \emph{clearly} valid?} We had not thought so originally, and the confirmation only came after complex incidence reasoning which we had to leave to automation. It could be argued that these chains of reasoning should have been explicit in the prose, perhaps with warnings about when Pasch cannot be applied, such as the one we gave in \S\ref{sec:Theorem4Alt}. This would help guide the reader through the subtleties of reasoning about incidence at this stage of the text, where we have so little geometric intuition that we can validly draw upon. This would have an advantageous side-effect on the proof. Assisting the reader will also assist the automated tool if it is rerun in batch fashion: it will be able to prune its search space down to a single path.
-
-\subsubsection{A Comparison with Hilbert's Prose}
-Our new formalisation gives an almost one-to-one correspondence between our formal proof and Hilbert's prose, but there are still differences which draw our attention.
-
-Firstly, notice that in the prose, Hilbert compresses his applications of Pasch's axiom (Axiom II,4):
+\subsubsection{Comparison with the Prose}
+The strengethened versions of the Pasch axiom mean we can be more efficient than Hilbert, who uses an unspecified number of applications of Axiom~II, 4 directly.
 
 \begin{quote}
-By repeated applications of Axioms II,3 and II,4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment at the point $GD$ at a point $H$.
+By repeated applications of Axioms II, 3 and II, 4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment at the point $GD$ at a point $H$.
 \end{quote}
 
-We can see from our formal version that this cashes out in exactly three applications of Pasch's axiom. While Hilbert does not give this number explicitly, it is implied by a subtle use of language in the English translation: ``the segments $AE$ and $BF$ meet at a point $G$'' while ``the \emph{line} $CF$ meets the segment $GD$ at a point $H$'' (our emphasis). Now if we are to show that two \emph{segments} intersect, we must derive \emph{two} facts of betweeness, and therefore we need \emph{two} applications of Pasch. But if we are to show that a \emph{line} and a segment intersect, we only need only one fact of betweeness. It seems that Hilbert was aware of this detail, and choose his words carefully, and as with Theorem~4, it indicates a subtlety of the logic which is not immediately apparent from the diagram.
+In our verification of Theorem~5 which avoids the Inner and Outer Pasch axioms and follows Hilbert mostly closely, we apply Axiom~II, 4 via the \code{by\_pasch} discoverer. By doing so, we see there are exactly three applications implied by Hilbert's prose (we elide the subproofs used to reject offending disjuncts).
 
-Secondly, notice that the first step in our proof is needed to show that $A$ and $D$ are distinct. If they were, then $B$ would lie between $A$ and $C$, whilst $C$ would lie between $A$ and $B$, which is impossible. This argument does not appear in the prose. Hilbert does not even assert that the points are distinct, and so it might seem that our automated tool should take care of the matter. However, we do not think this would be an appropriate use of automation, since at this stage, we cannot make such arguments \emph{systematic}. We discuss the matter further in Section \ref{sec:Chains}.
+\fbox{\begin{minipage}{\linewidth}\setlength\abovedisplayskip{0cm}
+\small
+\begin{align*}
+  &\code{consider}\ G\ \code{such that}\ \exists a. \code{on\_line}\ B\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ G\ a\wedge\\
+  &\qquad\qquad\qquad\qquad\qquad\wedge \between{A}{G}{E}\ \code{proof} & 4,5 \\
+  &\qquad\code{clearly by\_pasch}\ ...\\
+  &\code{have}\ \between{B}{G}{F}\ \code{proof}& 6\\
+  &\qquad\code{clearly by\_pasch}\ ...\\
+  &\code{consider}\ H\ \code{such that}\ \exists a. \code{on\_line}\ C\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ H\ a\\
+  &\qquad\qquad\qquad\qquad\qquad\wedge \between{D}{H}{G}\ \code{proof} & 7,8\\
+  &\qquad\code{clearly by\_pasch}\ ...
+\end{align*}\end{minipage}}\linebreak
 
-Next, note the following step in Hilbert's proof: ``...and since, however, by Axiom II,3, $E$ does not lie on the segment $AG$,....'' Here, Hilbert is eliminating a case-split in an application of Pasch. In our formal proof, there was no need to. As far as our tool is concerned, there is nothing special about this case-split. It is eliminated by the same systematic reasoning that allows all the other cases to be eliminated. We would therefore argue that, for the sake of consistency of presentation, it should have been omitted in Hilbert's prose.
+That three applications are necessary is implied by the careful language used in the prose: ``the segments $AE$ and $BF$ meet at a point $G$'' while ``the \emph{line} $CF$ meets the segment $GD$ at a point $H$'' (our emphasis). Now if we are to show that two \emph{segments} intersect, we must derive \emph{two} facts of betweenness, and therefore we need \emph{two} applications of Axiom~\ref{eq:g24}. But if we are to show that a \emph{line} and a segment intersect, we only need only one fact of betweenness. 
 
-Finally, we were able to elide the final step, where Hilbert proves that $B$ lies between $A$ and $D$. Hilbert implies this can be achieved by an analogous proof, but it is actually a corollary of the above: we just use Hilbert's first axiom in the group which tells us that \mbox{\texttt{BETWEEN A B C}} implies \mbox{\texttt{BETWEEN C B A}}. Therefore, we take the theorem, swap $A$ and $D$, and swap $B$ and $C$, and obtain the required result.
+In our verification using the Inner and Outer Pasch axioms (Figure~\ref{fig:FiveVerification1}), we can trim this down. The intersections of the segments $AE$ and $BF$ is covered by just one application of the strengthened version of the Inner Pasch Axiom~\eqref{eq:InnerPasch}, which we use again to intersect the segments $CF$ and $GD$. Finally we use the Outer Pasch Axiom~\eqref{eq:OuterPasch} to find a point $C'$ between $A$ and $D$. 
 
-We briefly mention the second part of the proof, which derives the following:
+For this final application of a Pasch axiom, Hilbert's writes: ``...and since, however, by Axiom II, 3, $E$ does not lie on the segment $AG$,....'' We draw attention to this remark because it is not reflected in our verification. Here, Hilbert, for the one and only time, is explicitly eliminating the disjunct in the conclusion of Axiom~\ref{eq:g24}, by appealing to the fact that $G$ lies between $A$ and $E$. We must appeal to the same fact, but in our verification, it is just the necessary precondition of Inner Pasch~\eqref{eq:InnerPasch}.
 
-\begin{quote}2. If $B$ lies on the segment $AC$ and $C$ lies on the segment $AD$ then $C$ also lies on the segment $BD$ and $B$ also lies on the segment $AD$.\end{quote}
+Finally, we elide Hilbert's final step ``one shows analogously that $B$ also lies on this segment.'' The analogue is just a corollary obtained by symmetry of betweenness: we just swap $A$ and $D$, and swap $B$ and $C$, and obtain the required result.
 
-We omit the details of its formalisation. Suffice to say, we noticed the same neat correspondence between our formal proof steps and Hilbert's prose. 
+\subsection{Discovered Theorems}
+In this subsection, we give an idea of how our discoverer interacts with HOL~Light by showing the theorems generated concurrently as we develop a verification of Theorem~5. We begin with the theorem's assumptions, and then obtain our first non-collinear point.
 
-We \emph{do} have a good deal to say about the final part of the proof, which in our HOL Light formalisation has become the base case of its later inductive generalisation. We discuss it in detail in the next section.
-
-% \vspace{0.5cm}
-% {\footnotesize
-% \texttt{prove BETWEEN A B C $\wedge$ between A C D $\Longrightarrow$ between B C D`}
-
-% \texttt{BETWEEN A B C $\wedge$ BETWEEN A C D}
-
-% \texttt{assist consider G such that $\neg$COLLINEAR {A, B, G}}
-
-% \texttt{$\qquad\qquad$ by construct\_triangle}
-
-% \texttt{assist consider F such that BETWEEN B G Fa by g22}
-
-% \texttt{consider H such that COLLINEAR \{C, F, H\} $\wedge$}
-
-% \texttt{$\qquad\qquad$ BETWEEN A H G $\vee$ BETWEEN B H G}
-
-% \texttt{$\qquad\qquad$ by pasch\_on $\neg$COLLINEAR \{E, H, I\} and E and H at 1}
-
-% \texttt{case BETWEEN A H G}
-
-% \texttt{$\quad$ qed by pasch\_on $\neg$COLLINEAR \{A, B, G\} and C and F}
-
-% \texttt{case BETWEEN B H G} 
-
-% \texttt{$\quad$ consider $I$ such that COLLINEAR \{Fa, H, Ia\} $\wedge$ BETWEEN B Ia D}
-
-% \texttt{$\qquad\qquad$ by pasch\_on $\neg$COLLINEAR \{B, D, G\} and F and H}
-
-% \texttt{$\quad$ assist qed}
-
-% \texttt{finished from 1}
-
-% \texttt{qed}}
-% \vspace{0.5cm}
-
-\subsection{Results}\label{sec:Results}
-A relatively simple description of a discoverer can now systematically recover the implicit incidence-reasoning in Hilbert's \emph{Foundations of Geometry}. We show its results through part of an example proof. Here, we are trying to prove a transitivity property of Hilbert's three-place \emph{between} relation on points: if $B$ lies between $A$ and $C$, and $C$ between $B$ and $D$, then $C$ lies between $A$ and $D$.
-
-\vspace{0.2cm}
-\noindent\fbox{\begin{minipage}{11.9cm}
-\footnotesize\code{prove between A B C $\wedge$ between B C D $\Longrightarrow$ between A C D}
-
-\code{assume between A B C $\wedge$ between B C D at 0}
-\code{consider E such that such that \ttriangle{A}{B}{E} from 0 by II,1 and triangle}
+\fbox{\begin{minipage}{\linewidth}\small\setlength\abovedisplayskip{0cm}
+\begin{align*}
+&\code{assume}\ \between{A}{B}{C} \wedge \between{B}{C}{D} & 0,1\\
+&\code{consider}\ E\ \code{such that}\ \Triangle{a}{A}{B}{E}\\
+&\qquad\code{from}\ 0\ \code{by}\ \eqref{eq:g12},\eqref{eq:g13b},\eqref{eq:g21} & 2
+\end{align*}
 \end{minipage}}
-\vspace{0.1cm}
+\linebreak
 
-The \code{assume} step adds the goal's antecedent to the current hypotheses, while the \code{consider} step introduces a non-collinear point $E$ using one of Hilbert's axioms and a lemma \code{triangle} (see Appendix~\ref{app:axioms}). These hypotheses form the context for our discoverer. They are automatically picked up by \code{monitor} and then fed through our incidence network to produce the following theorems within 0.31 seconds:\footnote{We have tested this on an Intel Core 2 2.53GHz machine.}
+Concurrently, results are being pulled from the discoverer \code{by\_incidence}, which will lazily force values according to our data-flow diagram from Figure~\ref{fig:DataFlow}. This ultimately means pulling theorems from the discoverer \code{monitor}, whose job it is to inspect the proof context and add any new theorems which appear there. Here, our two new hypotheses will be picked up and fed through our incidence reasoner to produce seven generations of incidence theorems. If the stream is forced beyond this, only empty generations will appear, indicating that no more inference is possible.
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize\code{A$\neq$E, B$\neq$E, between A B C, between B C D, A$\neq$B, A$\neq$C, B$\neq$C, B$\neq$D,}\\
-\code{C$\neq$D, \ttriangle{A}{B}{E},\ttriangle{A}{C}{E},}\\
-\code{\ttriangle{B}{C}{E}, C$\neq$E,}\\
-\code{\collinearfour{A}{B}{C}{D},}\\
-\code{\ttriangle{B}{D}{E}, \ttriangle{C}{D}{E},}\\
-\code{\planarfive{A}{B}{C}{D}{E}, D$\neq$E}
+These seven generations of theorems are delivered within 0.31 seconds. We include the dependent hypotheses in parentheses. \footnote{We have tested this on an Intel Core 2 2.53GHz machine.}
+
+\doublebox{\begin{minipage}{\linewidth}\footnotesize\setlength\abovedisplayskip{0cm}
+\begin{displaymath}
+  \begin{split}
+    &\left\{\begin{aligned}
+          &\exists a. \code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a\wedge\code{on\_line}\ D\ a, &(1)\\
+          &\exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a, &(0)\\
+          &\Triangle{a}{A}{B}{E}, &(2)\\
+          &B\neq C, B\neq D, C\neq D, & (1)\\
+          &A\neq B, A\neq C, & (0)\\
+          &A\neq E, B\neq E, & (2)\\
+          &\exists \alpha. \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\wedge \code{on\_plane}\ D, &(1)\\
+          &\exists \alpha. \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha, &(0)\\
+          &\exists \alpha. \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ E\ \alpha &(2)\end{aligned}\right\},\\
+  &\{\exists \alpha. \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ D\ \alpha \quad (0,1)\},\\
+  &\{\},\\
+  &\left\{\begin{aligned}
+          &\Triangle{a}{B}{C}{E}, & (0,1,2)\\
+          &\Triangle{a}{A}{B}{E}, & (0,2)\\
+          &\Triangle{a}{A}{C}{E}, & (0,2)\\
+          &C\neq E, & (0,2)\\
+          &\exists \alpha. \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\wedge \code{on\_plane}\ E\ \alpha & (0,2)
+        \end{aligned}\right\},\\
+      &\{\exists a. \code{on\_line}\ A\ a\wedge \code{on\_line}\ B\ a\wedge \code{on\_line}\ C\ a\wedge\code{on\_line}\ D\ a \quad (0,1)\},\\
+      &\{\},\\
+    &\left\{\begin{aligned}
+        &\Triangle{a}{B}{D}{E}, & (0,1,2)\\
+        &\Triangle{a}{C}{D}{E}, & (0,1,2)\\
+        &D\neq E, & (0,1,2)\\
+      &\exists \alpha. \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ D\ \alpha\wedge\code{on\_plane}\ E\ \alpha & (0,1,2)
+    \end{aligned}\right\},\\
+\end{split}
+\end{displaymath}
 \end{minipage}}
-\vspace{0.1cm}
+\linebreak
 
-The \code{obviously} keyword picks up these theorems, and from $C\neq E$ we are able to find a point $F$:
+As we can see, two of the seven generations are empty. This happens because of filtering: some of the inferences we use turn out to generate facts which have already appeared, and duplicates are always removed from the inference process. This filtering sometimes leaves generations completely empty. 
 
-\vspace{0.2cm}
-\noindent\fbox{\begin{minipage}{11.9cm}
-\footnotesize\code{obviously by\_incidence consider F such that between C E F by II,2 at 1}
+Besides the selection of triangles here, we have a theorem which says that all points in our figure lie in the same plane. We can see how this theorem has grown over the generations, with larger and larger planar sets found, via rule~$\code{planeplane}$ from \S\ref{list:Procedures}. 
+
+To follow Hilbert's proof at this stage, all we need to know is that $C\neq E$, which is proven in the fourth generation. We are told that its proof depends on hypothesis $0$, namely $\between{A}{B}{C}$ and hypothesis $2$, which is 
+\begin{displaymath}
+\Triangle{a}{A}{B}{C},
+\end{displaymath}
+Since this was the \emph{last} hypothesis to enter the proof context, we can add it as justification using the Mizar~Light keyword \code{so}.
+
+\fbox{\begin{minipage}{\linewidth}\small\setlength\abovedisplayskip{0cm}
+\begin{align*}
+\code{obviously by\_neqs so consider}\ F\ \code{such that}\ \between{C}{E}{F}\ \code{from}\ 0\ \code{by}\ \eqref{eq:g22} \quad 3
+\end{align*}
 \end{minipage}}
-\vspace{0.1cm}
+\linebreak
 
-The next set of discovered theorems are found within 1.21 seconds:
+The next sequence of generations is found within 1.21 seconds:
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize\code{between C E F, \collinearthree{C}{E}{F}, C$\neq$F, E$\neq$F,}\\
-\footnotesize\code{\planarsix{A}{B}{C}{D}{E}{F},}\\
-\footnotesize\code{A$\neq$F, B$\neq$F, D$\neq$F}\\
-\footnotesize\code{\ttriangle{A}{C}{F}, \ttriangle{A}{E}{F},}\\
-\footnotesize\code{\ttriangle{B}{C}{F}, \ttriangle{B}{E}{F},}\\
-\footnotesize\code{\ttriangle{C}{D}{F}, \ttriangle{D}{E}{F},}\\
-\footnotesize\code{\ttriangle{A}{B}{F}, \ttriangle{B}{D}{F}},
+\doublebox{\begin{minipage}{\linewidth}\footnotesize\setlength\abovedisplayskip{0cm}
+\begin{displaymath}
+  \begin{split}
+    &\left\{\begin{aligned}
+        &\exists a. \code{on\_line}\ C\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ F\ a, &(3)\\
+        &C\neq F, E\neq F, &(3)\\
+        &\exists\alpha. \code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha&(3)\end{aligned}\right\},\\
+    &\left\{\begin{aligned}
+        &\exists\alpha. \code{on\_plane}\ B\ \alpha\wedge\code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ D\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha&(0,3)\\
+        &\exists\alpha. \code{on\_plane}\ A\ \alpha\wedge\code{on\_plane}\ B\ \alpha\wedge\code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha&(0,3)\end{aligned}\right\},\\
+    &\{\},\{\},\\
+    &\left\{\begin{aligned}
+        &\exists\alpha. \code{on\_plane}\ A\ \alpha\wedge\code{on\_plane}\ B\ \alpha\wedge\code{on\_plane}\ C\ \alpha\\
+        &\qquad\wedge\code{on\_plane}\ D\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha&(0,1,3)\end{aligned}\right\},\\
+    &\{\},\\
+    &\left\{\begin{aligned} 
+      &B\neq F \quad& (0,1,2,3),\\
+      &A\neq F & (0,2,3)\end{aligned}\right\},\\
+    &\{\},\{\},\{D\neq F \quad (0,1,2,3)\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\\
+    &\left\{\begin{aligned} 
+        &\Triangle{a}{B}{C}{F} & (0,1,2,3)\\
+        &\Triangle{a}{B}{E}{F} & (0,1,2,3)\\
+        &\Triangle{a}{A}{C}{F} & (0,2,3)\\
+        &\Triangle{a}{A}{E}{F} & (0,2,3)\end{aligned}\right\},\\
+    &\{\},\{\},\\
+    &\left\{\begin{aligned} 
+        &\Triangle{a}{C}{D}{F} & (0,1,2,3)\\
+        &\Triangle{a}{D}{E}{F} & (0,1,2,3)\\
+        &\Triangle{a}{B}{D}{F} & (0,1,2,3)\\
+        &\Triangle{a}{A}{B}{F} & (0,1,2,3)\end{aligned}\right\}.
+\end{split}
+\end{displaymath}
 \end{minipage}}
-\vspace{0.1cm}
+\linebreak
 
-The rest of the proof consists of repeatedly applying a complex axiom due to Pasch. The axiom says that if a line enters one side of a triangle then it leaves by one of the other two sides. By cleverly applying this axiom, it is possible to prove our original theorem (this is not a trivial matter, and the proof had eluded Hilbert in the first edition of \emph{Foundations~of~Geometry} where the theorem was an axiom; the proof was later supplied by Moore~\cite{MooreProof}). 
+With thirteen triangles identified, we are probably interested in what applications of Axiom~\ref{eq:g24} are permissible, so we will want to look more specifically at the results of our \code{by\_pasch} discoverer. Already, it is telling us that there are six possibilities to choose from. The full set is found within 2.82 seconds.
 
-The challenge, however, lies in verifying when all the preconditions on Pasch's Axiom have been met, something we handle by adding a discover \code{by\_pasch} to our existing incidence discovery (we omit the definition for space). It reveals the following additional theorems, found within 2.82 seconds.
+\doublebox{\begin{minipage}{\linewidth}\footnotesize\setlength\abovedisplayskip{0cm}
+    \begin{displaymath}
+      \begin{split}
+        &\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\\
+        &\left\{
+          \begin{aligned}
+            &\exists G. (\exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ G\ a)\\
+            &\qquad\qquad\wedge (\between{B}{G}{C} \vee \between{B}{G}{F}) & (0,1,2,3)\\
+            &\exists G. (\exists a. \code{on\_line}\ B\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ G\ a)\\
+            &\qquad\qquad\wedge (\between{A}{G}{C} \vee \between{A}{G}{F}) & (0,1,2,3)
+         \end{aligned}\right\},\\
+       &\{\},\{\}\\
+       &\left\{
+         \begin{aligned}
+           &\exists G. (\exists a. \code{on\_line}\ B\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ G\ a)\\ &\qquad\qquad\wedge (\between{A}{G}{F} \vee \between{C}{G}{F}) \quad (0,1,2,3)
+         \end{aligned}\right\},\\
+       &\{\},\{\},\{\},\{\},\{\},\\
+        &\left\{
+          \begin{aligned}
+            &\exists G. (\exists a. \code{on\_line}\ D\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ G\ a)\\
+            &\qquad\qquad\wedge (\between{B}{G}{C} \vee \between{B}{G}{F}) & (0,1,2,3)\\
+            &\exists G. (\exists a. \code{on\_line}\ B\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ G\ a)\\
+            &\qquad\qquad\wedge (\between{C}{G}{D} \vee \between{D}{G}{F}) & (0,1,2,3)\\
+            &\exists G. (\exists a. \code{on\_line}\ B\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ G\ a)\\
+            &\qquad\qquad\wedge (\between{A}{G}{E} \vee \between{C}{G}{E}) & (0,1,2,3)
+         \end{aligned}\right\}.       
+% \code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G C $\vee$ between A G F)}\\
+% \code{$\exists$G. \collinearthree{A}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}\\
+% \code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G F $\vee$ between C G F)}\\
+% \code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between C G D $\vee$ between D G F)}\\
+% \code{$\exists$G. \collinearthree{B}{F}{G} $\wedge$ (between A G E $\vee$ between C G E)}\\
+% \code{$\exists$G. \collinearthree{D}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}
+     \end{split}
+   \end{displaymath}
+\end{minipage}}\linebreak
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize
-\code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G C $\vee$ between A G F)}\\ 
-\code{$\exists$G. \collinearthree{A}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}\\
-\code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G F $\vee$ between C G F)}\\
-\code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between C G D $\vee$ between D G F)}\\
-\code{$\exists$G. \collinearthree{B}{F}{G} $\wedge$ (between A G E $\vee$ between C G E)}\\
-\code{$\exists$G. \collinearthree{D}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}
-\end{minipage}}
-\vspace{0.1cm}
+The last possibility here corresponds to one of Hilbert's intended applications of Axiom~II, 4. To apply it, all we need to do is assert the theorem as \code{clearly} derivable, being sure to supply all four hypotheses as justification:
 
-Further exploration of the proof involves applying one of these theorems. We can, for instance, try the penultimate instance with the step
+\fbox{\begin{minipage}{\linewidth}\small\setlength\abovedisplayskip{0cm}
+\begin{align*}
+&\code{clearly by\_pasch consider}\ G\ \code{such that}\\
+&(\exists a. \code{on\_line}\ B\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ G\ a)\wedge (\between{A}{G}{E} \vee \between{C}{G}{E})\\
+&\qquad \code{from}\ 0,1,2,3
+\end{align*}
+\end{minipage}}\linebreak
 
-\vspace{0.2cm}
-\noindent\fbox{\begin{minipage}{11.9cm}
-\footnotesize\code{obviously by\_pasch consider G such that \collinearthree{B}{F}{G}\\
-$\wedge$ (between A G E $\vee$ between C G E)}
-\end{minipage}}
-\vspace{0.1cm}
+We now have a disjunction in our hypotheses. Provided our discoverer was called with the \code{split} function, it will convert this disjunction into a tree, which will combine as described in \S\ref{sec:Trees}. Our generations will become proper trees, and the inference process will be automatically partitioned into three. The first partition covers inferences which are made in the root node of our trees, where no particular disjunct is assumed. For brevity, we omit discovered theorems which are later subsumed.
 
-% The discoverer is now faced with a case-split, but in the right-branch, it infers $\code{between C G E} \rightarrow \bot$, after which further discovery stops. In the left branch, we obtain the following:
+\doublebox{\begin{minipage}{\linewidth}\footnotesize\setlength\abovedisplayskip{0cm}
+    \begin{displaymath}
+      \begin{split}
+        &\{\code{on\_line}\ B\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ G\ a \quad (4)\}\\
+        &\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\\
+        &\left\{\begin{aligned}
+            &\exists \alpha. \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ D\ \alpha\\
+            &\qquad\wedge\code{on\_plane}\ E\ \alpha\ \code{on\_plane}\ F\ \alpha\ \code{on\_plane}\ G\ \alpha\quad (0,1,3,4)
+            \end{aligned}\right\},\\
+        &\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\\
+        &\{C \neq G, E \neq G \quad (0,1,2,3,4)\},\\
+        &\{\},\{\},\\
+        &\{D \neq G, A \neq G \quad (0,1,2,3,4)\}.\\
+     \end{split}
+   \end{displaymath}
+\end{minipage}}\linebreak
 
-The \code{monitor} now picks up the disjunction and creates a tree to represent a case-split. As this feeds into the discoverer, our combinators will automatically partition the search on the two assumptions. Our discoverer then produces three sets of theorems in 9.58 seconds \footnote{Note that the outputs from the three sets are interleaved, and are not generated simultaneously. While the full set of theorems requires 9.58 seconds, most of the theorems shown here are actually generated in under 1 second. The theorem required to advance the proof, \code{between C G E $\rightarrow$ F = G} is generated in 6.19 seconds.}
+Here, the discoverer infers that the new point $G$ must, \emph{in any case}, be distinct from $A$, $C$, $D$ and $E$, and that all seven points must be planar. 
 
-The first set of theorems are proven independently of the case-split:
+We get more information in the next partition, which is the left-branch of the case-split. When the trees are flattened, the theorems in this branch carry $\between{A}{G}{E}$ as a disjunctive hypothesis.
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize
-\code{\planarseven{A}{B}{C}{D}{E}{F}{G}}\\
-\code{C$\neq$G $\wedge$ E$\neq$G $\wedge$ A$\neq$G $\wedge$ D$\neq$G}
-\end{minipage}}
-\vspace{0.1cm}
+\doublebox{\begin{minipage}{\linewidth}\footnotesize\setlength\abovedisplayskip{0cm}
+    \begin{displaymath}
+      \begin{split}
+        &\{\exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ G\ a \quad 4\},\\
+        &\{\},\{\},\\
+        &\{B \neq G \quad 0,1,2,4\}\\
+        &\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\\
+        &\{F\neq G\ \quad (0,2,3,4)\}\\
+        &\{\},\{\},\\
+        &\left\{\begin{aligned}
+            \Triangle{a}{A}{B}{G} & (2,4) \\
+            \Triangle{a}{B}{E}{G} & (2,4)
+          \end{aligned}\right\},\\
+        &\{\},\{\},\\
+        &\left\{\begin{aligned}
+            \Triangle{a}{A}{C}{G} & (0,2,4)\\
+            \Triangle{a}{C}{E}{G} & (0,2,4)\\
+            \Triangle{a}{B}{C}{G} & (0,1,2,4)&
+          \end{aligned}\right\},\\
+        &\{\},\{\},\\
+        &\left\{\begin{aligned}
+            \Triangle{a}{B}{D}{G} & (0,1,2,4)\\
+            \Triangle{a}{C}{D}{G} & (0,1,2,4)
+          \end{aligned}\right\}.
+     \end{split}
+   \end{displaymath}
+\end{minipage}}\linebreak
 
-The next set of theorems are discovered in a branch on the assumption of \code{between A G E}:
+This is the consistent case. The triangles found here will be used as further justification for applications of Axiom~\ref{eq:g24}. The inconsistent case occurs in the remaining partition, carrying the disjunctive hypothesis $\between{C}{G}{E}$.
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize
-\code{between A G E, \collinearthree{A}{G}{E}, B$\neq$G, F$\neq$G,}\\
-\code{\ttriangle{A}{B}{G}, \ttriangle{B}{E}{G}}\\
-\code{\ttriangle{A}{C}{G}, \ttriangle{C}{E}{G}}\\
-\code{\ttriangle{E}{F}{G}, \ttriangle{B}{D}{G}}\\
-\code{\ttriangle{C}{D}{G}, \ttriangle{C}{F}{G}}\\
-\code{\ttriangle{D}{F}{G}}
-\end{minipage}}
-\vspace{0.1cm}
+\doublebox{\begin{minipage}{\linewidth}\footnotesize\setlength\abovedisplayskip{0cm}
+    \begin{displaymath}
+      \begin{split}
+        &\{\},\{\},\{\},\{\},\{\},\{\},\\
+        &\{B \neq G\ \quad (0,1,2,4)\},\\
+        &\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\\
+        &\{\exists a. \code{on\_line}\ C\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ G\ a, \quad (0,2,3,4)\}\\
+        &\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\\
+        &\left\{\begin{aligned}
+            &\Triangle{a}{B}{C}{G} \quad& (0,1,2,4) \\
+            &\Triangle{a}{B}{E}{G} & (0,1,2,4) \\
+            &\Triangle{a}{A}{C}{G} & (0,2,4) \\
+            &\Triangle{a}{A}{E}{G} & (0,2,4)
+          \end{aligned}\right\},\\
+        &\{\},\{\},\\
+        &\left\{\begin{aligned}
+            &\Triangle{a}{C}{D}{G}\quad & (0,1,2,4)\\
+            &\Triangle{a}{D}{E}{G} & (0,1,2,4)\\
+            &\Triangle{a}{B}{D}{G} & (0,1,2,4)\\
+            &\Triangle{a}{A}{B}{G} & (0,1,2,4)
+          \end{aligned}\right\},\\
+        &\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\{\},\\
+        &\{F = G \quad (0,1,2,3,4)\}
+     \end{split}
+   \end{displaymath}
+\end{minipage}}\linebreak
 
-The final set of theorems are discovered in a branch on the assumption of \code{between C G E}:
+The use of our tree data structure means we can think of this last sequence as having been generated in parallel with the other two. It takes 9.58 seconds to generate all three sequences, though most of the theorems which appear are generated in under 1~second. The theorem required to actually advance the proof
+\begin{displaymath}
+\between{C}{G}{E} \implies F = G
+\end{displaymath}
+is generated in 6.19~seconds. The consequent of this implication contradicts our hypothesis that $\between{C}{E}{F}$, and thus, the case given by its antecedent can be discarded.
 
-\vspace{0.2cm}
-\noindent\doublebox{\begin{minipage}{11.9cm}
-\footnotesize
-\code{between C G E, \collinearfour{C}{E}{F}{G}, B$\neq$G,}\\
-\code{\ttriangle{A}{C}{G}, \ttriangle{A}{E}{G}}\\
-\code{\ttriangle{B}{C}{G}, \ttriangle{B}{E}{G}}\\
-\code{\ttriangle{C}{D}{G}, \ttriangle{D}{E}{G}}\\
-\code{\ttriangle{A}{B}{G}, \ttriangle{B}{D}{G}}\\
-\code{F = G, between C F E}
-\end{minipage}}
-\vspace{0.1cm}
+\fbox{\begin{minipage}{\linewidth}\small\setlength\abovedisplayskip{0cm}
+\begin{displaymath}
+   \code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed by}\ \eqref{eq:g21},\eqref{eq:g23}\ \code{from}\ 0,2,3
+\end{displaymath}\end{minipage}}\linebreak
 
-The \code{obviously} step collapses the stream of trees, pushing the branch labels into the theorems as antecedents, and then uses the resulting lemmas to justify the step. Thus, the fact \code{F = G} becomes \code{between C G E $\rightarrow$ F = G}. This fact is sufficient to derive a contradiction with \code{between C E F} and thus eliminate the case-split:
+The \code{obviously} keyword tells the step to collapse the stream of trees, pushing the branch labels into the theorems as antecedents, and then uses the resulting discovered theorems to justify the step.
 
-\vspace{0.2cm}
-\noindent\fbox{\begin{minipage}{11.9cm}
-\footnotesize\code{obviously by\_incidence have between A G E from 1 by II,3}
-\end{minipage}}
-\vspace{0.1cm}
+The rest of the proof proceeds similarly. With the help of our discoverers, we reduce the 80 or so steps used in our earlier Isabelle verification to a verification with just 17 steps. We found this roughly 80\% reduction in proof length across all 18 theorems from our Isabelle verifications, with the new verifications always comparing much more favourably with the prose.
 
-The rest of the proof proceeds similarly. While the prose proof has 9 steps and our earlier formalisation without discovery runs to over 80 steps, the new formalisation has just 17 steps. We found this roughly 80\% reduction in proof length across all 18 theorems from our earlier formalisation, with the new formalisations comparing much more favourably with the prose.
+\subsection{Part~2 of Theorem~5}
+We now consider the second part of Theorem~5, our verification of which matches Hilbert's logic very closely, even if we have reordered some of the derivations. The whole proof is indirect, which explains why there is no accompanying diagram, and it is one of the few proofs where Hilbert treats the disjunction in Axiom~II, 4 symmetrically: both alternatives entail a contradiction.
+
+\begin{quote}2. If $B$ lies on the segment $AC$ and $C$ lies on the segment $AD$ then $C$ also lies on the segment $BD$ and $B$ also lies on the segment $AD$. Choose one point $G$ that does not lie on $g$, and another point $F$ such that $G$ lies on the segment $BF$. By Axioms~I, 2 and II, 3 the line $CF$ meets neither the segment $AB$ nor the segment $BG$ and hence, by Axiom~II, 4 again, does not meet the segment $AG$. But since $C$ lies on the segment $AD$, the straight line $CF$ meets then the segment $GD$ at a point $H$. Now by Axiom~II,~3 and II,~4 again the line $FH$ meets the segment $BD$. Hence $C$ lies on the segment $BD$. The rest of Assertion 2 thus follows from 1.
+\end{quote}
+
+Our verification is shown in Figure~\ref{fig:FiveVerification2}. In the prose, Hilbert is applying Axiom~II, 4 in its contrapositive form, so we cannot follow Hilbert literally by using our \code{by\_pasch} discoverer. Instead, we run a \emph{reductio} argument in a subproof, where we can use Axiom~II, 4 in a forward direction.
+
+Notice that this is the one time that Hilbert makes an explicit reference to an incidence axiom other than I, 3: he cites Axiom~I, 2, and we do not have a clear idea why. This axiom is needed in many places in these proofs, but is nearly always implicit. Bernays makes a similar citation in a proof supplementing the text (see \S\ref{sec:SupplementI}). The only obvious commonality between the two is that the citation occurs when Axiom~\ref{eq:g24} is applied and \emph{both} disjuncts in the conclusion are eliminated. 
+
+But Axiom~I,2 is required when eliminating even \emph{one} disjunct. So perhaps there is evidence here that neither Hilbert nor Bernays are taking the case-split in Axiom~\ref{eq:g24} sufficiently seriously. If so, then it makes sense for our verifications to eliminate the disjuncts explicitly in subproofs, and it makes sense that we treat Axiom~I,2 uniformly, and leave its use implicit.
+
+\begin{boxedfigure}
+\scriptsize
+  \begin{align*}
+    &\code{assume}\ \between{A}{B}{C} \wedge \between{A}{C}{D} & 0,1\\
+    &\code{consider}\ G\ \code{such that}\\
+    &\qquad\Triangle{a}{A}{B}{G}\ \code{from}\ 0\ \code{by}\ \eqref{eq:g12},\eqref{eq:g13b},\eqref{eq:g21}&2\\
+    &\code{obviously by\_neqs so consider}\ F\ \code{such that}\ \between{B}{G}{F}\ \code{by}\ \eqref{eq:g22}&3\\
+    &\code{have}\ \neg(\exists P. (\exists a. \code{on\_line}\ C\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ P\ a)\wedge\between{A}{P}{G}\ \code{proof} & 4\\
+    &\qquad \code{otherwise consider}\ P\ \code{such that}\\
+    &\qquad\qquad \exists P. (\exists a. \code{on\_line}\ C\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ P\ a) \wedge\between{A}{P}{G}& 4,5\\
+    &\qquad\code{clearly by\_pasch so consider}\ Q\ \code{such that}\\
+    &\qquad\qquad(\exists a. \code{on\_line}\ C\ a\wedge\code{on\_line}\ P\ a\wedge\code{on\_line}\ Q\ a)\\
+    &\qquad\qquad\qquad(\between{A}{Q}{B} \vee \between{B}{Q}{G})\ \code{from}\ 0,2\\
+    &\qquad\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,2,3,4,5\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}\\
+    &\code{obviously by\_pasch so consider}\ H\ \code{such that}\\
+    &\qquad(\exists a. \code{on\_line}\ C\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ H\ a)\\
+    &\qquad\qquad\wedge\between{D}{H}{G}\ \code{from}\ 0,1,2,3\ \code{at}\ 5,6\\
+    &\code{have}\ B\neq D\ \code{from}\ 0,1\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23} & 7\\
+    &\code{clearly by\_pasch so consider}\ C'\ \code{such that}\\
+    &\qquad (\exists a. \code{on\_line}\ C'\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ H\ a)\\
+    &\qquad\qquad(\between{B}{C'}{D} \vee \between{B}{C'}{G}\ \code{from}\ 0,1,2,3,5,6\\
+    &\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,1,2,3,5,6,7\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}
+  \end{align*}
+  \caption{Theorem~5 Verification, Part 2}
+  \label{fig:FiveVerification2}
+\end{boxedfigure}
+
+\section{Conclusion}
+Hilbert gives only three prose proofs for the first two groups of axioms in \emph{Foundations of Geometry}. None of these proofs were present in the first edition, and the theorems they prove, one-dimensional ordering theorems, were assumed as axioms in the first edition. Two of the proofs were contributed by Wald and E.H. Moore, though Veblen also deserves credit in helping to investigate how linear order theorems can be derived from  two-dimensional order axioms.
+
+We have reviewed how the automation we discussed in the last chapter enables us to write very short proofs compared to our Isabelle verifications, without having to break from Hilbert's basic proof strategies. In fact, we obtain proofs whose steps match Hilbert's prose steps very closely. Our incidence discoverers appear to be adequate to handle all of the incidence reasoning implicit in Hilbert's proofs.
+
+As we move onwards from these simple theorems, we will see how much we came to rely on our incidence automation. As we introduce new concepts such as triangle interiors and exteriors in Chapter~\ref{chapter:JordanVerification1}, we will see that it is prudent to add component discoverers which can then be composed with the incidence discoverers from the last chapter. The composed discoverers are used pervasively in Chapters~\ref{chapter:JordanVerification1} and~\ref{chapter:JordanVerification2}. 
+
+We would eventually like to tackle Hilbert's Group~III, which contains many new prose proofs. We are confident, based on our experience verifying these theorems in earlier work~\cite{ScottMScThesis}, that our incidence discoverers will make short work of Hilbert's implicit argumentation in these proofs.
+
+Finally, we have shown how Hilbert's proofs can be substantially improved upon if we derive Inner and Outer Pasch versions of Axiom~II, 4. These exchange most of the complex preconditions of Pasch's axiom, including the tedious assumption that all points considered by the axiom lie in a plane, for just one additional betweenness assumption.
+
+%%% Local Variables: 
+%%% TeX-master: "../thesis"
+%%% End: 

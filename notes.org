@@ -20,3 +20,4 @@
   ** Do not count "have" which begins a subproof
   ** Count "qed"
   ** Do not count trivial "fix"
+* For further evaluation, consider writing axiom dependencies on all discovery.

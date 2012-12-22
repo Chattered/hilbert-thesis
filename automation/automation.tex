@@ -236,7 +236,7 @@ Ideally, we want to leave such case-splitting as a book-keeping issue in our alg
 
 Luckily, there is some flexibility in Spivey's search monad. We can choose a data-structure other than bags for the generations. To solve the problem of case-analysis, we have chosen to implement the generations as \emph{trees}. 
 
-\subsection{Trees}
+\subsection{Trees}\label{sec:Trees}
 Each tree represents a generation of discovered theorems and replaces each of Spivey's bags. Each node in a tree is a bag of theorems discovered in that generation under a disjunctive hypothesis. Branches correspond to case-splits, with each branch tagged for the disjunct on which case-splitting was performed. The branch labels along any root-path therefore provide a context of disjunctive hypotheses for that subtree. Our goal is to discover theorems which hold when the case-splits are eliminated.
 
 Thus, the tree in Figure~\ref{fig:BasicTreeExample} might represent a formula made by case-analysing\linebreak \mbox{$P \vee (Q \wedge (R \vee S))$}:
@@ -448,7 +448,7 @@ To complete the architecture, we supply basic commands that handle the thread co
 % \label{fig:MLEngine}
 % \end{figure}
 
-\subsection{Dependency Tracking}
+\subsection{Dependency Tracking}\label{sec:WriterMonad}
 While writing a proof, we would normally start an incidence discoverer concurrently, which could generate theorems as we worked. The discoverer would consider \emph{all} of our goal hypotheses, and would typically find a large number of theorems. Most of these theorems are not needed in the proof. Of those which are needed, we would like to know the specific subset of hypotheses from which they are derived. This is desirable when it comes to proof-replay, when we would like the discoverer to work more efficiently with just the hypotheses it needs. But it is also desirable in terms of writing \emph{declarative} proofs: we want to write the dependent hypotheses directly into the proof script, so they are apparent to the reader. To achieve this, we need our discoverers to  \emph{track} hypotheses.
 
 A nice feature of monads in functional programming is that, when defined in the form of a \emph{transformer}, the extra book-keeping can be added in a clean and modular way. In this case, we create a generic \emph{writer transformer}.

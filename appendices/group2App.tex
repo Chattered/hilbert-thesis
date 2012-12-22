@@ -11,12 +11,12 @@
 \end{equation}
 
 \begin{equation}\label{eq:g22}
-  \tag{II, 2}
+  \tag{II,~2}
   A \neq B \implies \exists C. \between{A}{B}{C}
 \end{equation}
 
 \begin{equation}\label{eq:g23}
-  \tag{II, 3}
+  \tag{II,~3}
   \between{A}{B}{C} \implies \neg\between{A}{C}{B}
 \end{equation}
 
@@ -28,37 +28,71 @@
 % 	   ==> ~on_line A a /\ ~on_line B a /\ ~on_line C a
 % 	   ==> on_line P a /\ between A P B
 % 	   ==> (?Q. on_line Q a /\ (between A Q C \/ between B Q C)))`;;
-  \tag{II, 4}
+  \tag{II,~4}
   \begin{split}
     \text{Pasch's Axiom}\qquad & \Triangle{a}{A}{B}{C}\\
     & \wedge \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha \\
-    & \wedge (\forall P. \code{on\_line}\ P\ a \rightarrow \code{on\_plane}\ P\ \alpha\\
+    & \wedge (\forall P. \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha)\\
     & \neg\code{on\_line}\ A\ a \wedge \neg\code{on\_line}\ B\ a \wedge \neg\code{on\_line}\ C\ a\\
     & \wedge \code{on\_line}\ P\ a \wedge \between{A}{P}{B}\\
-    & \rightarrow \exists Q. \code{on\_line}\ Q\ a \wedge (\between{A}{Q}{C} \vee \between{B}{Q}{C})
+    & \implies \exists Q. \code{on\_line}\ Q\ a \wedge (\between{A}{Q}{C} \vee \between{B}{Q}{C})
   \end{split}
 \end{equation}
 
 \section{Elementary Consequences}
-\begin{equation}\label{eq:innerPasch}
+\begin{align}
+  \tag{\ref{eq:PaschPointSet}}
+  &\neg\code{collinear}\ \{A,B,C\}\wedge\neg\code{collinear}\ \{A,D,E\}\wedge\neg\code{collinear}\ \{C,D,E\}\\
+  &\wedge\code{planar}\ \{A,B,C,D,E\}\wedge\between{A}{D}{B}\\
+  &\implies\exists F. \code{collinear}\ \{D,E,F\} \wedge (\between{A}{F}{C}\vee\between{B}{F}{C}).
+\end{align} 
+
+\begin{equation}\label{eq:PaschPointSetUnfold}
   \begin{split}
+  % |- !A B C D E.
+  %        (~(?a. on_line A a /\ on_line B a /\ on_line C a) /\
+  %         ~(?a. on_line A a /\ on_line D a /\ on_line E a) /\
+  %         ~(?a. on_line C a /\ on_line D a /\ on_line E a) /\
+  %         (?'a. on_plane A 'a /\
+  %               on_plane B 'a /\
+  %               on_plane C 'a /\
+  %               on_plane D 'a /\
+  %               on_plane E 'a)) /\
+  %        between A D B
+  %        ==> (?Fa. (?a. on_line D a /\ on_line E a /\ on_line Fa a) /\
+  %                  (between A Fa C \/ between B Fa C))
+    &\Triangle{a}{A}{B}{C}\\
+    &\wedge\Triangle{a}{A}{D}{E}\\
+    &\wedge\Triangle{a}{C}{D}{E}\\
+    &\wedge(\exists\alpha. \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\\
+    &\qquad\wedge \code{on\_plane}\ D\ \alpha\wedge \code{on\_plane}\ E\ \alpha)\\
+    &\wedge\between{A}{D}{B}\\
+    &\implies\exists F. (\exists a. \code{on\_line}\ D\ a\wedge \code{on\_line}\ E\ a\wedge \code{on\_line}\ F\ a)\\
+    &\qquad\qquad (\between{A}{F}{C}\vee\between{B}{F}{C})
+  \end{split}
+\end{equation}
+
+\begin{equation}
+  \tag{\ref{eq:OuterPasch}}
   % "!A B C D X. 
   %  ~(?a. on_line A a /\ on_line B a /\ on_line C a)
   %  /\ between A B D /\ between A X C
   %  ==> ?Y. between D Y X /\ between B Y C"
-    &\Triangle{A}{B}{C} \wedge \between{A}{B}{D} \wedge \between{A}{X}{C}\\
-    &\implies\exists Y. \between{D}{Y}{X} \wedge \between{B}{Y}{C}
+  \begin{split}
+    &\Triangle{a}{A}{B}{C} \wedge \between{B}{C}{D} \wedge \between{A}{E}{C}\\ 
+    &\qquad\implies \exists F. \between{D}{E}{F} \wedge \between{A}{F}{B}
   \end{split}
 \end{equation}
 
-\begin{equation}\label{eq:outerPasch}
-  \begin{split}
+\begin{equation}
+  \tag{\ref{eq:InnerPasch}}
   % "!A B C D X. 
   %    ~(?a. on_line A a /\ on_line B a /\ on_line C a)
   %    /\ between A B D /\ between B X C
   %    ==> ?Y. between D X Y /\ between A Y C"
-    &\Triangle{A}{B}{C} \wedge \between{A}{B}{D} \wedge \between{B}{X}{C}\\
-    &\implies\exists Y. \between{D}{X}{Y} \wedge \between{A}{Y}{C}
+  \begin{split}
+    &\Triangle{a}{A}{B}{C} \wedge \between{B}{C}{D} \wedge \between{A}{E}{B}\\ 
+    &\qquad\implies \exists F. \between{D}{F}{E} \wedge \between{A}{F}{C}.
   \end{split}
 \end{equation}
 

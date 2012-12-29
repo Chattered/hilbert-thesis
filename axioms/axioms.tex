@@ -65,12 +65,13 @@ We now give Hilbert's incidence axioms as they appear in the tenth edition of \e
 
 Even these simple axioms have undergone a substantial amount of revision since the first-edition, with axioms being reordered, combined, split and redundancies deleted. The fact that there are redundancies in the first place goes to show that Hilbert's later claim that his axioms are independent was never \emph{fully} investigated in the \emph{Foundations of Geometry}. In fact, only a few interdependencies were ever considered.
 
-We give our formalisation in Appendix~\ref{app:group1}. It is mostly straightforward. Here, we will just give some supplementary discussion of the axioms as of the tenth edition.
+We give our formalisation in Appendix~\ref{app:group1}. The theorems in the appendix are asserted as axioms in HOL~Light via the function \code{new\_axiom}. Here, we will just give some supplementary discussion of the axioms as of the tenth edition.
 
 Hilbert's Axioms II, 3 and II, 4 each contain two distinct claims. We have not identified any interesting logical connection between these, and so we have split them in our formalisation into Axiom~\ref{eq:g13a}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g14b}, giving a total of 10 axioms. 
 
 Axioms~\ref{eq:g11} and~\ref{eq:g12}, which were a single axiom in the first edition, require that two points uniquely determine a line. Analogous axioms for planes are given by~\ref{eq:g14a} and \ref{eq:g15}, while the \emph{converse}, namely that a line is determined by two points appears as Axiom~\ref{eq:g13a}. The converse for planes, that a plane is determined by three non-collinear points was an axiom of the first-edition, but was later weakened to assert only that a plane contains at least one point in Axiom~\ref{eq:g13b}. Hilbert was clearly aware that the former could be derived from the latter, but the proof and theorem are both absent from the text. We present our own proof and its formal verification in \S\ref{sec:PlaneThree}.
 
+\label{sec:DanglingPoints}
 We should note that there is some ambiguity in Axiom~\ref{eq:g13a}. Is Hilbert saying that there are two points and some line such that the points lie on that line, or is he saying more generally that \emph{every} line contains two points. We took the latter view, since on the weaker interpretation, we could formalise a model of the first group of axioms following the technique in \S\ref{sec:GroupIModels}, and show in this model that there is a line with \emph{no} incident points. We assume Hilbert did not intend this. 
 
 Next, we have Axiom~\ref{eq:g13b}. This is a \emph{dimension} axiom, requiring that the geometry has at least dimension 2. An analogous axiom is Axiom~\ref{eq:g18}, which requires that the geometry has at least dimension three. We will have very little need for this last axiom, since almost all of Hilbert's proofs are effectively planar proofs.

@@ -1,0 +1,249 @@
+\chapter{The Formalisation of the Jordan Curve Theorem for Polygons}\label{chapter:JordanFormalisation}\label{chapter:JordanVerification1}
+% In this chapter, we will analyse our HOL~Light~\cite{HOLLight} verification of the Jordan Curve Theorem for Polygons. This theorem appears as Theorem~9 in the 10th edition of Hilbert's \emph{Foundations of Geometry}. The verification might stand on its own: the theorem's formulation does not appeal to earlier definitions or theorems, and of all the proofs we have considered, its verification is the most complicated by an order of magnitude. But the theorem also serves as a useful case-study for the tools that we have developed up to this point: the linear reasoning tactic from Chapter~\ref{chapter:LinearOrder} was used pervasively in verifying the theorem, becoming the crucial work-horse for solving and exploring complex linear ordering problems. We leveraged the theory of Half-Planes from Chapter~\ref{chapter:HalfPlanes} as the basis for key lemmas on two-dimensional ordering. Lastly, the discovery algebra described in Chapter~\ref{chapter:Automation} was needed throughout to verify incidence problems and to identify case-splits and suggest proof strategies based on discovered facts. 
+
+In this chapter, we will introduce our HOL~Light~\cite{HOLLight} formalisation of the polygonal Jordan Curve Theorem (\emph{JCT} for short). This theorem appears as Theorem~9 in the 10th edition of Hilbert's \emph{Foundations of Geometry}. The verification might stand on its own: the theorem's formulation does not appeal to earlier definitions or theorems, and of all the proofs we have considered, its verification is the most complicated by an order of magnitude. But the theorem also serves as a useful case-study for the tools that we have developed up to this point: the linear reasoning tactic from Chapter~\ref{chapter:LinearOrder} was used pervasively in verifying the theorem, becoming the crucial work-horse for solving and exploring complex linear ordering problems. We leveraged the theory of Half-Planes from Chapter~\ref{chapter:HalfPlanes} as the basis for key lemmas on two-dimensional ordering. And, as always, the discovery algebra described in Chapter~\ref{chapter:Automation} was needed throughout to handle incidence problems, to identify case-splits and suggest proof strategies based on discovered theorems. 
+
+\section{Organisation}
+The verification is divided neatly into two parts, corresponding to the verification of two theorems:
+\begin{enumerate}
+  \item Given two points in the plane of a simple polygon, any polygonal path between them must cross the simple polygon.
+  \item Given three points in the plane of a simple polygon, there is a polygonal path between two of them.
+\end{enumerate}
+
+The formulation of these two lemmas is discussed in \S\ref{sec:JordanFormulation}. This section, together with Appendix~\ref{app:JordanVerification}, covers everything one needs to know about \emph{what} we have verified, and can be read independently. The next two chapters cover the auxiliary concepts and associated lemmas which are needed for the actual verification.
+
+When we discuss the verifications, we will cover the same general topics. First, we shall give an overview of the proof structure, effectively amounting to a sketch proof of the theorem. From these, we shall explain how we have formalised the key concepts needed in the proofs. In the case of the first part of the Polygonal Jordan Theorem, these are the notions of triangle interiors and exteriors and the notion of a ``crossing'' of a triangle by a polygonal path. For the second part of the theorem, we have the notion of ``lines-of-sight'' and polygon rotations. 
+
+These notions are supported by a suite of lemmas. Consistent with the synthetic style of geometric proof, these lemmas generally break down into one of two forms. On the one hand, we have lemmas which introduce points and other objects in a geometrical configuration. On the other hand, we have lemmas which allow us to infer properties of these configurations. The two sorts of lemmas are used in tandem. We build up complex figures using the ``introduction'' rules, and then use the other rules to satisfy the hypotheses of yet more ``introduction'' rules, and so on. Many of these lemmas are interesting in their own right, and we shall pick a few for a closer examination.
+
+We present some extracts of what we hope are interesting proofs, ones which highlight the benefits and drawbacks of our representations in terms of the resulting proof mechanics. We also hope to use these extracts to convince the reader that we have stayed faithful to the synthetic style of proof, even as they grow significantly in complexity. This, we suggest, is no mean feat. Consider that the proofs from Chapter~\ref{chapter:Group2}, when verified, only take a dozen or so steps. The proofs in this chapter frequently run to hundreds, and we suspect this really is due to the complexity of the synthetic reasoning involved.
+
+We remind the reader that we use the word ``formulate'' to refer to the translating of intuitive ideas into a mathematically precise form, and the word ``proof'' to refer to mathematically rigorous arguments of formulated theorems. We reserve the word ``formalise'' for the translation of a mathematically precise statement into the language of higher-order logic, and the word ``verification'' to the machine-checked formalisation of a mathematical proof.
+
+\section{Related Work}
+The Jordan Curve Theorem has some notoriety within the formal verification community, and has long been regarded as a major milestone, one which could demonstrate the feasibility of formal verification on non-trivial mathematic problems. The MIZAR~\cite{MizarMathematicalVernacular} community first began the verification in 1991, and completed the special case for polygons in 1996. The full proof was completed in 2005. In the same year, Hales completed the proof in HOL~Light~\cite{HalesJordanCurve}. 
+
+Both proofs use the special case for polygons as a lemma, though in a restricted form: in the case of the MIZAR proof, only polygons with edges parallel to axes are considered. In Hales' proof, the polygon is restricted to lie on a grid. Moreover, the formulations are algebraic rather than synthetic, and so are outside the scope of Hilbert's and Veblen's formulations.
+
+In 2009, Dufourd~\cite{DufourdJordanCurve} formally verified a constructive proof of the Discrete Jordan Curve Theorem. This theorem characterises Jordan curves in terms of a ``ring'' of faces in a subdivision of a plane or sphere. This is a more practical achievement, since we can expect this sort of characterisation to be more useful to computer scientists trying to express and reason about topological properties computationally. However, our interest here is in Hilbert's formulation and a synthetic proof of the Jordan Curve Theorem in ordered geometry.
+
+\section{Foundational Issues}
+% The proof that there are at most two follows from Veblen's second lemma. With this lemma, we can take three points $P$, $Q$ and $R$ and draw paths so that the points $P'$, $Q'$ and $R'$ meet around any chosen segment such as $AB$ in Figure~\ref{fig:meetingPoints}. We can prove that a point can only be one of two sides of $AB$, and therefore that two of three points can be connected, and thus lie on the same region.
+
+% \begin{figure}
+% \centering\includegraphics[scale=0.5]{navigate.pdf}
+% \caption{Meeting Points}
+% \label{fig:meetingPoints}
+% \end{figure}
+
+% Many of Hilbert's definitions and theorems are first-order logic, and indeed, much of our formalisation makes no essential use of higher-order or number theoretical notions. But as with Hilbert`s Theorem~6 which we discussed in \S\ref{sec:Theorem6}, things are not so clear for Hilbert's definition of polygons.
+
+% It seems easy to excuse Hilbert's lack of clarity on these matters, since he was working before symbolic first-order logic had been invented. But then, when we consider the reviews by Veblen and Poincar\'{e}~\cite{VeblenHilbertReview,PoincareReview}, we realise that the community was certainly interested in the mechanisation of logic. Both reviews anticipate the mechanical verification of Hilbert's geometry, and both mention the work of Peano, whose formulations of logic and mathematics were higher-order, and even admitted recursive definitions. Peano's ideas would later be developed in Russell's \emph{Principles of Mathematics}~\cite{PrinciplesOfMathematics}, which led directly to Russell and Whitehead's \emph{Principia Mathematica}.
+
+% We realise there is some controversy about how strong the logic should   , we have not been shy about using 
+
+% \begin{quote}[The axioms] presuppose only the validity of the operations of logic and counting (ordinal number).\end{quote}
+
+% As with Hilbert's Theorem~6 \S\ref{sec:Theorem6}, a formulation of polygon and polygonal path raises a number of questions relating to our logical foundations. As we have previously stated, Hilbert's work predates the systematic development of first-order logic, and 
+
+\section{Formulation}\label{sec:JordanFormulation}
+
+% \begin{quote}
+%   DEFINITION. A set of segments $AB$, $BC$, $CD$, $\ldots$, $KL$ is called a \emph{polygonal path} that connects the points $A$ and $L$. Such a polygonal path will also be briefly denoted by $ABCD\ldots KL$. The points inside the segments $AB$, $BC$, $CD$, $\ldots$, $KL$ as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ are collectively called the \emph{points of the polygonal path}. 
+% \end{quote}
+
+%In addition, for a polygonal path $A$, $B$, $C$, $\ldots$, $L$, we shall call the segments $AB$, $BC$, $CD$, $\dots$, $KL$ the \emph{edges} of the polygonal path.
+
+% Contrary to his conventions~\S\ref{sec:HilbertConvention}, Hilbert does not insist that the points involved here are distinct. Indeed, he adds an explicit distinctness clause when he defines polygons (see below).
+
+% The definition leaves much to be desired when it comes to formalisation. Hilbert has previously defined segments (\S\ref{sec:SegmentDefinition}) as unordered pairs, and it is trivial to define a set of such segments. But as with Theorem~6 (see \S\ref{sec:Theorem6}), the informal notation is doing heavy lifting on the constraints. If we are to take Hilbert at his word and formalise a polygonal path as a set, we will need to insist that all but at most two elements of this set share their endpoints with at least two other segments. The remaining element(s) must share exactly one of their endpoints with another segment.
+
+% This is fairly typical of prose mathematics, where the notation itself because the means to establish constraints and the mechanism of reasoning. Consider again, Veblen's proof from the last chapter, to see how mathematical proofs can involve complicated arguments, not about the mathematical objects of the theory, but the \emph{symbols} used to denote them:
+
+% \begin{quote}Let this segment be one segment of a broken line $Q_kQ_{k+1}\cdots Q_{j-1}Q_j$ of segments of $q$ not meeting $P_1P_3$ but such that $Q_{k-1}Q_k$ and $Q_jQ_{j+1}$ do each have a point or endpoint in common with $P_1P_3$ ($1 \leq k < j \leq m$; if $k = 1$, $Q_{k-1} = Q_m$; if $j = m$, $Q_{j+1} = Q_1$). If $O_j$ is the point common to $P_1P_3$ and $Q_jQ_{j+1}$ or $Q_{j+1}$, and $O_k$ is the point common to $P_1P_3$ and $Q_{k-1}Q_k$ or $Q_{k-1}$, the broken line $O_kQ_kQ_{k+1}\cdots Q_{j-1}Q_jO_j$, has a point inside and also a point outside the triangle $P_1P_2P_3$ and cuts the broken line $P_1P_2P_3$ only once.\end{quote}
+
+% As we described Hilbert's Theorem~6 (see \S\ref{sec:Theorem6}) as a metatheorem, we would describe Veblen's argument here as a \emph{metaproof}. The use of such metatheoretical arguments in axiomatic geometry probably goes back to Euclid, who 
+
+% These are complicated constraints, the consequences of which are likely to leave us laboured with complex proofs about the existence of shared endpoints and tedious case-splits. 
+
+% We decided that if Hilbert is going to let his notation do heavy lifting, then we should work to formalise the notation directly. As such, we opted to represent polygonal paths as their finite sequence of points, from which the original polygonal paths can be recovered. With this definition, all the constraints are implicit. We also generalise the definition in order to later recover an equivalence relation (as we did for rays \S\ref{sec:Rays}). In particular, we allow the sequence to contain zero or one point. Finally, we represent finite sequences using lists, in the hope that the heavy lifting in the notation can be carried out as computations on concrete list instances.
+
+TODO: Discuss or refer to an earlier discussion about using lists to handle ``metalevel'' definitions, and why lists are somewhat justified by the fact that all infinite structures are now abstractions over geometric objects since we have derived the axiom of infinity.
+
+The list library in HOL Light is fairly impoverished (compared with, say, that of Isabelle/HOL), and so our verification had to take a detour as we added new function definitions and theorems for lists. For instance, in order to recover the edges of a polygonal path, we must take adjacent pairs of the points in its vertex list. We can do this by following a standard pattern in functional programming, shown in Figure~\ref{fig:AdjacentSpec}, which zips all but the last element of a list with its tail. However, it is generally easier and requires much less unfolding to compute directly with the recursive specification of the function. All the definitions of auxiliary functions, such as the list indexing function $\code{el}$ are given in Appendix~\ref{app:JordanVerification}.
+
+\begin{boxedfigure}
+\begin{align*}
+  &\code{adjacent}\; : \; [\alpha] \rightarrow [(\alpha,\alpha)]\\
+  &\code{adjacent}\ [P_0,P_1,P_2,\ldots,P_n]\\
+  &\quad=\code{zip}\ (\code{butlast}\ [P_0,P_1,P_2,\ldots,P_n])\ (\code{tail}\ [P_0,P_1,P_,2,\ldots,P_n])\\
+  &\quad= \code{zip}\ \begin{array}[t]{rcccccl}\lbrack & P_0,&P_1,&P_2,&\ldots,&P_{n-1}&\rbrack\\
+    \lbrack & P_1,&P_2,&P_3,&\ldots,&P_n&\rbrack
+  \end{array}\\
+  &\quad= [(P_0,P_1),(P_1,P_2),(P_2,P_3),\ldots,(P_{n-1},P_n)]\\\\
+  &\code{adjacent}\ [] = []\\
+  &\code{adjacent}\ (\cons{x}{xs}) = []\\
+  &\code{adjacent}\ (\cons{x}{\cons{y}{xs}}) = \cons{(x,y)}{\code{adjacent}\ (\cons{y}{xs})}.
+\end{align*}
+\caption{Specifications for $\code{adjacent}$}
+\label{fig:AdjacentSpec}
+\end{boxedfigure}
+
+With this function, we can define the points of a polygonal path. As per Hilbert's definition, these are the points of the vertex list and the points inside each individual segment $(x,y)$. We can test for each using the list-membership predicate $\code{mem}$.
+\begin{equation}\label{eq:OnPolyPath}
+  \begin{split}
+    &\code{on\_polypath}\,:\,[\code{point}] \rightarrow \code{point} \rightarrow \code{bool}\\
+    &\code{on\_polypath}\ Ps\ P \iff \\
+    &\quad\code{mem}\ P\ Ps\vee\,\exists x\ y.\; \code{mem}\ (x,y)\ (\code{adjacent}\ Ps) \wedge \between{x}{P}{y}.
+  \end{split}
+\end{equation}
+
+Next, we need to formalise the notion of region as used in the Polygonal Jordan Curve Theorem. We shall follow our approach when formalising the notions of \emph{half-plane} and \emph{rays} (see \S\ref{sec:HalfPlanesFormulation}), and understand these regions as equivalence classes under a suitable relation, namely one which requires there to be a polygonal path between two given points. We shall call this relation ``path-connectedness'' and we shall say that two points satisying it are ``path-connected.''
+\begin{align*}
+  &\code{path\_connected}\,:\,\code{plane}\rightarrow(\code{point} \rightarrow \code{bool}) \rightarrow    \code{point} \rightarrow \code{point}\\
+  &\code{path\_connected}\ \alpha\ figure\ P\ Q \iff\\
+  &\quad\exists path.\; path \neq []\\
+  &\qquad\wedge\,(\forall R.\ \code{mem}\ R\ path \implies \onplane{R}{\alpha})\\
+  &\qquad\wedge\,\code{head}\ path = P \wedge \code{last}\ path = Q\\
+  &\qquad\wedge\,\code{disjoint}\ (\code{on\_polypath}\ path)\ figure.
+\end{align*}
+
+Note that, when formalised, this relation is defined on the set of all points in space, parameterised on a plane $\alpha$ and a $figure$. Instead of a plane parameter, we could have added constraints to the figure and path, such as requiring that they all lie in exactly one plane. The tradeoffs are in the number of constraints in the definition compared with the number of constraints on later theorems. Here, we have opted for the simpler definition.
+
+A figure here is represented by a predicate-set of all the points on the figure. Thus, the relation on points in the plane $\alpha$ which are path-connected with respect to a polygonal path $Ps$ can be cleanly expressed by $\code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)$. This is obviously an equivalence relation.
+
+\subsection{Verifying Equivalence}\label{sec:segConnectEquivalence}
+The proof that we have an equivalence relation boils down entirely to properties of lists. To prove reflexivity, we use the one-element polygonal path (excluded in Hilbert's definitions). Our witness for symmetry is obtained by reversing the supplied polygonal path. Our witness for transitivity is obtained by appending the two supplied polygonal paths. To reason about these objects, we first proved some extra simplification rules for our list functions:
+\begin{align*}
+  &xs \neq [] \wedge ys \neq []\\ 
+  &\quad\implies\code{adjacent}(\append{xs}{ys})\\
+  &\qquad\qquad = \append{\append{\code{adjacent}\ xs}{(\code{last}\ xs,\ \code{hd}\ ys)}}{\code{adjacent}\ ys}\\
+  &n + 1 < \code{length}\ xs\\
+  &\quad\implies \el{n}{(\code{adjacent}\ xs)} = (\el{n}{xs}, \el{(n+1)}{xs})\\
+  &\code{length}\ xs = \code{length}\ ys\\
+  &\quad\implies\code{reverse}\ (\code{zip}\ xs\ ys) = \code{zip}\ (\code{reverse}\ xs)\ (\code{reverse}\ ys)\\
+  &\code{butlast}\ (\code{reverse}\ xs) = \code{reverse}\ (\code{tail}\ xs)\\
+  &\code{tail}\ (\code{reverse}\ xs) = \code{reverse}\ (\code{butlast}\ xs).
+\end{align*}
+
+With these, we can prove that path-connectedness defines an equivalence relation on points in the plane which are not points of the figure. The constraint appears as an assumption on reflexivity. 
+
+Obviously, we will need these three theorems \emph{somewhere} in our later verification, though it turns out that they are not used very often. They can be seen, at least, as a sanity check on our notion of path-connectedness.
+\begin{align*}
+  \;&\code{on\_plane}\ P\ \alpha \wedge \neg(figure\ P) \implies \code{path\_connected}\ \alpha\ figure\ P\ P\\
+  \;&\code{path\_connected}\ \alpha\ figure\ P\ Q \implies \code{path\_connected}\ \alpha\ figure\ Q\ P\\
+  \;&\code{path\_connected}\ \alpha\ figure\ P\ Q \wedge \code{path\_connected}\ \alpha\ figure\ Q\ R\\
+  &\qquad\implies \code{path\_connected}\ \alpha\ figure\ P\ R.
+\end{align*}
+
+Note that for the rest of the chapter, we shall elide all terms involving $\code{on\_plane}$, and thus present this verification as if from planar rather than spatial axioms. This is merely for clarity. Our actual verification is conditional on information about planes, and we have restored the conditions in Appendix~\ref{app:JordanVerification}, where it is clear they only serve to relativise all other objects to the same plane $\alpha$. Had we been working from planar axioms, all of these terms would be absent (see \S\ref{sec:RelativisingPlane} for some discussion).
+
+\subsection{Polygons}\label{sec:polygonFormalisation}
+Hilbert continues his definitions as follows:
+\begin{quote}
+  If the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ all lie in a plane and the point $A$ coincides with the point $L$ then the polygonal path is called a \emph{polygon} and is denoted as the polygon $ABCD\ldots K$. The segments $AB$, $BC$, $CD$, \ldots, $KA$ are also called the \emph{sides of the polygon}. The points $A$, $B$, $C$, $D$, $\ldots$, $K$ are called the \emph{vertices of the polygon.} Polygons of $3$, $4$, $\ldots$, $n$ \emph{vertices} are called \emph{triangles}, \emph{quadrilaterals}, $\ldots$, \emph{n-gons}.
+\end{quote}
+
+The term ``side'' is ambiguous between the segments of a polygon and the half-planes of a given line. As such, we shall refer to the segments defining both a polygonal path and a polygon as ``edges'', and reserve ``side'' for half-planes. These definitions will help us orientate ourselves within the familiar world of geometry, but we do not believe they correspond to any useful abstractions on the formalisation side. As such, we shall only use them informally to explain parts of the verification. The important definition for the formalisation is the one for \emph{simple polygons}:
+\begin{quote}
+  DEFINITION. If the vertices of a polygon are all distinct, none of them falls on [an edge] and no two of its nonadjacent [edges] have a point in common, the polygon is called \emph{simple}.
+\end{quote}
+
+Combining this with the definition of polygon gives us the following formalisation:
+\begin{equation}\label{eq:SimplePolygonDef}
+  \begin{split}
+    &\code{simple\_polygon}\ \alpha\ Ps \iff \\
+    &\qquad 3 \leq \code{length}\ Ps\\
+    &\qquad\wedge \code{head}\ ps = \code{last}\ Ps\\
+    &\qquad\wedge (\forall P.\;\code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha)\\
+    &\qquad\wedge \code{pairwise}\ (\neq)\ (\code{butlast}\ Ps)\\
+    &\qquad\wedge \neg(\exists P\;Q\;X.\; \code{mem}\;X\;Ps\wedge\code{mem}\;(P,Q)\;(\code{adjacent}\;Ps)\wedge\between{P}{X}{Q})\\
+    &\qquad\wedge \code{pairwise}\ (\lambda(P,Q)\;(P',Q').\;\neg(\exists X. \between{P}{X}{P'} \wedge \between{Q}{X}{Q'}).
+  \end{split}
+\end{equation}
+
+In this definition, we have introduced the polygon's plane as a parameter, but we are aware of that this could be more elegantly refactored. Any simple polygon uniquely determines the plane on which it lies, and so it might have been more elegant to hide the plane witness by an existential in the body of the definition. A function could be then be defined to extract the unique witness from the list $Ps$ when $Ps$ is known to be a simple polygon. 
+
+The definition would still be rather unweildly. First, we have a ``magic'' number 3,\footnote{The number $4$ would do just as well.} which is needed to rule out the degenerate case of a point polygon $[P,P]$ which slips past Hilbert's constraints. The next two clauses are straightforward, and define $Ps$ to be a polygon according to Hilbert's definitions. The real complexity is in the last three clauses which define the polygon as \emph{simple}. 
+
+Given the unweildiness of this formalisation, we must be wary of subtle mistakes. These could lead either to some figures being classed as simple polygons when they should not be, or some figures not being classed as simple polygons when they should. The first sort of error must show up in the verification. The second sort of error is more insidious, since it will only cause our verification to become all too easy. In the worst case, the definition will be unsatisfiable and all theorems of simple polygons will become trivial. This might happen if, say, we had removed the use of \code{butlast} above (in fact, it almost \emph{did}).
+
+Because of these concerns, we must pay attention to the behaviour of the function $\code{pairwise}$. One might think that $\code{pairwise}\, R$ would check whether the relation $R$ holds across all pairs of elements drawn from its argument list, which would be the case if $\code{pairwise}$ were equivalent to $\code{all} \circ \code{lift2}\ R$ for the usual list monad. If this were the case, the definition would be unsatisfiable, since it is always possible to draw some pair $(P,P)$ from a non-empty list, and this pair cannot satisfy $(\neq)$. But in fact, \code{pairwise} only checks half the pairs, and so can be satisfied even when the supplied relation is irreflexive (such as $(\neq)$ above) and even anti-symmetric. Consider the evaluation of $\code{pairwise}\ (<)\ [1,2,3,4]$:
+\begin{align*}
+  \code{pairwise}\ (<)\ [1,2,3,4,5] &= 1 < 2 < 3 < 4 \\
+  &\quad\wedge\; 2 < 3 < 4 \\
+  &\quad\wedge\; 3 < 4\\
+  & = \top.
+\end{align*}
+
+For now, inspection is the best way to inspire confidence in the definition, but there are two other small reassurances. Firstly, we have verifed a quick sanity check for triangles. Secondly, the definition does not appear until the final hurdles of our formal verification. Our verification of Veblen's first lemma, for instance, makes no reference to simple polygons. Thus, there is plenty of verified theory which can be understood independently of the above definition.
+\begin{equation*}
+  \begin{split}
+    \; \Triangle{a}{A}{B}{C} \\
+    \implies \code{simple\_polygon}\ [A,B,C,A].
+  \end{split}
+\end{equation*}
+
+\subsection{Goal Theorems}
+In \S\ref{sec:segConnectEquivalence}, we said that we would understand the regions defined by the polygonal Jordan Curve Theorem as equivalence classes under path-connectedness. If we were to follow the style of Chapter~\ref{chapter:HalfPlanes}, we would quotient an appropriate data-type under this relation and talk of regions as abstract objects.
+ 
+We shall not, however. We are not planning as of now to build on the Polygonal Jordan Curve Theorem, and so the abstraction can wait. We hope, though, that some of the example proofs in this chapter show that there \emph{was} a substantial pay-off when talking abstractly of \emph{half-planes}, while there was no need to talk abstractly of rays. This gives us some perspective on both Hilbert and Veblen's remarks that the the Polygonal Jordan Curve Theorem is principally founded on the theory of half-planes.
+
+Abstractly, then, we would express the Polygonal Jordan Curve Theorem by saying that a simple polygon separates the plane into exactly two regions. Talking instead in terms of the underlying representation and path-connectedness, we say firstly that there are at least two points in the plane and not on the polygon which are not path-connected. Secondly, we say that of any three points in the plane and not on the polygon, at least two of them can be path-connected.
+
+There is a final claim: one of the regions is unbounded. This theorem does not appear in Veblen's thesis, and we have left its verification to future work. Hilbert formulates the claim by saying that exactly one of the regions contains straight lines. Since we are avoiding talk of regions directly, we shall generalise and formulate it as follows:
+\begin{itemize}
+\item there exists a line in the plane of a polygonal path which does not intersect the polygonal path;
+\item given two lines $a$ and $b$ in the plane of a polygonal path which does not intersect the polygonal path, all points of $A$ and all points of $B$ are path-connected with respect to the polygonal path.
+\end{itemize}
+
+In the first part, the rough idea is that there is at least one region containing a straight line, while in the second, that there is at most one region containing a straight line. The formulation needs some discussion. 
+
+We have dropped the unnecessary condition that the polygonal path is a simple polygon from both parts. We have also dropped any mention of path-connectedness and path-connected regions from the first part. This condition appears in the second part, and can be obtained for the line $a$ simply by setting $a=b$.
+
+With the breakdown considered, we turn to the formalisation. Again, we must pay careful attention to the details. Our later verification demonstrates that these formalisations are provable, but we have left the matter of whether they are ``too easily provable'' to inspection.
+\begin{equation}\label{eq:jordanFormal1}
+  \begin{split}
+    &\code{simple\_polygon}\ \alpha\ Ps\\
+    &\implies \exists P\ Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
+    &\qquad\wedge \neg\code{on\_polypath}\ Ps\ P \wedge \neg\code{on\_polypath}\ Ps\ Q\\
+    &\qquad\wedge \neg\code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q.
+  \end{split}
+\end{equation}
+
+\begin{equation}\label{eq:jordanFormal2}
+  \begin{split}
+  &\code{simple\_polygon}\ \alpha\ Ps\\
+  &\wedge \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha \wedge \code{on\_plane}\ R\ \alpha\\
+  &\wedge \neg\code{on\_polypath}\ Ps\ P\wedge \neg\code{on\_polypath}\ Ps\ Q\wedge \neg\code{on\_polypath}\ Ps\ R\\
+  &\implies \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q\\
+  &\qquad\quad\vee \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ R\\
+  &\qquad\quad\vee \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ Q\ R.
+     \end{split}
+\end{equation}
+
+\begin{equation}
+  \begin{split}\label{eq:jordanFormal3}
+  &(\forall P. \code{on\_polypath}\ Ps\ P \implies \code{on\_plane}\ P\ \alpha)\\
+  &\implies \exists a.\; \forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha
+  \wedge \neg\code{on\_polypath}\ P\ Ps.
+     \end{split}
+\end{equation}
+
+\begin{equation}
+  \begin{split}\label{eq:jordanFormal4}
+  &(\forall P.\; \code{on\_polypath}\ Ps\ P \implies \code{on\_plane}\ P\ \alpha)\\
+  &(\forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ a)\\
+  &(\forall P.\; \code{on\_line}\ P\ b \implies \code{on\_plane}\ P\ b)\\
+  &\implies \code{on\_line}\ A\ a \vee \code{on\_line}\ A\ b\wedge 
+  \code{on\_line}\ B\ a \vee \code{on\_line}\ B\ b\\
+  &\implies \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ A\ B.
+\end{split}
+\end{equation}
+
+Here, Theorems~\ref{eq:jordanFormal1} and~\ref{eq:jordanFormal2} formalise the fact that there are respectively at least two and at most two path-connected regions, while Theorems~\ref{eq:jordanFormal3} and~\ref{eq:jordanFormal4} formalise the fact that exactly one region is unbounded.
+
+We would like to draw the reader's attention to the side-condition in the conclusion of Theorem~\ref{eq:jordanFormal1}. We must assert that $P$ and $Q$ lie in the plane of the polygon and do not lie on the polygon. \emph{Any} two points not satisfying these conditions are such that they cannot be path-connected. Without this side-condition, the theorem is trivial.
+
+In this subsection, we have presented the verification goals for this chapter, namely Theorems~\ref{eq:jordanFormal1} and~\ref{eq:jordanFormal2}. These theorems are also given in Appendix~\ref{app:JordanVerification}, together with all definitions on which the formalisations depend. Any definitions and theorems we introduce from here on are scaffolding needed to support the verification. The verification is the subject of the next few chapters.
+

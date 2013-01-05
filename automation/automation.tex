@@ -1,7 +1,7 @@
 \chapter{Automation}\label{chapter:Automation}
 In the last chapter, we considered a representation for incidence claims involving lines and planes which helped us write shorter verifications. The use of these rules also appeared ripe for automation. 
 
-The HOL~Light theorem prover expects its users to work ``close to the metal'', often writing ML directly. Writing new tools can be comfortable in this environment, and it is easy to prototype and experimentally integrate new tools into the rest of the system and existing proof languages. In this chapter, we shall see how this integration can take the form of a concurrent and collaborative discovery tool for incidence reasoning, which can be made available as a tactic and in Mizar~light proof steps.
+The HOL~Light theorem prover expects its users to work ``close to the metal'', often writing ML directly. Writing new tools can be comfortable in this environment, and it is easy to prototype and experimentally integrate new tools into the rest of the system and existing proof languages. In this chapter, we shall see how this integration can take the form of a concurrent and collaborative automated tool for incidence reasoning, which can be made available as a tactic and in Mizar~light proof steps.
 
 Much of this chapter and the subsequent chapter is an expansion and improvement on earlier work~\cite{ScottExploring,ScottComposable}.
 
@@ -105,15 +105,22 @@ The thread then echoes each generation of facts concurrently to a separate termi
 
 %When a fixpoint is detected, the user is notified, so that they can decide whether perhaps an assumption is missing, or whether a more sophisticated subproof is needed. In the meantime, the forward-chaining thread will sleep.
 
-Since we are using an LCF style prover~\cite{LCF}, we always ensure that our forward-chaining derivations are \emph{fully-expansive}~\cite{FullyExpansive}. This means that to carry out its derivations, the tool directly applies inference rules to generate fully machine verified lemmas. These lemmas can then be seamlessly integrated into the user's proof script to produce a fully machine-checked proof.
+%Since we are using an LCF style prover~\cite{LCF}, we always ensure that our forward-chaining derivations are fully-expansive~\cite{FullyExpansive}. This means that to carry out its derivations, the tool directly applies inference rules to generate fully machine verified lemmas. These lemmas can then be seamlessly integrated into the user's proof script to produce a fully machine-checked proof.
+
+\subsection{Discovery}
+In our designs, our automation is very much intended in the spirit of \emph{assistance}. It is not intended to take over, or to solve the user's problems. It is there as a support, to be relied on as desired. These make its purposes so modest that it is not clear why such a tool would ever be needed. Perhaps it would be useful to set the scene.
+
+We would typically develop our geometric proofs on paper, but as we noted above, a typical geometric diagram probably includes many non-degeneracy assumptions. In our case, these assumptions required that certain points be non-equal and others non-collinear. Discharging these assumptions typically meant a pen-and-paper combinatorial search, which we would again trace out on paper.
+
+In this narrow domain, it was easy to imagine simple programs which could do the combinatorial search for us, and which could display a breadth of theorems in case we had missed shorter paths, or overlaps with later inferences. This, then, is not quite automated search, but more assisted search. We have chosen to give it the shorter title of ``discovery'', which stresses the point that we are usually interested in obtaining many results from the search process, including results we had not expected, and that we generally did not run the searches with a particular goal theorem in mind. However, we should mention that our use of the word ``discovery'' is to be contrasted with fully automated discovery systems which search for arbitrary interesting theorems and concepts without the need for assistance~(see the work of Colton et al~\cite{ColtonInterestingness}, as well as McCasland and Bundy~\cite{Mathsaid}).
 
 \section{An Implementation in Combinators}\label{sec:DiscoveryAlgebra}
 \subsection{Data-Flow}
-Our prototype implementation was an adequate proof of concept, and enabled us to write some extremely short and clear proofs. We have some examples of these in the next chapter. However, our prototype currently has no theoretical underpinning. The finer details of the implementation are complex, ad-hoc, unlikely to scale, and cannot be easily modified to work on new problems.
+Our prototype implementation was an adequate proof of concept, and enabled us to write some very short and clear proofs. We have some examples of these in the next chapter. However, our prototype currently has no theoretical underpinning. The finer details of the implementation are complex, ad-hoc, unlikely to scale, and cannot be easily modified to work on new problems. 
 
 Much of the complexity of the ML algorithm comes from the fact that each generation of theorems is partitioned into five types: point equalities, point inequalities, collinear sets, non-collinear sets and planar sets. By partitioning in this way, we greatly reduce the number of combinations of theorems we need to try with each inference rule, but there is still much wasted effort. Every time a new generation is generated, all relevant combinations are applied, \emph{including} the combinations which were applied for the \emph{last} generation. Our simple lists do not help us filter out the repetitious work.
 
-Rather than seeing the problem as simply one of repeating inferences across a succession of generations, we need a way to model the data-flow directly. The flow of data for our problem, according to the rules of \S\ref{list:Procedures}, is given in Figure~\ref{fig:DataFlow}.
+Rather than seeing the problem as simply one of repeating inferences across a succession of generations, we decided to model the data-flow directly. The flow of data for our problem, according to the rules of \S\ref{list:Procedures}, is given in Figure~\ref{fig:DataFlow}.
 
 \begin{figure}
 \centering\includegraphics[scale=0.5]{automation/DataFlow}
@@ -121,10 +128,14 @@ Rather than seeing the problem as simply one of repeating inferences across a su
 \label{fig:DataFlow}
 \end{figure}
 
-Our aim in this section is to find a way to directly express this data-flow in a suitable language. For this, we will need a distinguished set of primitives which can be combined by transformations. Following the examples of tactics and conversions~\cite{Tactics}, the hallmark of the LCF approach to theorem proving, and following a strong staple of strongly typed functional programming~\cite{CombinatorLanguages}, we shall implement our language in \emph{combinators}. The advantage of choosing a combinator language is that it fully integrates with the host programming language, and is therefore easy to integrate with the tactic combinator language and the Mizar~Light combinator language. The user is also free to extend the language and can easily inject computations into it using lambda abstraction.
+The particular automation we need for Hilbert lies in a very narrow domain, and we would rather see it as a  ``one-shot'' tool, one which is unlikely to be needed in other projects. This makes it most similar in purpose to a hand-crafted conversion or tactic~\cite{Tactics}. Conversions and tactics, a staple of the LCF approach to theorem proving, are normally written and understood via a combinator~\cite{CombinatorLanguages}, which are themselves a staple of strongly-typed functional programming. 
+
+Our aim in this section will therefore be to hsow how a data-flow such as that of Figure~\ref{fig:DataFlow} can be directly expressed in a suitable language combinator language, with a distinguished set of primitives which can be combined by transformations. While the incidence automation itself will be a one-shot tool written in this language, we hope the data-flow language will be more useful in other contexts.
+
+The advantage of choosing a combinator language, as opposed to some other kind of domain-specific language, is that it fully integrates with the host programming language, and is therefore easy to integrate with the tactic combinator language and the Mizar~Light combinator language. The user is also free to extend the language and can easily inject computations into it using lambda abstraction.
 
 \subsection{Related Work}
-The idea of an algebraic data-flow language was considered early on by Chen~\cite{ChenForwardChaining}, who gave a specification for a variety of primitives very similar to our own, though without an implementation. Since then, algebras for logic programming, handling unbounded and fair search have been developed~\cite{BacktrackingMonad}. The algebra we shall consider here is related and was originally conceived by Spivey~\cite{SearchAlgebras}. It has more rigorously developed underpinnings, and compared to other search algebras, it places stronger constraints on the order in which the values are generated. We shall be generalising Spivey's ideas somewhat, and also hope to give more a more ``operational'' motivation for the definitions.
+The idea of an algebraic data-flow language was considered early on by Chen~\cite{ChenForwardChaining}, who gave a specification for a variety of primitives very similar to our own, though without an implementation. Since then, algebras for logic programming, handling unbounded and fair search have been developed~\cite{BacktrackingMonad}. The algebra we shall consider here is related and was originally conceived by Spivey~\cite{SearchAlgebras}. It has more rigorously developed underpinnings, and compared to other search algebras such as~\cite{BacktrackingMonad}, it places stronger constraints on the order in which the values are generated. We shall be generalising Spivey's ideas somewhat, and also hope to give more a more ``operational'' motivation for the definitions.
 
 \subsection{Streams}\label{sec:Streams}
 Our overarching purpose is to output a stream of theorems, perhaps to a terminal, to a database of facts to be used during a proof, or perhaps to another consumer for further processing. If we think of this output \emph{as} the implementation, then we are dealing with procedures which lazily generate successive elements of a list. These lazy lists, or streams, shall be the primitives of our data-flow algebra. 
@@ -155,7 +166,7 @@ satisfying the algebraic laws given in Figure~\ref{fig:MonadLaws}.
 \label{fig:MonadLaws}
 \end{figure}
 
-The list monad can be used for search, but takes list concatenation $\code{concat} : [[\alpha]] \rightarrow [\alpha]$ for its join operation. This makes it unsuitable for \emph{unbounded} discovery. If the list $xs$ represents one unbounded search, then we have $xs + ys = xs$\footnote{Here, $+$ is just list append.} for any $ys$, and thus, all items found by $ys$ are lost. This is an undesirable property. We want to be able to combine unbounded searches over infinite domains without losing any data.
+The list monad can be used for search, but takes list concatenation $\code{concat} : [[\alpha]] \rightarrow [\alpha]$ for its join operation. This makes it unsuitable for \emph{fair} and \emph{unbounded search}. If the list $xs$ represents one unbounded search, then we have $xs + ys = xs$\footnote{Here, $+$ is just list append.} for any $ys$, and thus, all items found by $ys$ are lost. This is an undesirable property. We want to be able to combine unbounded searches over infinite domains without losing any data.
 
 \subsection{The Stream Monad}\label{sec:StreamMonad}
 There is an alternative definition of the monad for streams (given in Spivey~\cite{SearchAlgebras}) which handles unbounded search. Here, the join function takes a possibly infinite stream of possibly infinite streams, and produces an exhaustive enumeration of \emph{all} elements. We show how to achieve this in Figure~\ref{fig:ShiftGen} using a function $\code{shift}$, which moves each stream one to the ``right'' of its predecessor. We can then exhaustively enumerate every element, by enumerating each column, one-by-one, from left-to-right. 
@@ -189,7 +200,7 @@ There is an alternative definition of the monad for streams (given in Spivey~\ci
   \label{fig:ShiftGen}
 \end{figure}
 
-If we understand these streams as the outputs of discoverers, then the outer stream can be understood as the output of a discoverer which \emph{discovers discoverers}. The join function can then be interpreted as \emph{forking} each discoverer at the point of its creation and combining the results into a single discoverer. The highlighted column in Figure~\ref{fig:ShiftGen} is this combined result: a set of values generated \emph{simultaneously} and thus having no specified order (this is required to satisfy Law~\ref{eq:JoinAssoc} in Figure~\ref{fig:MonadLaws}).
+If we understand these streams as the outputs of searches, then the outer stream can be understood as the output of a discoverer which \emph{discovers discoverers}. The join function can then be interpreted as \emph{forking} each discoverer at the point of its creation and combining the results into a single discoverer. The highlighted column in Figure~\ref{fig:ShiftGen} is this combined result: a set of values generated \emph{simultaneously} and thus having no specified order (this is required to satisfy Law~\ref{eq:JoinAssoc} in Figure~\ref{fig:MonadLaws}).
 
 However, this complicates our stream type, since we now need additional inner structure to store the combined values. We will refer to each instance of this inner structure as a \emph{generation}, following our terminology from \S\ref{sec:NaiveImplementation}. Each generation here is a finite collection of simultaneous values discovered at the same level in a breadth-first search. We just need to define the join function, taking care of this additional structure.
 
@@ -432,7 +443,7 @@ Next, we introduce a keyword $\code{clearly}$. This has the same type as $\code{
 \label{sec:DiscoverTac}
 Finally, we have introduced a theorem-tactic \code{discover\_tac} with type
 \begin{displaymath}
-\code{discover\_tac}\;:\;(\code{discoverer}\ \alpha\rightarrow\code{discoverer}\ \alpha) \rightarrow [\code{thm}] \rightarrow \code{tactic}.
+\code{discover\_tac}\;:\;(\code{discoverer}\ \alpha\rightarrow\code{discoverer}\ \alpha) \rightarrow ([\code{thm}] \rightarrow \code{tactic}) \rightarrow \code{tactic}.
 \end{displaymath}
 As with $\code{obviously}$ and $\code{clearly}$, we take a transformation of discoverers. Then when we apply $\code{discover\_tac}\ f\ tac$,  all goal hypotheses are fed to $f$. The resulting discovered facts are then supplied to the function $tac$ (often just $\code{MESON}$).
 

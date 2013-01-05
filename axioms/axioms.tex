@@ -269,9 +269,13 @@ In Figure~\ref{fig:PointSets}, we reproduce a set of rules for reasoning with co
 \caption{Incidence Rules in Point Sets}\label{fig:PointSets}
 \end{figure}
 
-So long as we are restricting our attention to \emph{a finite number of points}, which is the typical context for applying these rules, we can make these axioms correspond to the incidence axioms which do not introduce points, and thus justify them as an alternative presentation of the incidence rules. Given a set of points $S$, let us think of a line containing the points of $S$, should it exist, as a maximal collinear superset of $S$. Similarly, let us think of a plane containing the points of $S$, should it exist, as a maximal planar superset of $S$. In this way, we can define lines and planes entirely in terms of point-sets known to be collinear and planar. 
+So long as we are restricting our attention to \emph{a finite number of points}, which is the typical context for applying these rules, we can make these axioms correspond to the incidence axioms which do not introduce points, and thus justify them as an alternative presentation of the incidence rules. We regard this as somewhat important, since we do not want a bunch of \emph{ad-hoc} rules which happen to work most of the time. We almost want an alternative way to think about incidence reasoning, one which has nice computational properties. We will then offer the idea that Hilbert omitted incidence arguments \emph{because} they are just computational detail.
 
-In this sense, Rule~\ref{rule:colltwo} must assert that the points $A$ and $B$ are incident with a line $AB$, corresponding to Axiom~\ref{eq:g11}. Rule~\ref{rule:collunion} is less easy to understand, but effectively corresponds to Axiom~\ref{eq:g12}. It asserts that the expression ``the line $AB$'' is well-defined: the line $AB$, as we have said, must be a unique maximal superset of all points containing $A$ and $B$. Now the largest possible set containing $A$ and $B$ is just the finite union of all sets containing $A$ and $B$. What Rule~\ref{rule:collunion} is telling us is that this set is collinear. In other words, the unique largest set containing $A$ and $B$ is the line of $AB$.
+This is perhaps fussy detail, but we want to offer a more \emph{charitable} (though not necessary more \emph{correct}) reading of Hilbert than appears in Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}. We encourage readers who find these questions rather bland to skip ahead.
+
+Given a set of points $S$, let us think of a line containing the points of $S$, should it exist, as a maximal collinear superset of $S$. Similarly, let us think of a plane containing the points of $S$, should it exist, as a maximal planar superset of $S$. In this way, we can define lines and planes entirely in terms of point-sets known to be collinear and planar. 
+
+In this sense, Rule~\ref{rule:colltwo} must assert that the points $A$ and $B$ are incident with a line $AB$, corresponding to Axiom~\ref{eq:g11}~\footnote{A nice way to read this rule, due to Robert Henderson, is to say that when two lines meet at \emph{more} in more than two places, they must form a straight line rather than a hinge.}. Rule~\ref{rule:collunion} is less easy to understand, but effectively corresponds to Axiom~\ref{eq:g12}. It asserts that the expression ``the line $AB$'' is well-defined: the line $AB$, as we have said, must be a unique maximal superset of all points containing $A$ and $B$. Now the largest possible set containing $A$ and $B$ is just the finite union of all sets containing $A$ and $B$. What Rule~\ref{rule:collunion} is telling us is that this set is collinear. In other words, the unique largest set containing $A$ and $B$ is the line of $AB$.
 
 Similarly, Rule~\ref{rule:planethree} tells us that $A$, $B$ and $C$ are incident with the plane $ABC$ while Rule~\ref{rule:planeunion} asserts that the expression ``the plane $ABC$'' is well-defined, or more generally, that a plane is uniquely determined by any of its non-collinear subsets.
 
@@ -295,7 +299,7 @@ Luckily, when we reflected on our manually crafted proofs, we realised that the 
 We finish by remarking that the rules of Figure~\ref{fig:PointSets} were verified in a procedural rather than declarative style in HOL~Light. We only intend these verifications to justify rules that will be become the implementation details of an incidence algorithm, rather than rules of general geometric interest. It therefore made sense to take full advantage of HOL~Lights tactics and its simplifier, which are particularly useful for working with finite sets.  
 
 \section{Group~II}
-Hilbert's second group of axioms give us a bare \emph{ordered geometry}, which defines the scope for the present work. With such few geometrical notions, things might seem quite restrictive, buth there is a good history of interest in systems where we have these ``axioms without measurement''~\cite{AxiomaticsOrderedGeometry}. 
+Hilbert's second group of axioms give us a bare \emph{ordered geometry}, which defines the scope for the present work. With such few geometrical notions, things might seem quite restrictive, but there is a good history of interest in systems where we have these ``axioms without measurement''~\cite{AxiomaticsOrderedGeometry}. 
 
 There has been some interesting development of order axioms to the tenth edition. They were crucially missing in the ancient axiomatisations of geometry such as Euclid's, and their introduction marks an important milestone in the modern rigorisation of geometry. The first investigation of order axioms is credited to Pasch, and to this day, Hilbert's one planar axiom in this group --- and its variants --- are still referred to as ``Pasch's Axioms.''
 
@@ -314,7 +318,7 @@ This first axiom is not particularly informative. It really just gives some usef
 
 Our formalised rendering is just slightly weaker than Hilbert's. As Veblen spotted~\cite{Veblenphd}, we will not need to assume that all points are distinct. 
 \begin{equation}\label{eq:g21} 
- \tag{II, 1}
+ \tag{II,~1}
   \begin{split}
     \between{A}{B}{C} \implies & A \neq C\\
                                & \wedge \exists a. \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a \wedge \code{on\_line}\ C\ a\\
@@ -331,12 +335,12 @@ We now give the remaining axioms.
 
 Axiom~II, 2 can be compared to Euclid's second postulate: ``To produce a finite straight line continuously in a straight line.'' Here, Hilbert is telling us that we can extend the segment $AC$ to a point $B$ in the direction $\overrightarrow{AC}$. This axiom is absolutely key in building up geometrical figures.
 
-Axiom~II, 3 is akin to an anti-symmetry property for linear ordering. With Axiom~I, 1, it also shows that from $\between{A}{B}{C}$ we can infer that $A$, $B$ and $C$ are mutually distinct. 
+Axiom~II, 3 is akin to an anti-symmetry property for linear ordering. With Axiom~\ref{eq:g21}, it also shows that from $\between{A}{B}{C}$ we can infer that $A$, $B$ and $C$ are mutually distinct. 
 
 Axiom~II, 4 is Pasch's axiom. So far, it is the most complex axiom we have to apply, being a planar axiom with numerous preconditions and a disjunctive conclusion wrapped in an existential. The complexity can be measured by comparing the size of the formalisation in Appendix~\ref{app:Group2} with that for the other axioms.
 
 \subsection{Pasch and Incidence Reasoning}
-In fact, most of the effort we found in our earlier work was expended trying to verify the preconditions of Pasch's Axiom~\eqref{eq:g24}. In order to leverage our representation in point sets, we decided to rewrite the axiom in terms of collinearity and planarity. To do this, we remove all mention of the line $a$ from the axiom, and replace it by two defining points $DE$. The point $D$ will be assumed to be the point of intersection between the line and the segment $AB$, and the point $E$ will be any other point on the line $a$. See Figure~\ref{fig:PaschDiagram}.
+In fact, most of the effort we found in our earlier work was expended trying to verify the preconditions of Pasch's Axiom~\eqref{eq:g24}. In order to leverage our representation in point sets, we decided to rewrite the axiom in terms of collinearity and planarity. To do this, we remove all mention of the line $a$ from the axiom, and replace it by two defining points $D$ and $E$. The point $D$ will be assumed to be the point of intersection between the line and the segment $AB$, and the point $E$ will be any other point on the line $a$. See Figure~\ref{fig:PaschDiagram}.
 
 \begin{figure}
 \centering\includegraphics{axioms/Pasch}

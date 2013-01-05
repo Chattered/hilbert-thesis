@@ -1,5 +1,5 @@
 \chapter{Infinity and Linear Ordering}\label{chapter:LinearOrder}
-The next theorem on the agenda is Theorem~6, and in this chapter, we will look at two different ways to deal with it formally. The theorem itself tells us that any finite set of points on a line are linearly ordered in terms of betweenness. One approach to formalising this is at the metalevel, where it can be treated as an algorithm for enumerating cases of betweenness. In another approach, we can formalise the theorem at the object level and verify it. In so doing, we shall derive the Axiom of Infinity. All the development up to now has been independent of this axiom, which we manually removed from HOL~Light as explained in \S\ref{sec:NoInfinity}.
+The next theorem on the agenda is Theorem~6, and in this chapter, we will look at two different ways to deal with it formally. The theorem itself tells us that any finite set of points on a line are linearly ordered in terms of betweenness. One approach to formalising this is at the metalevel, where it can be treated as an algorithm for enumerating cases of betweenness. In another approach, we can formalise the theorem at the object level and verify it. In so doing, we shall derive the Axiom of Infinity. As mentioned in \S\ref{sec:NoInfinity}, this axiom is redundant given Hilbert's geometric axioms.
 
 \section{Theorem 6 at the Metalevel}\label{sec:Theorem6}
 We ended the last chapter by discussing two parts to Hilbert's proof of Theorem~5. The final part of this proof can be generalised to formalise and verify Theorem~6.
@@ -349,8 +349,7 @@ Informally, and for the purposes of explaining our formalisation, we will identi
 
 Thus, the successor of $0$ is the diagram obtained by replacing $0$ with $1$, the intersection of $CD$ and $A0$. To obtain the next successor, we first find the intersection of $1D$ and $AC$, namely the point $C_1$. We then replace $1$ with the intersection of $C_1D$ and $A0$. 
 
-In general, the successor of a diagram is obtained by finding $C'$, the intersection of $DN$ and $AC$, and then finding the intersection of $C'D$ and $A0$. Formally:
-
+In general, the successor of a diagram is obtained by finding $C'$, the intersection of $DN$ and $AC$, and then finding the intersection of $C'D$ and $A0$. Formally\label{sec:UseOfIota}:
 \begin{align*}
 \code{ind\_suc}\, n =& \code{let } (A,B,C,D,0,N) = \code{dest\_ind}\ n \code{ in}\\
 &\quad \code{mk\_ind} (A,B,C,D,0,\iota S.\\
@@ -526,15 +525,15 @@ $S$ \text{ lies between } $P$ \text{ and } $R$,
 \end{cases}
 \end{displaymath}
 
-Hilbert says the case-analysis arises from applications of \ref{eq:four}, which tells us that of three points, one lies between the other two. When we generalise from four points to $n+1$ points, we apply induction, and two of the applications of \ref{eq:four} become applications of our inductive hypothesis to $n$ points.
+Hilbert says the case-analysis arises from applications of \ref{eq:four}, which tells us that of three points, one lies between the other two. When we generalise from four points to $n+1$ points, we apply induction, and two of the applications of \ref{eq:four} become applications of our inductive hypothesis to $n$ points. We give the generalised proof now, following the original proof closely to show how the inferences become generalised.
 
 \begin{proof}
 Now let $n+1$ points on a line be given. Take $n$ of the points and label $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $R$ the ones which by our inductive hypothesis are ordered along the line. Finally, label $S$ the last of the $n+1$ points. By Axiom~\ref{eq:g23} and \ref{eq:four} it follows then that the following three distinct possibilities for the position of $S$ exist:
 
 \vspace{0.5cm}
-\noident $R$ lies between $P$ and $S$,\\
-\noident or $P$ lies between $R$ and $S$,\\
-\noident or $S$ lies between $P$ and $R$.
+\noindent $R$ lies between $P$ and $S$,\\
+\noindent or $P$ lies between $R$ and $S$,\\
+\noindent or $S$ lies between $P$ and $R$.
 \vspace{0.5cm}
 
 In the last case, we apply our inductive hypothesis to the points $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $S$. In any of these cases, we can apply Theorem~\ref{eq:OrderExtend} to label all the points in order.
@@ -595,6 +594,8 @@ Putting these facts together, we can verify Hilbert's assertion.
   \code{finite}\ X \wedge \code{ordering}\ f\ X \wedge \code{ordering}\ g\ X \wedge (\code{finite}\ X \implies n < |X|)\\
   \implies \forall n. f\ n = g\ n \vee f\ n = g (|X| - n - 1)
 \end{multline}
+
+We mention this only briefly, because we never apply this theorem in the later verification.
 
 \section{An Ordering Tactic}
 \ref{eq:six} says everything one wants to know about the order of a finite number of points on a line, but it is not immediately obvious how to apply it.

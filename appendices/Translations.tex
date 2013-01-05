@@ -1,0 +1,27 @@
+\chapter{Translations}\label{app:Translations}
+
+Throughout the thesis, we have tried to use conventional notation from mathematics (including type theory). This is not quite the syntax used by HOL~Light, which lacks unicode support to render the symbols correctly. We also use various pieces of sugar to keep things more elegant.
+
+\begin{center}
+  \begin{tabular}{|c|c|}
+    \hline
+    Notation   & Translation \\
+    \hline
+    $\neg$     & \code{\tt\char`~} \\
+    $\wedge$   & \code{/{\tt\char`\\}} \\
+    $\vee$     & \code{{\tt\char`\\}/} \\
+    $\implies$ & \code{==>} \\
+    $\iff$     & \code{<=>} \\
+    $\forall$  & \code{!} \\
+    $\exists$  & \code{?} \\
+    $\lambda x.$  & \code{\tt\char`\\ x.} \\
+  $P \neq Q$ & \code{\tt\char`~(P=Q)}\\
+  $\alpha$, $\beta$, $\gamma$ & \code{'a}, \code{'b}, \code{'c}\\
+  $x,y \in A,B$ & \code{x IN A /{\tt\char`\\} y IN A /{\tt\char`\\} x IN B /{\tt\char`\\} y IN A}\\
+  \hline
+  \end{tabular}
+\end{center}
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "../thesis"
+%%% End: 

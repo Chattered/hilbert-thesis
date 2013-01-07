@@ -12,13 +12,13 @@ The verification is divided neatly into two parts, corresponding to the verifica
 
 The formulation of these two lemmas is discussed in \S\ref{sec:JordanFormulation}. This section, together with Appendix~\ref{app:JordanVerification}, covers everything one needs to know about \emph{what} we have verified, and can be read independently. The auxiliary concepts and associated lemmas which are needed to get the verification through will be covered in the next two chapters.
 
-When we discuss the verifications, we will cover the same general topics. First, we shall give an overview of the structure, effectively amounting to a sketch proof of the theorem. From this, we shall give the formalisations of the key concepts mentioned in the proof. In the case of the first part of the Polygonal Jordan Theorem, these are the concepts of triangle interiors and exteriors and the concept of a ``crossing'' of a triangle by a polygonal path. For the second part of the theorem, we have the concept of ``lines-of-sight'' and polygon rotations. 
+When we discuss the verifications, we will cover the same general topics. First, we shall give an overview of the theory structure, effectively amounting to a sketch proof of the theorem. From this, we shall give the formalisations of the key concepts mentioned in the proof. In the case of the first part of the Polygonal Jordan Theorem, these are the concepts of triangle interiors and exteriors and the concept of a ``crossing'' of a triangle by a polygonal path. For the second part of the theorem, we have the concept of ``lines-of-sight'' and polygon rotations. 
 
 These concepts are supported by a suite of lemmas. Consistent with the synthetic style of geometric proof, these lemmas generally break down into one of two forms. We have lemmas which introduce points and other objects in a geometrical configuration. We also have lemmas which allow us to infer properties of these configurations. The two sorts of lemmas are used in tandem: we build up complex figures using the ``introduction'' rules, and then use the other rules to satisfy the hypotheses of yet more ``introduction'' rules, and so on. Many of these lemmas are interesting in their own right, and we shall pick a few for a closer examination.
 
-We present some extracts of what we hope are interesting verifications, ones which highlight the benefits and drawbacks of our representations in terms of the resulting proof mechanics. We also hope to use these extracts to convince the reader that we have stayed faithful to the synthetic style of proof, even as they grow significantly in complexity. This, we suggest, is no mean feat. Consider that the verifications from Chapter~\ref{chapter:Group2Eval}, when verified, only take a dozen or so steps. The verifications in this chapter frequently run to hundreds, and we suspect this really is due to the complexity of the synthetic reasoning involved.
+We present some extracts of what we hope are interesting verifications, ones which highlight the benefits and drawbacks of our representations in terms of the resulting proof mechanics. We also hope to use these extracts to convince the reader that we have stayed faithful to the synthetic style of proof, even as they grow significantly in complexity. This, we suggest, is no mean feat. Consider that the verifications from Chapter~\ref{chapter:Group2Eval} take only a dozen or so steps. The verifications in the next few chapters frequently run to hundreds, and we suspect this really is due to the complexity of the synthetic reasoning involved.
 
-We remind the reader that we use the word ``formulate'' to refer to the translating of intuitive ideas into a mathematically precise form, and the word ``proof'' to refer to mathematically rigorous arguments of formulated theorems. We reserve the word ``formalise'' for the translation of a mathematically precise statement into the language of higher-order logic, and the word ``verification'' to the HOL~Light proof script which verifies the formalised theorem.
+We remind the reader that we use the word ``formulate'' to refer to the translating of intuitive ideas into a mathematically precise form, and the word ``proof'' to refer to mathematically rigorous arguments of formulated theorems. We reserve the word ``formalise'' for the translation of a mathematically precise statement into the language of higher-order logic, and the word ``verification'' for the HOL~Light proof script which verifies the formalised theorem.
 
 \section{Related Work}
 The Jordan Curve Theorem has some notoriety within the formal verification community, and has long been regarded as a major milestone, one which  demonstrates the feasibility of formal verification on non-trivial mathematic problems. The MIZAR~\cite{MizarMathematicalVernacular} community first began a verification in 1991, and completed the special case for polygons in 1996. The full proof was completed in 2005. In the same year, Hales completed the proof in HOL~Light~\cite{HalesJordanCurve}. 
@@ -45,21 +45,22 @@ In 2009, Dufourd~\cite{DufourdJordanCurve} formally verified a constructive proo
 In addition, for a polygonal path $A$, $B$, $C$, $\ldots$, $L$, we shall call the segments $AB$, $BC$, $CD$, $\dots$, $KL$ the \emph{edges} of the polygonal path.
 
 \end{quote}
-This is Hilbert's first key definition, defining what Veblen calls \emph{broken lines}, and what we shall prefer to call \emph{polygonal paths}. Contrary to his conventions~\S\ref{sec:HilbertConvention}, Hilbert does not insist that the points involved here are distinct. Indeed, he adds an explicit distinctness clause when he defines polygons (see \S\ref{sec:polygonFormalisation}).
+This is Hilbert's first key definition, defining what Veblen calls \emph{broken lines}, and what we shall prefer to call \emph{polygonal paths}. Contrary to his conventions~(see \S\ref{sec:DistinctVars}), Hilbert does not insist that the points involved here are distinct. Indeed, he adds an explicit distinctness clause when he defines polygons (see \S\ref{sec:polygonFormalisation}).
 
 One thing which is clear to us is that Hilbert's notation is doing the heavy lifting in this definition. He needs that to take care of the otherwise clumsy constraint that all but two segments in the set share their endpoints with at least two other segments. Those remaining two elements must share exactly one of their endpoints with another segment.
 
-Had Hilbert bothered to prove the polygonal Jordan Curve Theorem, he would have probably used his notation to do more heavy lifting, as Veblen did in his own proof. Veblen's argument ends up running over symbols and numerical subscripts in a way which seems to take us out of the world of synthetic geometry, and back into a computational metatheory. We saw this with Hilbert's Theorem~6, which we discussed at length in Chapter~\ref{chapter:LinearOrder}. Ironically, as we shall see in the next few chapters, our verification shows that there is a \emph{lot} more synthetic geometry involved in the proof than one would suspect from Veblen's attempt:
+Had Hilbert given a proof of the polygonal Jordan Curve Theorem, he would have probably used his notation to do more heavy lifting, as Veblen did in his own proof. Veblen's argument ends up running over symbols and numerical subscripts in a way which seems to take us out of the world of synthetic geometry, and back into a computational metatheory. We saw this with Hilbert's Theorem~6, which we discussed at length in Chapter~\ref{chapter:LinearOrder}. Looking at Veblen's proof attempt, one would think the metatheoretical arguments needed for the Polygonal Jordan Curve Theorem are also mostly computational. This is not the case. Our verification shows that there is a \emph{lot} more synthetic geometry involved in the proof than one would suspect from Veblen's attempt:
 \begin{quote}By the case $n=3$, $q$ meets the boundary of the triangle $P_1P_2P_3$ in at least one point other than $O$. If this point is on the broken line $P_1P_2P_3$ the lemma is verified. If not, $q$ has at least one point on $P_1P_3$, and at least one of the segments $Q_1'Q_2'$, $Q_2'Q_3'$ has no point or end-point on $P_1P_3$. Let this segment be one segment of a broken line $Q_kQ_{k+1}\cdots Q_{j-1}Q_j$ of segments of $q$ not meeting $P_1P_3$ but such that $Q_{k-1}Q_k$ and $Q_jQ_{j+1}$ do each have a point or endpoint in common with $P_1P_3$ ($1 \leq k < j \leq m$; if $k = 1$, $Q_{k-1} = Q_m$; if $j = m$, $Q_{j+1} = Q_1$). If $O_j$ is the point common to $P_1P_3$ and $Q_jQ_{j+1}$ or $Q_{j+1}$, and $O_k$ is the point common to $P_1P_3$ and $Q_{k-1}Q_k$ or $Q_{k-1}$, the broken line $O_kQ_kQ_{k+1}\cdots Q_{j-1}Q_jO_j$, has a point inside and also a point outside the triangle $P_1P_2P_3$ and cuts the broken line $P_1P_2P_3$ only once. \end{quote}
 
-Metatheoretical arguments like this go at least back to Euclid. Consider Euclid's classic Proposition 20 from Book IX:
-\begin{quote}
-Prime numbers are more than any assigned multitude of prime numbers.
-Let $A$, $B$, and $C$ be the assigned prime numbers.
 
-I say that there are more prime numbers than $A$, $B$, and $C$.
-\end{quote}
-This is not a proof, but more like a proof \emph{template}. Euclid is assuming his reader knows how to repeat the argument for other assignments of prime numbers besides $A$, $B$ and $C$!
+% Metatheoretical arguments like this go at least back to Euclid. Consider Euclid's classic Proposition 20 from Book IX:
+% \begin{quote}
+% Prime numbers are more than any assigned multitude of prime numbers.
+% Let $A$, $B$, and $C$ be the assigned prime numbers.
+
+% I say that there are more prime numbers than $A$, $B$, and $C$.
+% \end{quote}
+% This is not a proof, but more like a proof \emph{template}. Euclid is assuming his reader knows how to repeat the argument for other assignments of prime numbers besides $A$, $B$ and $C$!
 
 % This is fairly typical of prose mathematics, where the notation itself because the means to establish constraints and the mechanism of reasoning. Consider again, Veblen's proof from the last chapter, to see how mathematical proofs can involve complicated arguments, not about the mathematical objects of the theory, but the \emph{symbols} used to denote them:
 
@@ -67,13 +68,14 @@ This is not a proof, but more like a proof \emph{template}. Euclid is assuming h
 
 %As we described Hilbert's Theorem~6 (see \S\ref{sec:Theorem6}) as a metatheorem, we would describe Veblen's argument here as a \emph{metaproof}. The use of such metatheoretical arguments in axiomatic geometry probably goes back to Euclid, who 
 
-If notation is going to do heavy lifting, then we should formalise the notation. We opted to represent polygonal paths as their finite sequence of points, from which the original polygonal paths can be recovered. With this definition, the clumsy constraint about segments sharing endpoints is handled implicitly. The heavy lifting will be carried out as computations on concrete list instances. Lists are available to us in the logic, ultimately being defined in terms of natural numbers, which as we saw in Chapter~\ref{chapter:LinearOrder}, are represented by geometric figures. We have something of a claim here that our lists are geometric rather than computational entities.
+Nevertheless, the notation is still doing heavy lifting, and so we should formalise the notation. We opted to represent polygonal paths as their finite sequence of points, from which the original polygonal paths can be recovered. With this definition, the clumsy constraint about segments sharing endpoints is handled implicitly. The heavy lifting will be carried out as computations on concrete list instances. Lists are available to us in the logic, ultimately being defined in terms of natural numbers, which as we saw in Chapter~\ref{chapter:LinearOrder}, are represented by geometric figures. We have something of a claim here that our lists are geometric rather than computational entities.
 
 %TODO: Discuss or refer to an earlier discussion about using lists to handle ``metalevel'' definitions, and why lists are somewhat justified by the fact that all infinite structures are now abstractions over geometric objects since we have derived the axiom of infinity.
 
 Now the list library in HOL Light is slightly impoverished (at least compared with, say, that of Isabelle/HOL), and so our verification had to take a detour as we added new function definitions and theorems for lists. For instance, in order to recover the edges of a polygonal path, we must take adjacent pairs of the points in its vertex list. We can do this by following a standard pattern in functional programming, shown in Figure~\ref{fig:AdjacentSpec}, which zips all but the last element of a list with its tail. However, it is generally easier and requires much less unfolding to compute directly with the recursive specification of the function. All the definitions of auxiliary functions, such as the list indexing function $\code{el}$ are given in Appendix~\ref{app:JordanVerification}.
 
 \begin{boxedfigure}
+\small
 \begin{align*}
   &\code{adjacent}\; : \; [\alpha] \rightarrow [(\alpha,\alpha)]\\
   &\code{adjacent}\ [P_0,P_1,P_2,\ldots,P_n]\\
@@ -131,13 +133,13 @@ With these, we can prove that path-connectedness defines an equivalence relation
 
 Obviously, we will need these three theorems \emph{somewhere} in our later verification, though it turns out that they are not used very often. They can be seen, at least, as a sanity check on our notion of path-connectedness.
 \begin{align*}
-  \;&\code{on\_plane}\ P\ \alpha \wedge \neg(figure\ P) \implies \code{path\_connected}\ \alpha\ figure\ P\ P\\
+  \;&\code{on\_plane}\ P\ \alpha \wedge \neg figure\ P \implies \code{path\_connected}\ \alpha\ figure\ P\ P\\
   \;&\code{path\_connected}\ \alpha\ figure\ P\ Q \implies \code{path\_connected}\ \alpha\ figure\ Q\ P\\
   \;&\code{path\_connected}\ \alpha\ figure\ P\ Q \wedge \code{path\_connected}\ \alpha\ figure\ Q\ R\\
   &\qquad\implies \code{path\_connected}\ \alpha\ figure\ P\ R.
 \end{align*}
 
-Note that for the rest of the chapter, we shall elide all terms involving $\code{on\_plane}$, and thus present this verification as if from planar rather than spatial axioms. This is merely for clarity. Our actual verification is conditional on information about planes, and we have restored the conditions in Appendix~\ref{app:JordanVerification}, where it is clear they only serve to relativise all other objects to the same plane $\alpha$. Had we been working from planar axioms, all of these terms would be absent (see \S\ref{sec:RelativisingPlane} for some discussion).
+Note that for the rest of the chapter, we shall elide all terms involving $\code{on\_plane}$, and thus present this verification as if from planar rather than spatial axioms. This is merely for clarity. Our actual verification is conditional on information about planes, and we have restored the conditions in Appendix~\ref{app:JordanVerification}, where it is clear they only serve to relativise all other objects to the same plane $\alpha$. Had we been working from planar axioms, all of these terms would be absent (see \S\ref{sec:PlanarProofs} for some discussion).
 
 \subsection{Polygons}\label{sec:polygonFormalisation}
 Hilbert continues his definitions as follows:
@@ -163,7 +165,7 @@ Combining this with the definition of polygon gives us the following formalisati
   \end{split}
 \end{equation}
 
-In this definition, we have introduced the polygon's plane as a parameter, but we are aware of that this could be more elegantly refactored. Any simple polygon uniquely determines the plane on which it lies, and so it might have been more elegant to hide the plane witness by an existential in the body of the definition. A function could be then be defined to extract the unique witness from the list $Ps$ when $Ps$ is known to be a simple polygon. 
+In this definition, we have introduced the polygon's plane as a parameter, but we are aware of that this could be more elegantly refactored. Any simple polygon uniquely determines the plane on which it lies, and so it might have been more elegant to hide the plane witness by an existential in the body of the definition. A function could then be defined to extract the unique witness from the list $Ps$ when $Ps$ is known to be a simple polygon. 
 
 The definition would still be rather unweildly. First, we have a ``magic'' number 3,\footnote{The number $4$ would do just as well.} which is needed to rule out the degenerate case of a point polygon $[P,P]$ which slips past Hilbert's constraints. The next two clauses are straightforward, and define $Ps$ to be a polygon according to Hilbert's definitions. The real complexity is in the last three clauses which define the polygon as \emph{simple}. 
 

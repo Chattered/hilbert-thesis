@@ -3,7 +3,7 @@ In this chapter, we describe our verification tool HOL~Light, its object logic a
 
 In \S\ref{sec:ObjectLogic}, we give an overview of simple type theory, including its history. In \S\ref{sec:ObjectLogicFormal}, we give its formal definition. 
 
-In \S\ref{sec:LCF}, we review the LCF approach to implementing interactive proof assistants, and our chosen proof asistant HOL~Light. 
+In \S\ref{sec:LCF}, we review the LCF approach to implementing interactive proof assistants, and our chosen proof assistant HOL~Light. 
 
 In \S\ref{sec:DeclarativeProof}, we introduce the idea of a declarative proof, and in \S\ref{sec:MizarLight}, we discuss the Mizar~Light language that we have used for our verification. In \S\ref{sec:MizarLightExtend}, we present previously unpublished material on some useful extensions and modifications to the Mizar~Light language.
 
@@ -12,7 +12,7 @@ The logic of our proof assistant is Church's Simple Theory of Types~\cite{Church
 
 The original lambda calculus turns out to be inconsistent (all of its terms are provably equivalent~\cite{InconsistencyLambdaCalculus}), and ironically, Church fixed the problem in essentially the same way as Russell, though by this period in time, Russell's ramified types had been simplified; hence, the \emph{simple theory of types}.
 
-There might be some concern that the use of lambda calculus is unfaithful to mathematics which is nominally based on first-order set theory, but this is not the case. The \emph{scope} of mathematics might well be characterised by reference to ZFC set theory, as evidenced by its power to close down research programmes such as the Continuum Problem in the face of Cohen's independence proof~(citation needed). And it can be argued that the concerns of model theory has one favouring first-order logic~\cite{LogicFirstOrder}. But practised verification usually favours typed higher-order logics. Russell and Whitehead's celebrated computer unassisted verification~\cite{Principia} was in a typed higher-order logic. The first computer assisted non-trivial verification by De Bruijn in AUTOMATH used a powerful extension of the simply typed lambda calculus. And according to Wiedijk's survey~\cite{SeventeenProvers}, eleven of the world's seventeen proof assistants are based on a higher-order logic. Even those based nominally on untyped set theory such as Mizar~\cite{MizarMathematicalVernacular} can be viewed as being typed~\cite{MizarSoftTypes}. 
+There might be some concern that the use of lambda calculus is unfaithful to mathematics which is nominally based on first-order set theory, but this is not the case. The \emph{scope} of mathematics might well be characterised by reference to ZFC set theory, as evidenced by its power to close down research programmes such as the Continuum Problem in the face of Cohen's independence proof~(EDIT: I've lost my citation to this. I think it's in a paper by Field). And it can be argued that the concerns of model theory has one favouring first-order logic~\cite{LogicFirstOrder}. But practised verification usually favours typed higher-order logics. Russell and Whitehead's celebrated computer unassisted verification~\cite{Principia} was in a typed higher-order logic. The first computer assisted non-trivial verification by De Bruijn in AUTOMATH used a powerful extension of the simply typed lambda calculus. And according to Wiedijk's survey~\cite{SeventeenProvers}, eleven of the world's seventeen proof assistants are based on a higher-order logic. Even those based nominally on untyped set theory such as Mizar~\cite{MizarMathematicalVernacular} can be viewed as being typed~\cite{MizarSoftTypes}. 
 
 We suggest the reason for this is down to the pervasive use of metatheory in mathematics, which requires more expressive power to verify than offered by first-order logic alone. The entirety of Chapter~\ref{chapter:LinearOrder} is a case-study, based in Hilbert's \emph{Foundations of Geometry}, on why faithful mathematical verification demands this expressive power.
 
@@ -151,11 +151,11 @@ The axiom governing this notion clarifies how simple type theory handles undefin
 
 More accurately, the only statements we can derive of $\epsilon x. P\ x$ are logical truths. If we take Wittgenstein at his word in the \emph{Tractacus}, we might say that when all we can derive are logical truths, we have nothing. It is in this sense that we can formalise the notion of undefined terms and the undefined values of partial functions in HOL. Each one is just $\epsilon x. \bot$.
 
-The other axiom is the axiom of extensionality, or the $\eta$-reduction axiom. With it, one can prove that any two lambda expressions $\lambda x. f x$ and $\lambda x. g x$ are equal precisely when we can prove $f\ x = g\ x$ for arbitrary $x$.
+The other axiom is the axiom of extensionality, or the $\eta$-reduction axiom. With it, one can prove that any two lambda expressions $\lambda x. f\ x$ and $\lambda x. g\ x$ are equal precisely when we can prove $f\ x = g\ x$ for arbitrary $x$.
 
 It turns out that with these two axioms we can derive the law of excluded-middle~\cite{AxiomChoiceExcludedMiddle}, by exploiting the fact that $\epsilon$ terms with extensionally equivalent bodies must now pick out the same value. In particular, if we consider $\epsilon x. x \vee P$ and $\epsilon x. \neg P \vee P$, we realise that, in assuming $P$, $\epsilon$ must pick the same value for these two expressions, since the body of the $\epsilon$ terms are now extensionally equivalent. With a little bit more work, one then derives the law of excluded-middle.
 
-\subsection{Axiom of Infinity}
+\subsection{Axiom of Infinity}\label{sec:Infinity}
 The final classical axiom in HOL~Light is the axiom of infinity. We will discuss this axiom in some detail in Chapter~\ref{chapter:LinearOrder}. For now, we will only say in advance that it is provably redundant when we have Hilbert's first two groups of axioms. We have therefore deleted it from our verification. This is not intended to be a serious philosophical statement, but we might draw a parallel here between our \emph{post-hoc} deletion of the axiom of infinity from higher-order logic with Hilbert's later expressed scepticism on the security of infinite sets~\cite{OnInfinite}.
 
 \subsection{Proof Tools}
@@ -171,7 +171,7 @@ The purpose of a tactic is to input a goal and to produce subgoals. These are th
 Many tactics correspond to inference rules but applied in reverse. For instance, there is a tactic $\code{DISCH\_TAC}$ which can be applied when one's goal is an implication $P \implies Q$. This deletes the current subgoal and replaces it with the goal $Q$ but now under the \emph{hypothesis} $P$.
 
 \subsubsection{Fully Automated Procedures}
-Some tactics in HOL~Light are decision procedures and fully automated proof tools. Generally, these are used to solve a goal \emph{outright}, without generating any new subgoals. HOL~Light has decision procedures for checking tautologies, a decision procedure for linear arithmetic, and for computing ideal elements via Gr\"{o}bner bases~\cite{BuchbergerGrobner}. 
+Some tactics in HOL~Light are decision procedures or otherwise fully automated proof tools. Generally, these are used to solve a goal \emph{outright}, without generating any new subgoals. HOL~Light has decision procedures for checking tautologies, a decision procedure for linear arithmetic, and for computing ideal elements via Gr\"{o}bner bases~\cite{BuchbergerGrobner}. 
 
 More recently, the tools have expanded outside of ML. Eekelen et al~\cite{HOLLightBoolean} have implemented HOL~Light code to take proof certificates from external ``off-the-shelf'' checkers for universally quantified propositional logic. These are formally verified by being converted to derivations of HOL~Light sequents (the verification is fully expansive~\cite{FullyExpansive}). Similar progress has been made in Isabelle~\cite{IsabelleSledgehammer}.
 
@@ -395,6 +395,8 @@ Returning to our example proof, our functions \code{case} and \code{end} allow u
 Allowing interactive case-splitting worked well in practice. We would write our verifications interactively, and when completed, package them up as batch proofs. The translation between flattened proof and the normal batch \code{per cases} combinator was always straightforward.
 
 For clarity, when we exhibit Mizar~Light verifications in the rest of the thesis, we shall elide much of the syntax, such as the list delimiters, brackets and semicolons. 
+
+Many of our ideas evolved during the proof development, and there are legacy naming conventions which need to be refactored and brought into line with the present thesis. Because of this, the proofs, as of writing, are not identical to the one's we give in this thesis. They are, at least, alpha-equivalent.
 
 Further modifications to Mizar~Light are described in Chapter~\ref{chapter:Automation}.
 

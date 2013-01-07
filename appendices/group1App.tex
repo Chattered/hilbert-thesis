@@ -2,12 +2,12 @@
 
 \section{Axioms}
 \begin{equation}\label{eq:g11}
-  \tag{I, 1}
+  \tag{I,~1}
     A \neq B \implies \exists a. \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a
 \end{equation}
 
 \begin{equation}\label{eq:g12}
-  \tag{I, 2}
+  \tag{I,~2}
   \begin{split}
     A \neq B &\wedge \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a\\
     &\wedge \code{on\_line}\ A\ b \wedge \code{on\_line}\ B\ b\\
@@ -16,27 +16,27 @@
 \end{equation}
 
 \begin{equation}\label{eq:g13a}
-  \tag{I, 3.1}
+  \tag{I,~3.1}
   \exists A\; B. A \neq B \wedge \code{on\_line}\ A\ a \wedge \code{on\_line} B a
 \end{equation}
 
 \begin{equation}\label{eq:g13b}
-  \tag{I, 3.2}
+  \tag{I,~3.2}
   \exists A\; B\; C. \Triangle{a}{A}{B}{C}
 \end{equation}
 
 \begin{multline}\label{eq:g14a}
-  \tag{I, 4.1}
+  \tag{I,~4.1}
   \Triangle{a}{A}{B}{C}\\\quad \implies \exists \alpha. \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha
 \end{multline}
 
 \begin{equation}\label{eq:g14b}
-  \tag{I, 4.2}
+  \tag{I,~4.2}
   \exists A. \code{on\_plane}\ A\ \alpha
 \end{equation}
 
 \begin{equation}\label{eq:g15}
-  \tag{I, 5}
+  \tag{I,~5}
   \begin{split}
     &\Triangle{a}{A}{B}{C}\\
     &\wedge \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha\\
@@ -46,7 +46,7 @@
 \end{equation}
 
 \begin{equation}\label{eq:g16}
-  \tag{I, 6}
+  \tag{I,~6}
   \begin{split}
     A \neq B &\wedge \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha\\
     &\wedge \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a\\
@@ -56,14 +56,14 @@
 
 \begin{multline}
 \label{eq:g17}
-  \tag{I, 7}
+  \tag{I,~7}
    \alpha \neq \beta \wedge \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ A\ \beta\\
    \implies \exists B. A \neq B \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ B\ \beta
 \end{multline}
 
 \begin{equation}
 \label{eq:g18}
-  \tag{I, 8}
+  \tag{I,~8}
   \exists A\;B\;C\;D. \forall \alpha. \neg(\code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha \wedge \code{on\_plane}\ D\ \alpha)
 \end{equation}
 

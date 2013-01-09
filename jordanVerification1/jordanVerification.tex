@@ -1,4 +1,4 @@
-\chapter{The Polygonal JCT: Part I}\label{chapter:JordanFormalisation}\label{chapter:JordanVerification1}
+\chapter{The Polygonal JCT: Part I}\label{chapter:JordanVerification1}
 This chapter concerns the verification of Theorem~\ref{eq:jordanFormal1} from Hilbert's axioms of ordered geometry. For this theorem, we assume a simple polygon, and must find two points in the plane with the following property: given an arbitrary polygonal path connecting the two points, we can find another point at which the path intersects the simple polygon. The overall idea of this proof is very similiar to Veblen's 1904 proof~\cite{Veblenphd} which we described in detail in \S\ref{sec:VeblenProof}. We give the correct version of this proof now.
 
 \section{Sketch Proof}\label{sec:ParityProofInformal}
@@ -622,28 +622,28 @@ Now the definition of a crossing makes use of a triangle's interior, and differe
 There is an obvious case-split here, shown in Figure~\ref{fig:CrossingWellDefined}. If $C$ and $C'$ are on opposite sides of $AB$ as in (a), then the interiors of the two triangles are disjoint. In this case, as we move from the interior of $ABC$ across the edge $AB$ to the exterior, we simultaneously move from the exterior of $ABC$ to the interior. On the other hand, if $C$ and $C'$ are on the same side of $AB$ as in case (b), then the triangle interiors will overlap. Here, as we cross the edge $AB$, we enter or leave the interiors of both triangles together. 
 
 \begin{multline}\label{eq:crossChangeLemma1}
-  \begin{split}
+  \begin{aligned}
     &\code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp)\\
     &\wedge\code{on\_half\_plane}\ hp\ C \wedge \code{on\_half\_plane}\ hp\ C'\wedge\between{A}{P_i}{B}
-  \end{split}\\
-  \implies\left(\begin{split} 
+  \end{aligned}\\
+  \implies\left(\begin{aligned} 
       &(\exists R. \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C)\ R)\\
       & \iff (\exists R. \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C')\ R)
-  \end{split}\right)
+  \end{aligned}\right)
 \end{multline}
 
 \begin{multline}\label{eq:crossChangeLemma2}
-  \begin{split}
+  \begin{aligned}
     &\Triangle{a}{A}{B}{C'}\\
     &\wedge \code{on\_polypath}\ [P_i;P_{i+1}]\ A \wedge \code{on\_polypath}\ [P_i;P_{i+1}]\ B\\
     &\wedge\code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp)\\
     &\wedge\code{on\_half\_plane}\ hp\ C \wedge \neg\code{on\_half\_plane}\ hp\ C'\\
     &\wedge \between{A}{P_i}{B} \wedge \neg\between{A}{P_{i+1}}{B}
-  \end{split}\\
-  \implies\left(\begin{split}
+  \end{aligned}\\
+  \implies\left(\begin{aligned}
       &(\exists R. \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C)\ R)\\
       &\iff\neg \exists R. \between{P_i}{R}{P_{i+1}} \wedge \neg\code{in\_triangle}\ (A,B,C')\ R
-  \end{split}\right)
+  \end{aligned}\right)
 \end{multline}
 
 These two theorems are proven by reasoning about half-planes and, in both cases, applying Theorem~\ref{eq:triCutHalfPlane}. The assumptions on half-planes in Theorem~\ref{eq:crossChangeLemma1} require that the points $C$ and $C'$ lie on the same side of $AB$. In Theorem~\ref{eq:crossChangeLemma2}, they require that $C$ and $C'$ lie on opposite sides. Theorem~\ref{eq:crossChangeLemma2} needs some extra assumptions since the negations make for very weak claims. For instance, the fact that $C'$ does not lie on $hp$ might just mean that it lies on the line $AB$, so we have to add in a condition that the points $A$, $B$ and $C'$ are non-collinear.
@@ -716,7 +716,7 @@ When computing the total crossings for a polygonal path, this context is threade
 
 Sometimes, the answer is straightforward. If the endpoint $P_{i+1}$ lies in the interior of the triangle, then the value of the context for $P_iP_{i+1}$ is $\top$. If $P_{i+1}$ lies in the exterior of $ABC$, then the value is $\bot$. These give us our solutions for the initial context, and it would be convenient if we could rely on this simple case.
 
-There is some hope here, since any closed polygon which crosses a triangle must have a vertex which is not on the triangle. So perhaps all we have to do is arrange things so that we only start computing a crossing for a polygon at a vertex which lies either inside or outside the triangle. This will require that we have some way to rotate a polygon's vertex list, but we will show how to do this in \S\ref{sec:PolygonRotatio}.
+There is some hope here, since any closed polygon which crosses a triangle must have a vertex which is not on the triangle. So perhaps all we have to do is arrange things so that we only start computing a crossing for a polygon at a vertex which lies either inside or outside the triangle. This will require that we have some way to rotate a polygon's vertex list, but we will show how to do this in \S\ref{sec:PolygonRotation}.
 
 Unfortunately, this simple method breaks the well-definedness considered in the last section. In Figure~\ref{fig:ContextInitialiseCounter}, we have two triangles $ABC$ and $ABC'$ sharing an edge $AB$, each crossed by the polygonal path $P_1P_2P_3$. As we claimed, this polygonal path has a vertex off the boundary of each triangle ($P_3$ for $\triangle ABC$ and $P_1$ for $\triangle ABC'$), but there is no vertex off both boundaries. 
 

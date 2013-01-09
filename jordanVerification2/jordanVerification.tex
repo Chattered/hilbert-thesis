@@ -379,13 +379,13 @@ We would like to draw special attention to the hypotheses in the verified theore
   \end{split}
 \end{equation}
 
-\section{Without-Loss-of-Generality}\label{sec:PolygonRotation}
+\section{Without-Loss-of-Generality}
 In the last section, we described how to move wall-to-wall in a polygon. However, we effectively made a without-loss-of-generality assumption when stating the theorem, since we assumed that the walls in question were defined by the first three elements of the vertex list. More generally, they could be the two walls defined by  three adjacent elements of the list, or, if we are considering moving forward from the last wall of a polygon back to the first, then the vertices defining the walls come from the last two elements and the first two elements.
 
 As with the sort of without-loss-of-generality assumptions considered by Harrison~\cite{HarrisonWLOG}, we can justify ourselves if we can find an equivalence relation which preserves the properties of interest to us. We are, in effect, saying that before we move a player to the next wall, we must be able to transform the polygon's vertex list into the player's perspective, much as we would perform a coordinate transform.
 
 \subsection{Polygon Rotations: Formulation}\label{sec:PolygonRotation}
-To make the idea work formally, we will need a way to represent a polygon rotation. Since our polygons are being represented by vertex lists, we must briefly leave the pleasant world of synthetic geometry and instead look at computing with lists. This is not very geometric, but on the upside, the ideas in this section are a general contribution to the theory of lists, and can be applied in many other contexts. 
+To make the idea work formally, we will need a way to represent a polygon rotation. Since our polygons are being represented by vertex lists, we must briefly leave the pleasant world of synthetic geometry and instead look at computing with lists. This is not very geometric, but on the upside, the ideas in this section are a general contribution to the theory of lists, and can be applied in other contexts. 
 
 It is not uncommon, for instance, to need to rotate a list. This can be understood in terms of splitting the list at some point and then switching the two halfs. Formally:
 \begin{displaymath}
@@ -394,34 +394,9 @@ It is not uncommon, for instance, to need to rotate a list. This can be understo
 &\code{rotation\_of}\ ps\ qs \iff \exists xs\;ys.\; ps = \append{xs}{ys} \wedge qs = \append{ys}{xs}.\\
   \end{split}
 \end{displaymath}
-This defines an equivalence relation, but we had some difficulty proving this. 
+This defines an equivalence relation\footnote{Thanks to Steven Obua for helping me with the verification.}, but our use-case for list rotations gives us a complication. We represent a polygon by a vertex list where we assume that the first and last elements are duplicated. We cannot simply rotate this vertex list, since this will generally give us duplicate vertices and endpoints which do not match. Instead, we should only rotate the largest non-trivial prefix of the list, and then duplicate the new head at the end. 
 
-EDIT: I'm currently doing the verification. This section is actually describing a refactoring that I only spotted in write-up.
-
-%We actually found it helpful to start from a more computational representation of this relation, and reason using arithemtic. The declarative specification can be derived afterwards. To that end, we defined:
-%\begin{displaymath}
-% \code{rotation\_of}\ ps\ qs \iff \exists n::\mathbb{N}. xs = \code{rotate}\ n\ ys.
-% \end{displaymath}
-% \begin{displaymath}
-%   \begin{aligned}
-% \code{rotate}\; &: \; \mathbb{N} \rightarrow [\alpha] \rightarrow \code{bool}\\
-% \code{rotate}\ m\ [P_1,P_2,\ldots,P_{n-1},P_n] &= \code{drop}\ m\ [P_1,P_2,\ldots,P_{n-1},P_n]\\
-% &\quad++ \code{take}\ m\ [P_1,P_2,\ldots,P_{n-1},P_n]\\
-% &= [P_{m+1},P_{m+2},\ldots,P_{n-1},P_n] ++ [P_1,P_2,\ldots,P_{m-1},P_m]\\
-% &= [P_{m+1},P_{m+2},\ldots,P_{n-1},P_n,P_1,P_2,\ldots,P_{m-1},P_m]\\
-%   \end{aligned}
-% \end{displaymath}
-
-Our use-case for list rotations gives us a complication. We represent a polygon by a vertex list where we assume that the first and last elements are duplicated. We cannot simply rotate this vertex list, since  this will generally give us duplicate vertices and endpoints which do not match. Instead, we should only rotate the largest non-trivial prefix of the list, and then duplicate the new head at the end. Computationally:
-\begin{displaymath}
-  \begin{aligned}
-    \code{rotate\_poly}\ m\ &[P_1,P_2,P_3,\ldots,P_n,P_1]\\
-&= \code{rotate}\ m\ (\code{butlast}\ [P_1,P_2,P_3,\ldots,P_n,P_1])\\
-&\quad++ \code{head}(\code{rotate}\ m\ (\code{butlast}\ [P_1,P_2,P_3,\ldots,P_n,P_1]))\\
-&= [P_{m+1},P_{m+2},\ldots,P_{n-1},P_n,P_1,P_2,\ldots,P_{m-1},P_m,P_{m+1}]\\
-  \end{aligned}
-\end{displaymath}
-The declarative version of this specification is not particularly tidy, but it is useful to have in declarative proofs. Assuming that $m > 0$, we can understand the result of the computation above as taking some vertex inside the list and swapping it with the first and last elements. The sublists in between are then exchanged. In other words:
+The definition of this sort of rotation is slightly more complex, but assuming the rotation is not the identity, we can understand it as taking some vertex inside the list and swapping it with the first and last elements. The sublists in between are then exchanged. In other words:
 \begin{displaymath}
   \begin{aligned}
     \code{rotation\_of}\ Ps\ Qs \iff 
@@ -430,6 +405,8 @@ The declarative version of this specification is not particularly tidy, but it i
     \vee\; Ps &= Qs
   \end{aligned}
 \end{displaymath}
+
+We verified that this is also an equivalence relation.
 
 \subsection{Invariance}
 In order to use these list rotations to justify without-loss-of-generality, we need to know that a rotation preserves the properties of interest. In our case, we need to know that a rotated polygon is still the same figure as a set of points, and we need to know that it is still \emph{simple} as a set of segments. 

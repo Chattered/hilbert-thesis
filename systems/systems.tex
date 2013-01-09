@@ -1,5 +1,5 @@
 \chapter{System Description}\label{chapter:System}
-In this chapter, we describe our verification tool HOL~Light, its object logic and address a few philosophical questions about using computerised logical systems to analyse mathematical foundations. The chapter is provided to keep the thesis self-contained, and contains very little in the way of new material. To assist the reader wanting to skip topics familiar or otherwise irrelevant to them, we give a brief overview of each section.
+In this chapter, we describe our chosen verification tool HOL~Light and its object logic and we address a few philosophical questions about using computerised logical systems to analyse mathematical foundations. The chapter is provided to keep the thesis self-contained, and contains very little in the way of new material. To assist the reader wanting to skip topics familiar or otherwise irrelevant to them, we give a brief overview of each section.
 
 In \S\ref{sec:ObjectLogic}, we give an overview of simple type theory, including its history. In \S\ref{sec:ObjectLogicFormal}, we give its formal definition. 
 
@@ -78,7 +78,7 @@ Finally, we have a few rules to handle instantiations of free variables and type
 We omit the formal definitions of substitution here. We just mention that $\lambda$ \emph{binds} free variables just like a quantifier does.
 
 \subsection{Higher-order Logic}
-These inference rules embed a full (intuitionistic) higher-order logic (hereafter \emph{HOL}). For instance, it is possible, though we omit the details, to convince oneself that a conjunction $p \wedge q$ can be formulated as $(p,q) = (\top,\top)$ which can, in turn, be formulated as
+These inference rules embed a full (intuitionistic) higher-order logic (hereafter \emph{HOL}). For instance, it is possible to convince oneself that a conjunction $p \wedge q$ can be formulated as $(p,q) = (\top,\top)$ which can, in turn, be formulated as
 \begin{displaymath}
 (\lambda f. f\ p\ q) = \lambda f. f\ ((\lambda x. x) = \lambda x. x)\ ((\lambda x. x) = \lambda x. x).
 \end{displaymath}
@@ -119,7 +119,7 @@ We should say a brief word on notation. To make the thesis more accessible, we t
 \subsection{Edinburgh LCF}
 HOL~Light is a theorem prover in the tradition of Edinburgh LCF~\cite{LCF}, implemented in the Ocaml programming language. The roots of both go back to the original statically typed functional language ML.
 
-If natural languages serve as the metalanguages for defining object logics for human proof checkers, then ML serves as the metalanguage for defining object logics for computerised proof checkers. Accordingly, when we define the syntax of an object logic, ML understands ``inductive data type'' where we understand ``inductive definition'', and ML understands ``function from sequents to sequent'' in place of ``inference rule''.
+If natural languages serve as the metalanguages for defining object logics for human proof checkers, then ML serves as the metalanguage for defining object logics for \emph{computerised} proof checkers. Accordingly, when we define the syntax of an object logic, ML understands ``inductive data type'' where we understand ``inductive definition'', and ML understands ``function from sequents to sequent'' in place of ``inference rule''.
 
 The use of a programming language can actually clarify a lot. Consider the definition of the $\code{ABS}$ inference rule in Figure~\ref{fig:HOLInferenceRules}, where we say ``for all $x$'', a qualification which is absent from the definition of say, $\code{BETA}$. The ML code makes the difference here very clear: the function implementing the inference rule $\code{ABS}$ takes a metavariable $x$ as an additional argument, while that for $\code{BETA}$ does not.
 
@@ -127,7 +127,7 @@ While programming languages clarify, they might also be viewed suspiciously. We 
 
 ML's strong type system enforces this boundary between a \emph{trusted kernel} and the outside world. Because of this enforcement, it is impossible to construct a HOL sequent through any method other than correct derivation from inference rules, assuming we trust the implementation of the kernel. 
 
-In order to acquire trust in HOL~Light's implementation, one can simply peruse its modest 672 line kernel. Many of the implementation details in this kernel are trivial. The only non-trivial parts which might recommend careful inspection are the 160 or so lines of code needed to deal with free variable substitutions, instantiations, and testing whether two terms are equivalent up to a consistent renaming of bound variables (formally, testing for ``$\alpha$-equivalence''). That the code implementing these behaviours is less trivial than the rest of the kernel implementation is reflected in ordinary mathematical definitions, and reflected in the fact that in defining a correct logical calculus, one usually has to pay careful attention to the behaviour of free-substitutability.
+In order to acquire trust in HOL~Light's implementation, one can simply peruse its modest 672 line kernel. Many of the implementation details in this kernel are trivial. The only non-trivial parts which might recommend careful inspection are the 160 or so lines of code needed to deal with free variable substitutions, instantiations, and testing whether two terms are equivalent up to a consistent renaming of bound variables (formally, testing for ``$\alpha$-equivalence''). That the code implementing these behaviours is less trivial than the rest of the kernel implementation is reflected in the fact that, when defining a correct logical calculus in ordinary mathematics, one usually has to pay careful attention to the behaviour of free-substitutability.
 
 \subsection{Additional Functionality}
 HOL~Light extends the simple theory of types by allowing us to add new term and type definitions, and new axioms. Definitions cannot contain free variables on their right hand sides, nor can they be recursive. Thus, it is trivial that they lead only to conservative extensions of the theory. We could potentially substitute the right hand sides of all our definitions throughout a theory without affecting the validity of the derivations. 
@@ -153,9 +153,9 @@ More accurately, the only statements we can derive of $\epsilon x. P\ x$ are log
 
 The other axiom is the axiom of extensionality, or the $\eta$-reduction axiom. With it, one can prove that any two lambda expressions $\lambda x. f\ x$ and $\lambda x. g\ x$ are equal precisely when we can prove $f\ x = g\ x$ for arbitrary $x$.
 
-It turns out that with these two axioms we can derive the law of excluded-middle~\cite{AxiomChoiceExcludedMiddle}, by exploiting the fact that $\epsilon$ terms with extensionally equivalent bodies must now pick out the same value. In particular, if we consider $\epsilon x. x \vee P$ and $\epsilon x. \neg P \vee P$, we realise that, in assuming $P$, $\epsilon$ must pick the same value for these two expressions, since the body of the $\epsilon$ terms are now extensionally equivalent. With a little bit more work, one then derives the law of excluded-middle.
+It turns out that with these two axioms we can derive the law of excluded-middle~\cite{AxiomChoiceExcludedMiddle}, by exploiting the fact that $\epsilon$ terms with extensionally equivalent bodies must now pick out the same value. In particular, if we consider $\epsilon x. x \vee P$ and $\epsilon x. \neg P \vee P$, we realise that, in assuming $P$, $\epsilon$ must pick the same value for these two expressions, since the bodies of the $\epsilon$ terms are now extensionally equivalent. With a little bit more work, one then derives the law of excluded-middle.
 
-\subsection{Axiom of Infinity}\label{sec:Infinity}
+\subsection{Axiom of Infinity}\label{sec:InfinityDescription}
 The final classical axiom in HOL~Light is the axiom of infinity. We will discuss this axiom in some detail in Chapter~\ref{chapter:LinearOrder}. For now, we will only say in advance that it is provably redundant when we have Hilbert's first two groups of axioms. We have therefore deleted it from our verification. This is not intended to be a serious philosophical statement, but we might draw a parallel here between our \emph{post-hoc} deletion of the axiom of infinity from higher-order logic with Hilbert's later expressed scepticism on the security of infinite sets~\cite{OnInfinite}.
 
 \subsection{Proof Tools}
@@ -173,7 +173,7 @@ Many tactics correspond to inference rules but applied in reverse. For instance,
 \subsubsection{Fully Automated Procedures}
 Some tactics in HOL~Light are decision procedures or otherwise fully automated proof tools. Generally, these are used to solve a goal \emph{outright}, without generating any new subgoals. HOL~Light has decision procedures for checking tautologies, a decision procedure for linear arithmetic, and for computing ideal elements via Gr\"{o}bner bases~\cite{BuchbergerGrobner}. 
 
-More recently, the tools have expanded outside of ML. Eekelen et al~\cite{HOLLightBoolean} have implemented HOL~Light code to take proof certificates from external ``off-the-shelf'' checkers for universally quantified propositional logic. These are formally verified by being converted to derivations of HOL~Light sequents (the verification is fully expansive~\cite{FullyExpansive}). Similar progress has been made in Isabelle~\cite{IsabelleSledgehammer}.
+More recently, the tools have expanded outside of ML. Eekelen et al~\cite{HOLLightBoolean} have implemented HOL~Light code to take proof certificates from external ``off-the-shelf'' checkers for universally quantified propositional logic. These are formally verified by being converted to derivations of HOL~Light sequents (the verification is fully expansive~\cite{FullyExpansive}). Similar progress has been made in HOL4~\cite{HOLBoolean} and Isabelle~\cite{IsabelleSledgehammer}.
 
 \subsection{Declarative Proof}\label{sec:DeclarativeProof}
 Proof assistants accept formal texts in broadly two types: declarative and procedural. The difference is analogous to that between declarative and procedural programming languages. In the procedural approach, the user employs tactics to compose automated tools in order to verify formalised theorems. 
@@ -238,7 +238,7 @@ As noticed by Harrison~\cite{MizarHOL}, the operational semantics of these proof
 \begin{center}
 \code{consider}\ $P$ \code{such that}\ $\neg$\code{on\_line}\ P\ a \code{by}\ \eqref{eq:g12},\eqref{eq:g13a}.
 \end{center}
-This $\code{consider}$ step translates to a tactic which introduces the subgoal\linebreak \code{$\exists$P. $\neg$on\_line P a}. The goal is solved outright using the step's \emph{justification}. By default, steps are justified by HOL~Light's generic \code{MESON} tactic~\cite{HarrisonMESON}, but additional tactics can be composed with the \code{using} keyword. The justification tactic usually needs some help to solve its goals, and in declarative proof, we provide justification theorems using the keyword \code{by}. In this case, we hade added some theorems (\ref{eq:g12} and \ref{eq:g13a}) which are passed directly to \code{MESON}.
+This $\code{consider}$ step translates to a tactic which introduces the subgoal\linebreak \code{$\exists$P. $\neg$on\_line P a}. The goal is solved outright using the step's \emph{justification}. By default, steps are justified by HOL~Light's generic \code{MESON} tactic~\cite{HarrisonMESON}, but additional tactics can be composed with the \code{using} keyword. The justification tactic usually needs some help to solve its goals, and in declarative proof, we provide justification theorems using the keyword \code{by}. In this example, we have added some theorems (\ref{eq:g12} and \ref{eq:g13a}) which are passed directly to \code{MESON}.
 
 These Mizar~Light commands are ordinary ML functions, and the Mizar~Light language is really just a combinator language~\cite{CombinatorLanguages}. This has been useful to us, since it is almost trivial to modify and extend Mizar~Light by just writing new combinators. 
 

@@ -21,3 +21,5 @@
   ** Count "qed"
   ** Do not count trivial "fix"
 * For further evaluation, consider writing axiom dependencies on all discovery.
+* Mention Boyer's comment that for Appolonius, equations are determined by geometry, not the other way around.
+* Lennes has a proof of the PJCT in ordered geometry. Guggenheimer also has a proof based on Dehn's order-preserving maps from a segment to subsegments. Both should be cited.

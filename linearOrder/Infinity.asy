@@ -1,58 +1,95 @@
-pair[] tri = {(0,0),(4,0),(2,3)};
-draw(tri[0]--tri[1]--tri[2]--tri[0]);
-dot("$A$",tri[0],W);
-dot("$0$",tri[1],E);
-dot("$B$",tri[2],N);
+unitsize(60);
 
-pair c = extension(tri[1],tri[2],(0,-1),(1,-1));
-pair d = extension(tri[0],tri[2],(0,1),(1,1));
-
-draw(tri[1]--c);
-draw(c--tri[0],p=dashed);
-dot("$C$",c,SE);
-dot("$D$",d,NW);
-
-pair[] ns;
-picture basePic = currentpicture;
-picture full = currentpicture;
-full.size(400);
-
-pair c2 = c;
-
-picture[] steps;
-
-for (int i=0; i<300; ++i) {
-  picture newpic;
-  newpic.add(full);
-  newpic.unitsize(50);
-  pair n = extension(c2,d,tri[0],tri[1]);
-  draw(c2--d);
-  dot(c2);
-  draw(tri[2]--c2);
-  dot(extension(tri[2],c2,tri[0],tri[1]));
-  if (i < 4) {
-    dot(format("$%d$",i+1),n,SW);
-    if (i>0) {dot(format("$C_%d$",i),c2,S);}
-  }
-
-  steps.push(newpic);
-  
-  //shipout(pic=newpic,prefix=format("InfinityStep%d",i),format="pdf");
-
-  draw(pic=full,c2--d);
-  dot(pic=full,c2);
-  draw(pic=full,tri[2]--c2);
-  dot(pic=full,extension(tri[2],c2,tri[0],tri[1]));
-  dot(pic=full,n);
-
-  c2 = extension(tri[2],n,tri[0],c2);
-  ns.push(n);
+// Diagram used to generate natural numbers
+struct diagram {
+  pair a;
+  pair b;
+  pair zero;
+  pair c;
+  pair d;
+  int count;
 }
 
-currentpicture = steps[0];
-add(steps[1].fit(),(5,0));
-add(steps[2].fit(),(0,-5));
-add(steps[3].fit(),(5,-5));
+void drawDiagram(picture pic = currentpicture, diagram dia) {
+  dot("$A$",dia.a,W);
+  dot("$B$",dia.b,N);
+  dot("$C$",dia.c,SE);
+  dot("$D$",dia.d,NW);
+  dot("$0$",dia.zero,E);
 
-shipout(pic=steps[0],prefix="InfinitySteps",format="pdf");
-shipout(pic=full,prefix="InfinityFull",format="pdf");
+  draw(dia.a--dia.b--dia.c);
+  draw(dia.a--dia.zero);
+  draw(dia.c--dia.a);
+}
+
+// Returns natural number points
+pair[] sucs(diagram dia, int count) {
+  pair[] ns;
+  ns.push(dia.zero);
+  if (count == 1) {
+      ns.push(extension(dia.c,dia.d,dia.a,dia.zero));
+    }
+
+  for (int i = 2; i < count; ++i) {
+    pair c2 = extension(dia.b,ns[ns.length-1],dia.a,dia.c);
+    ns.push(extension(dia.a,dia.zero,dia.d,c2));
+  }
+
+  return ns;
+}
+
+// Returns outputCount incremental pictures, with a final
+// picture containing sucCount successors. Only the first
+// labelCount successor points will be labelled..
+picture[] pics(diagram dia, int sucCount, int outputCount, int labelCount) {
+  picture pics[];
+  picture pic = currentpicture.copy();
+  pair[] ss = sucs(dia,sucCount);
+  pair c2 = dia.c;
+  for (int i=1; i<ss.length; ++i) {
+    draw(pic,c2--dia.d);
+
+    dot(ss[i]);
+    if (i <= labelCount) {
+      label(pic,format("$%d$",i),ss[i],SW);
+    }
+    
+    if (i <= outputCount) {
+      pics.push(pic.copy());
+    }
+
+    c2 = extension(dia.b,ss[i],dia.a,c2);
+    draw(pic,dia.b--c2);
+
+    dot(c2);
+    if (i <= labelCount) {
+      label(pic,format("$C_%d$",i),c2,S);
+    }
+
+    if (i <= outputCount) {
+      pics.push(pic.copy());
+    }
+  }
+  pics.push(pic.copy());
+  return pics;
+}
+
+diagram dia;
+dia.a    = (0,0);
+dia.b    = (2,3);
+dia.zero = (4,0);
+dia.c    = extension(dia.b,dia.zero,(0,-1),(1,-1));
+dia.d    = dia.a + 0.4*(dia.b-dia.a);
+
+drawDiagram(dia);
+
+picture[] pics = pics(dia,800,100,4);
+
+// Draw the first four interations in 2 columns.
+currentpicture = pics[0];
+add(pics[1].fit(),(5,0));
+add(pics[2].fit(),(0,-5));
+add(pics[3].fit(),(5,-5));
+
+shipout(prefix="InfinitySteps",format="pdf");
+shipout(pic=pics[200],"InfinityFull",format="pdf");

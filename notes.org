@@ -1,25 +1,90 @@
-* In introduction, put in diagram giving the logical relationships.
-* Turn Chapter 3 into "Representation" and refer to other systems based on their benefits (subtyping, etc)
+*
+** In introduction, put in diagram giving the logical relationships.
+** Turn Chapter 3 into "Representation" and refer to other systems based on their benefits (subtyping, etc)
 ** Move onto MIZAR Light. Brief forward reference about metatheoretical issues, but most discussion should go linear ordering chapter, since it needs context. Combinators + forward reference. Modifications. Keep contributions separate.
-* Put detailed examples in the half-planes chapter and order chapters about why they are useful, and brief in-context examples in JCT when it's not that interesting, and detailed examples when it's interesting.
-* Keep minimal model in infinity, since it is there to justify that infinite sets cannot be derived from G1.
-* Group 1: axioms, elementary consequences. Combinatorial reasoning with sets -> need for automation.
-* Maybe change chapter "Group II: Hilbert's Proofs"
-* Maybe change: "Linear Order" to "Group II: Ordering along a line" -- bring natural numbers in earlier
-* Maybe change: "Half-planes" to "Group II: Ordering in the plane"
-* Reference to Poincare, Feigl: explain that we do hold of it.
-* Maybe suggest reader can skip first proof attempt. Explain reward of proof. Bring some of the discussion to the front. More commentary during the proof and forward references.
-* Explain corollary to Veblen's theorem
-* Q1'Q2' and triangle are not in figure 9.10
-* Replace general abstractions with concrete outside quotes
-* Explain introduction of primes on O_k and O_j
-* Maybe mention asymptote and how shit was found
+** Put detailed examples in the half-planes chapter and order chapters about why they are useful, and brief in-context examples in JCT when it's not that interesting, and detailed examples when it's interesting.
+** Keep minimal model in infinity, since it is there to justify that infinite sets cannot be derived from G1.
+** Group 1: axioms, elementary consequences. Combinatorial reasoning with sets -> need for automation.
+** Maybe change chapter "Group II: Hilbert's Proofs"
+** Maybe change: "Linear Order" to "Group II: Ordering along a line" -- bring natural numbers in earlier
+** Maybe change: "Half-planes" to "Group II: Ordering in the plane"
+** Reference to Poincare, Feigl: explain that we do hold of it.
+** Maybe suggest reader can skip first proof attempt. Explain reward of proof. Bring some of the discussion to the front. More commentary during the proof and forward references.
+** Explain corollary to Veblen's theorem
+** Q1'Q2' and triangle are not in figure 9.10
+** Replace general abstractions with concrete outside quotes
+** Explain introduction of primes on O_k and O_j
+** Maybe mention asymptote and how shit was found
+*
+** Counting conventions
+*  ** Do not count "per cases"
+*  ** Do not count "have" which begins a subproof
+*  ** Count "qed"
+*  ** Do not count trivial "fix"
+** For further evaluation, consider writing axiom dependencies on all discovery.
+** Mention Boyer's comment that for Appolonius, equations are determined by geometry, not the other way around.
+** Lennes has a proof of the PJCT in ordered geometry. Guggenheimer also has a proof based on Dehn's order-preserving maps from a segment to subsegments. Both should be cited.
 
-* Counting conventions
-  ** Do not count "per cases"
-  ** Do not count "have" which begins a subproof
-  ** Count "qed"
-  ** Do not count trivial "fix"
-* For further evaluation, consider writing axiom dependencies on all discovery.
-* Mention Boyer's comment that for Appolonius, equations are determined by geometry, not the other way around.
-* Lennes has a proof of the PJCT in ordered geometry. Guggenheimer also has a proof based on Dehn's order-preserving maps from a segment to subsegments. Both should be cited.
+* <2013-01-28 Mon>
+** Back references to contributions
+** Be more confident about investigation
+** General discussion about dealing with mathematical prose in a faithful way + lessons learned
+** New proof discovered
+** New proofs identified and made rigorous
+** Comparison between Mizar Light and Isar (System description?)
+** Explain format of formalised proof
+** Change "System Description" to "Background"
+** Emphasise that Mizar Light is new extension in Declarative Interactivity
+** Distinguish logical metalogic from computational metalogic in the background with back-reference in ordering chapter
+** Mention bug in substitution
+** Forward reference on "erratic"
+** Remove sentence about "diagrammatic reasoning". Maybe cut down on repitition of "mugs", "tables", "chairs."
+** Move anything which you reference out of the appendix and into the main chapter. Make upper case all use of word "theorem" which refers to something Hilbert stated.
+** Deal with ambiguity: Theorems Hilbert stated; Formalised theorems; Theorem in theorem environment. Maybe use "proposition", and give theorems names, and explain disambiguation.
+** Clarify different sorts of difficulty with Tarski.
+** Clarify "omit the verifications". Everything has been verified, we just don't reproduce *our* verifications
+** Explain tables for proofs and that right-justified numbers are part of the script
+** Give ASCII table translation in Background
+** Push "proof" down to start of block
+** Remove Henderson footnote
+** Explain that we can use a weaker rendering of g21 in the context of the other axioms and that the stronger has been verified.
+** Use fixfig or something to overrule LaTeX stupidity
+** Remove thing about "possibly giving Hilbert too much credit."
+** Other methods: mention Chou + Grobner bases = algebraic, maybe cylindrical algebraic decomposition, turn to synthetic with signed-area + full angle which try to produce readable proofs, but backwards via point-elimination.
+** Change Related Work to "Background" in Automation, and move "Ranks" out of "Related work" and make it purely incidental: it happens to be similar. But not building on it.
+** More consistent use of "infer" and "use" in 4.2. Clarify that the first selection of rules are alternative ways to apply existing rules.
+** Mention "typical" list monad.
+** Clarify eager/lazy and the fact that a stream is just a lazy list, that the stream monad is actually just a variant of a list monad.
+** Use triple equal for definition
+** Explain when MP can throw an exception and so we need to wrap it.
+** Give example of ordering conjunctions for quick failure: Pasch axiom. Plane union roles. We put most constrained first.
+** Delete Lucas Dixon footnote
+** Strongly explain what is meant by concurrency, and that it is not parallelisation.
+** Drop paragraph "parallelisation."
+** Explain Veblen's analogous proof with "under the following mapping..."
+** With these Inner and Outer axioms derived,...
+** Search is breadth first if you force every generation, but might be depth first if you just map the heads.
+** Explain why "finite" appears in definition of "ordering", explain that it's more general than necessary.
+** Change "potentially infinite" to "arbitrarily large": just clarify
+** Explain where "ind" comes from.
+** Existence of infinite domains is not a logical axiom in FOL or HOL
+** Spell out how discover_tac eqs works. Explain that this was all implicit. And why you care. Procedurally = don't care about the details.
+** Rephrase proof of Theorem~7 as a demo of ORDER_TAC, that it is using the recursive definition of finite, and that it is there redundant, and using the existing recursive definition of infinite. Stay positive.
+** Conclusion: Separate conflated issues in first paragraph.
+** Total equivalence relation on pairs of arrows. Introduce type of arrow more formally.
+** The correctness of this definition is not necessarily immediately obvious, but it will be clear from the derived theorems. Weaken "will be determined", to "have some evidence."
+** Drops connection.
+** In either...or stuff, say that this is "positing" and "conjecturing", but that the edits are real.
+** The presentation gets substantially weaker...
+*** Hilbert's presentation gets substantially weaker...
+** Change on_half_plane to half_plane_on to reflect reversing arguments.
+** Not to be confused with E. H. Moore.
+** ...So we cannot ray-cast in the direction of a parallel line
+** More than aesthetic reasons: interesting proofs, it explains our initial strategy, and we will be referring back to it, and ideas in this proof became incorporated into the main verification.
+** 8.4.1: Explain that theorem is only easy now with hindsight.
+** Delete paragraph about skipping or strengthen hindsights.
+** A diagram for IH4. Mention we use contraposition of IH5.
+** Ambiguous between inductive hypothesis and proof of step case of inductive hypothesis. Use dashes for step cases.
+** /Give/ contraposition of IH5
+** Change path_connected to rel_path_connected
+** Conclude chapter 9

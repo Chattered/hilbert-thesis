@@ -33,7 +33,7 @@ First of all, we introduce \emph{types}, which act as disjoint collections of va
 Next, we have \emph{terms} based on an alphabet of term constants and term variables, and a typing relation $(:)$ which is used to associate a term with its type, according to the rules:
 \begin{enumerate}
 \item Every term constant and every term variable is a term.
-\item For terms $f\ :\ \tau_1\rightarrow\tau_2$ and $x\ :\ \tau_1$, we have that $f\ x$ is a term such that $f\ x : \tau_2$. These combinations are left-associative: $f\ g\ h = (f\ g)\ h$. This means that contrary to conventional mathematical notation, we write function and predicate applications as $f\ x$ rather than $f(x)$.
+\item For terms $f\ :\ \tau_1\rightarrow\tau_2$ and $x\ :\ \tau_1$, we have that $f\ x$ is a term such that \mbox{$f\ x : \tau_2$}. These combinations are left-associative: $f\ g\ h = (f\ g)\ h$. This means that contrary to conventional mathematical notation, we write function and predicate applications as $f\ x$ rather than $f(x)$.
 \item Given a term variable $x : \tau_1$ and a term $y : \tau_2$, we have that $\lambda x. y$ is a term such that $\lambda x. y : \tau_1 \rightarrow \tau_2$. These lambda abstractions consume everything to the right, so $\lambda x. f\ x\ y$ parses as $\lambda x. ((f\ x)\ y)$.
 \end{enumerate}
 
@@ -136,7 +136,7 @@ HOL~Light extends the simple theory of types by allowing us to add new term and 
 
 HOL~Light also extends the simple theory of types by allowing one to define an abstract type of values in bijection with a non-empty subset of an existing type. This feature is particularly useful for enforcing that derived definitions are used in a way which ``respects'' the abstraction.
 
-For instance, in geometry, we might wish to define a ``ray'' as a particular kind of set of points, and we may wish to define an ``endpoint'' of a ray as a set of points with additional constraints (see Chapter~\ref{chapter:HalfPlanes}). We will want to use expressions such as ``endpoint of a ray'', but we probably wish to declare expressions such as ``endpoint of a line'' or ``endpoint of a plane'' as meaningless. These expressions break the abstraction of ``ray'', but the abstraction can be reinforced by using a derived abstract type. As an added benefit, because HOL Light types can always be mechanically reconstructed from expressions, abstract types can keep our formal statements short by pushing the constraints on what defines a ray into an automatically inferred type.
+For instance, in geometry, we might wish to define a ``ray'' as a particular kind of set of points, and we may wish to define an ``endpoint'' of a ray as a set of points with additional constraints (see Chapter~\ref{chapter:HalfPlanes}). We will want to use expressions such as ``endpoint of a ray'', but we probably wish to declare expressions such as ``endpoint of a line'' or ``endpoint of a plane'' as meaningless. These expressions break the abstraction of ``ray'', and so we want to enforce the abstraction by using a derived abstract type. As an added benefit, because HOL Light types can always be mechanically reconstructed from expressions, abstract types can keep our formal statements short by pushing the constraints on what defines a ray into an automatically inferred type.
 
 \section{Classical Logic}\label{sec:ClassicalAxioms}
 HOL~Light as described so far is non-classical. The only primitive values we have considered are those of type $\code{bool}$, and contrary to classical logic, the calculus does not require that $\code{bool}$ has only two inhabitants.
@@ -149,9 +149,9 @@ To make HOL classical, a new term is introduced, $\epsilon$, and two new axioms:
 
 We are to understand $\epsilon x. P$ as ``the arbitrarily chosen $x$ satisfying $P$''. This construct is used both as a definitional tool, but it is also equivalent, with the other classical axioms, to the full axiom of choice. It should be contrasted with the weaker $\iota$ binder, which yields expressions $\iota x. P$ to be read as ``the uniquely specified $x$ satisfying $P$.'' The distinction is discussed further in \S\ref{sec:UseOfIota}.
 
-The axiom governing this notion clarifies how simple type theory handles undefined or non-referring terms. Consider what happens when $P$ is unsatisfiable. In this case, $\epsilon x. P\ x$ is still in some sense, well-defined, since from the perspective of the logic's model theory, all terms must refer. But from a proof-theoretic point of view, since the condition on the axiom can never be discharged for this particular $P$, nothing interesting can ever be shown true of $\epsilon x. P\ x$.
+The axiom governing this notion clarifies how simple type theory handles undefined or non-referring terms. Consider what happens when $P$ is unsatisfiable. In this case, $\epsilon x. P\ x$ is still, in a sense, well-defined. From the perspective of the logic's model theory, all terms, even peculiar ones such as $\epsilon x. P\ x$ where $P$ is unsatisfiable, must refer. But from a proof-theoretic point of view, since the condition on the axiom can never be discharged for this particular $P$, nothing interesting can ever be shown true of $\epsilon x. P\ x$.
 
-More accurately, the only statements we can derive of $\epsilon x. P\ x$ are logical truths. If we take Wittgenstein at his word in the \emph{Tractacus}, we might say that when all we can derive are logical truths, we have nothing. It is in this sense that we can formalise the notion of undefined terms and the undefined values of partial functions in HOL. Each one is just $\epsilon x. \bot$.
+More accurately, the only statements we can derive of $\epsilon x. P\ x$ are logical truths. If we take Wittgenstein at his word in the \emph{Tractacus}~\cite{ToWitNothing}, we might say that when all we can derive are logical truths, we have nothing. It is in this sense that we can formalise the notion of undefined terms and the undefined values of partial functions in HOL. Each one is just $\epsilon x. \bot$.
 
 The other axiom is the axiom of extensionality, or the $\eta$-reduction axiom. With it, one can prove that any two lambda expressions $\lambda x. f\ x$ and $\lambda x. g\ x$ are equal precisely when we can prove $f\ x = g\ x$ for arbitrary $x$.
 
@@ -185,7 +185,19 @@ More recently, the tools have expanded outside of ML. Eekelen et al~\cite{HOLLig
 \section{Declarative Proof}\label{sec:DeclarativeProof}
 Proof assistants accept formal texts in broadly two types: declarative and procedural. The difference is analogous to that between declarative and procedural programming languages. In the procedural approach, the user employs tactics to compose automated tools in order to verify formalised theorems.
 
-Different tactic languages have their own styles and idioms, but they usually support both \emph{forward} reasoning from the premises of a formalised theorem to its conclusion, and \emph{backward} reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural \emph{transformations} rather than logical formulas, which are sometimes entirely absent from procedural verifications.
+Different tactic languages have their own styles and idioms, but they usually support both \emph{forward} reasoning from the premises of a formalised theorem to its conclusion, and \emph{backward} reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural \emph{transformations} rather than logical formulas, which are sometimes entirely absent from procedural verifications. 
+
+% Consider our procedural verification of the fact that $xs ++ ys = us ++ vs \iff xs = us \wedge ys = vs$ for lists $xs$, $ys$, $us$ and $vs$ where $xs$ and $ys$ have the same length:
+
+% \begin{scriptsize}
+%   \begin{align*}
+%     \code{LIST\_INDUCT\_TAC THEN } &\code{GEN\_TAC THEN LIST\_INDUCT\_TAC}\\
+% \qquad \code{THEN (}&\code{REWRITE\_TAC [APPEND]}\\
+% &\code{THEN REWRITE\_TAC [LENGTH;NOT\_SUC] THEN}\\
+% &\code{REWRITE\_TAC [EQ\_SYM\_EQ;NOT\_SUC] THEN NO\_TAC}\\
+% &\code{ORELSE ASM\_SIMP\_TAC [APPEND;CONS\_11;LENGTH;SUC\_INJ;CONJ\_ACI]))}
+% \end{align*}
+% \end{scriptsize}
 
 Declarative proof assistants on the other hand, beginning with \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The verifications show the flow of argument as trees of intermediate results, branching at subproofs, with each intermediate result stated with its dependencies. The flow of the script always moves \emph{forward} from assumptions to goal, with the focus on \emph{what} the logical relations between formulas are, rather than \emph{how} the proof state is transformed to represent such relations. This latter detail is left to the internal operation of the proof assistant, which tries to use automated verification tools to bridge the inferential gaps.
 
@@ -249,12 +261,12 @@ This $\code{consider}$ step translates to a tactic which introduces the subgoal\
 
 These Mizar~Light commands are ordinary ML functions, and the Mizar~Light language is really just a combinator language~\cite{CombinatorLanguages}. This has been useful to us, since it is almost trivial to modify and extend Mizar~Light by just writing new combinators.
 
-That combinators make it easy to extend a system is a feature we find particularly attractive. Tactics themselves are implemented as combinators, which makes it easy for users to write their own (we describe a few of ours in Chapters~\ref{chapter:Automation} and~\ref{chapter:LinearOrder}). Another feature of tactics is that they compose algebraically. There are tensoring operators, sums, identities and a zero. In trying to keep to the spirit of HOL~Light, we have designed our own automation, described in Chapter~\ref{chapter:Automation}, in terms of an algebraic combinator language.
+That combinators make it easy to extend a system is a feature we find particularly attractive. Tactics themselves are implemented as combinators, which makes it easy for users to write their own (we describe a few of ours in Chapters~\ref{chapter:Automation} and~\ref{chapter:LinearOrder}). Another feature of tactics is that they compose algebraically. There are tensoring operators, sums, identities and a zero. We have tried to keep to this spirit of algebraic combinator languages in our own automation, described in Chapter~\ref{chapter:Automation}.
 
 \subsection{Extending Mizar~Light for Interactivity}\label{sec:MizarLightExtend}
-Wiedijk's basic combinators are based on the original Mizar system, a batch prover, and in this spirit,  Mizar~Light verifications are written in their entirety and then evaluated in one. We find this undesirable, firstly, because the error reporting is not rich enough to show where errors occur in the case of a failed verification. Secondly, we have chosen to implement our automation (described in Chapter~\ref{chapter:Automation}) so that it runs concurrently as a user writes a verification. Here, the tool works best when it can exploit the user's idle time when working \emph{interactively} as opposed to \emph{batch} mode.
+Wiedijk's basic combinators are based on the original Mizar system, a batch prover, and in this spirit,  Mizar~Light verifications are written in their entirety and then evaluated in one. We find this undesirable, firstly, because the error reporting is not rich enough to show where errors occur in the case of a failed verification. Secondly, we have chosen to implement our automation (described in Chapter~\ref{chapter:Automation}) so that it runs concurrently as we developed our verification. Here, the tool works best when it can exploit our idle time when working \emph{interactively} as opposed to \emph{batch} mode.
 
-The problem here lies with case-splitting. Here are the original combinators at work in an extract of one of Wiedijk's example verifications (the details of which are not important):
+The problem lies with case-splitting. Here are the original combinators at work in an extract of one of Wiedijk's example verifications (the details of which are not important):
 
 \vspace{0.5cm}
 \begin{minipage}{\linewidth}
@@ -331,13 +343,11 @@ Case splits are ultimately justified by proving a disjunction of all considered 
 
 The important point here is that the implicit disjunction must be determined before any of the subproof tactics are applied. This is possible, because \code{per cases} takes the full list of cases, from which the disjunction can be assembled. But this strategy will not work if we are to linearise the subproofs and apply each step interactively, since the full disjunction will not be known until all cases are interactively solved.
 
-Harrison's original Mizar mode for HOL Light had better support for interactive case-splitting~\cite{MizarHOL}. In his system, the disjunction is assembled at the end of the full verification, when all goals have been solved and a forward verification reconstituted from the tactic justification. The drawback is that the user is only made aware of an unsuccessful case-split at the very end of the verification.
-
-To overcome this drawback, we have implemented two functions \code{case} and \code{end}. The \code{case} function is used to introduce a new case term $\phi$. It then generates two subgoals, the first with $\phi$ as hypothesis, and the second with $\neg\phi$ as hypothesis. The \code{case} step, therefore, has performed a case-split on $\phi\vee\neg\phi$. The user must first prove the goal on the hypothesis of $\phi$. Once the goal is solved, the one remaining goal will have $\neg\phi$ as its hypothesis.
+Harrison's original Mizar mode for HOL Light had better support for interactive case-splitting~\cite{MizarHOL}. The drawback appears to be that it relies on potentially invalid justification tactics. Our implementation is different. We use two functions \code{case} and \code{end}. The \code{case} function is used to introduce a new case term $\phi$. It then generates two subgoals, the first with $\phi$ as hypothesis, and the second with $\neg\phi$ as hypothesis. The \code{case} step, therefore, has performed a case-split on $\phi\vee\neg\phi$. The user must first prove the goal on the hypothesis of $\phi$. Once the goal is solved, the one remaining goal will have $\neg\phi$ as its hypothesis.
 
 The user now proceeds by introducing the \emph{next} case, using the \code{case} function again with a new term, say $\psi$. Two subgoals are again generated, one with $\psi$ and the other with $\neg\psi$ as hypothesis.
 
-By the time the user has considered and proven all cases, the one remaining subgoal will have the negations of every considered case in its hypotheses. If the cases are exhaustive, these negations will entail a contradiction\footnote{We assume we are only interested in \emph{classical} proofs. Otherwise, this does not necessarily follow.}. This is where the \code{end} step is used. It will automatically take all the negated cases, identifying them by a case-label \code{Case} in the goal-stack, and use them as a justification for $\bot$.
+By the time the user has considered and proven all cases, the one remaining subgoal will have the negations of every considered case in its hypotheses. If the cases are exhaustive, the negations will entail a contradiction\footnote{We assume we are only interested in \emph{classical} proofs. Otherwise, this does not necessarily follow.}. This is where the \code{end} step is used. It will automatically take all the negated cases, identifying them by a case-label \code{Case} in the goal-stack, and use them as a justification for $\bot$.
 
 Suppose, for example, that we have a formal theorem $\phi \implies P \vee Q \vee R$ and suppose that each of $P$, $Q$ and $R$ can solve a goal $G$ using the implicit automation built into Mizar~Light. Then we can write the verification:
 
@@ -375,7 +385,7 @@ The final \code{end} step is justified since
 P \vee Q \vee R, \neg P, \neg Q, \neg R \vdash \bot
 \end{displaymath}
 
-This approach does not have the drawback of Harrison's solution. Whenever the case splitting is not exhaustive, the \code{end} step will fail at the point at which it is evaluated, rather than at the very end of the verification when the final justification is assembled.
+This approach only uses valid tactics. Whenever the case splitting is not exhaustive, the \code{end} step will immediately fail.
 
 Returning to our example verification, our functions \code{case} and \code{end} allow us to write
 
@@ -399,14 +409,14 @@ Returning to our example verification, our functions \code{case} and \code{end} 
 \vspace{0.5cm}
 
 \subsection{Concluding Remarks}
-Allowing interactive case-splitting worked well in practice. We would write our verifications interactively, and when completed, package them up as batch verifications. The translation between flattened verification and the normal batch \code{per cases} combinator was always straightforward.
+Allowing interactive case-splitting worked well in practice. We would write our verifications interactively, and when completed, package them up as batch verifications. The translation between flattened verification and the normal batch \code{per cases} combinator was always straightforward\footnote{An example unpackaged proof is given at \url{https://github.com/Chattered/hilbert/blob/master/polygon-unpacked.ml}}.
 
 Further modifications to Mizar~Light are described in Chapter~\ref{chapter:Automation}.
 
 \section{Conventions}
 \added{As with any thesis of this sort, there are certain ambiguities which arise from overloading and which ought to be clarified. We have decided to adopt the following terminology. The term ``theorem'' shall be used specifically to refer to the natural language statements of mathematical results given by other authors. When we want specifically to refer to theorems given by Hilbert in the \emph{Grundlagen der Geometrie}, we shall use the uppercase ``THEOREM''. For our own theorems, we shall reserve the term ``proposition''. Finally, the term ``proof'' shall be used to refer to natural language arguments which serve to justify these theorems and propositions.
 
-The adjective ``formal'', as in ``formal theorem'', ``formal proposition'' and ``formal proof'', shall be used to indicate the translation of the natural language statements into the symbolic language of higher-order logic. The word ``verification'' will then be reserved for the actual proof scripts which have been machine-checked by the HOL~Light theorem prover.
+The adjective ``formal'', as in ``formal theorem'', ``formal proposition'' and ``formal proof'', shall be used for the translation of natural language statements into the symbolic language of higher-order logic. The word ``verification'' will then be reserved for the actual proof scripts which have been machine-checked by the HOL~Light theorem prover.
 
 Throughout the thesis, we shall give sample verifications. These depict actual Ocaml code, but for readability, we elide various pieces of syntax such as brackets and semi-colons. We also introduce our own syntactic sugar, shown in the following table.}
 
@@ -434,7 +444,7 @@ Throughout the thesis, we shall give sample verifications. These depict actual O
 
 We have adapted the $\code{at}$ Mizar~Light slightly. It now takes a list, so that an expression such as $\code{at [}m\code{, } n\code{, } p\code{]}$ can be used to label the individual conjuncts (in this case, three of them) of an intermediate step, each of which can be cross-referenced separately. In the sample verifications in this thesis, we shall elide the combinator $\code{at}$ and instead set $m$, $n$ and $p$ as right-justified labels in the verification. 
 
-Many of our ideas evolved during the verification development, and, as of writing, there are legacy naming conventions which need to be refactored and brought into line with the present thesis. For now, we can only claim that the verifications reproduced in the thesis are alpha-equivalent to the originals.}
+Many of our ideas evolved during the verification development, and, as of writing, there are legacy naming conventions which need to be refactored and brought into line with the present thesis. For now, we can only claim that the verifications reproduced in the thesis are $\alpha$-equivalent to the originals.}
 
 %%% Local Variables:
 %%% mode: latex

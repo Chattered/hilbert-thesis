@@ -1,0 +1,442 @@
+\chapter{Background}\label{chapter:Background}
+In this chapter, we describe our chosen verification tool HOL~Light and its object logic and we address a few philosophical questions about using computerised logical systems to analyse mathematical foundations. The chapter is provided to keep the thesis self-contained, and contains very little in the way of new material. To assist the reader wanting to skip topics familiar or otherwise irrelevant to them, we give a brief overview of each section.
+
+In \S\ref{sec:ObjectLogic}, we give an overview of simple type theory, including its history. In \S\ref{sec:ObjectLogicFormal}, we give its formal definition.
+
+In \S\ref{sec:LCF}, we review the LCF approach to implementing interactive proof assistants, and our chosen proof assistant HOL~Light.
+
+In \S\ref{sec:DeclarativeProof}, we introduce the idea of a declarative verification, and in \S\ref{sec:MizarLight}, we discuss the Mizar~Light language that we have used for our verification. In \S\ref{sec:MizarLightExtend}, we present previously unpublished material on some useful extensions and modifications to the Mizar~Light language.
+
+\section{Object Logic}\label{sec:ObjectLogic}
+The logic of our proof assistant is Church's Simple Theory of Types~\cite{ChurchTheoryOfTypes} or the simply-typed lambda calculus. This calculus is typically associated with the foundations of programming languages, but in fact, it was always conceived as a foundation for logic~\cite{UntypedTheoryLambdaCalculus}, and a solution to the paradoxes which plagued n\"{a}ive set theories. Church regarded it as less ``artificial'' than ZF set theory and Russell's Ramified Type Theory~\cite{RussellTheoryOfTypes}.
+
+The original lambda calculus turns out to be inconsistent (all of its terms are provably equivalent~\cite{InconsistencyLambdaCalculus}), and ironically, Church fixed the problem in essentially the same way as Russell, though by this period in time, Russell's ramified types had been simplified; hence, the \emph{simple theory of types}.
+
+There might be some concern that the use of lambda calculus is unfaithful to mathematics which is nominally based on first-order set theory, but \deleted{this is not the case. The \emph{scope} of mathematics might well be characterised by reference to ZFC set theory, as evidenced by its power to close down research programmes such as the Continuum Problem in the face of Cohen's independence proof. And it can be argued that the concerns of model theory has one favouring first-order logic~\cite{LogicFirstOrder}. But} practised verification usually favours typed higher-order logics. Russell and Whitehead's celebrated computer unassisted verification~\cite{Principia} was in a typed higher-order logic. The first computer assisted non-trivial verification by De Bruijn in AUTOMATH used a powerful extension of the simply typed lambda calculus. And according to Wiedijk's survey~\cite{SeventeenProvers}, eleven of the world's seventeen proof assistants were based on a higher-order logic as of 2006. Even those based nominally on untyped set theory such as Mizar~\cite{MizarMathematicalVernacular} can be viewed as being typed~\cite{MizarSoftTypes}.
+
+\deleted{We suggest the reason for this is down to the pervasive use of metatheory in mathematics, which requires more expressive power to verify than offered by first-order logic alone. The entirety of Chapter~\ref{chapter:LinearOrder} is a case-study in Hilbert's \emph{Grundlagen der Geometrie}, on why faithful mathematical verification demands this expressive power.}
+
+The simple theory of types as it appears in HOL~Light makes an extension to Church's simple theory of types: it turns the type-schemas which appear implicitly in Church's original paper into type variables, or \emph{polymorphic types}. This extension is so standard that hereafter when we refer to ``simple type theory'' we shall mean one in which polymorphic types replace type-schemas.
+
+\added{This extension does not increase the expressive power of the logic, as this is only \emph{rank}-1 polymorphism. The type variables cannot appear on the left of the function type constructor, and so can always be shifted to an outer most position where they have the same function as type-schemas. Moreover, the extension does not add any syntactic burden to the user: as with Standard ML~\cite{StandardML}, it is possible to mechanically infer the most general type of any term~\cite{HindleyMilner}}.
+
+\subsection{Definitions}\label{sec:ObjectLogicFormal}
+We now give the formal definition of the object logic as used in HOL~Light. We will be somewhat terse in this section, since we are just aiming to keep the thesis self-contained. For a more detailed introduction to this material, we recommend the excellent HOL~Light manual~\cite{HOLLightManual}.
+
+\subsubsection{Syntax}
+First of all, we introduce \emph{types}, which act as disjoint collections of values and which can be defined from an alphabet of type constants and an alphabet of type variables, such that
+\begin{enumerate}
+\item every type constant and every type variable is a type;
+\item for types $\tau_1$ and $\tau_2$, we have that $\tau_1 \rightarrow \tau_2$ is a (function) type. Arrow composition is right-associative, so that $\alpha \rightarrow \beta \rightarrow \gamma$ parses as $\alpha \rightarrow (\beta \rightarrow \gamma)$.
+\end{enumerate}
+
+Next, we have \emph{terms} based on an alphabet of term constants and term variables, and a typing relation $(:)$ which is used to associate a term with its type, according to the rules:
+\begin{enumerate}
+\item Every term constant and every term variable is a term.
+\item For terms $f\ :\ \tau_1\rightarrow\tau_2$ and $x\ :\ \tau_1$, we have that $f\ x$ is a term such that $f\ x : \tau_2$. These combinations are left-associative: $f\ g\ h = (f\ g)\ h$. This means that contrary to conventional mathematical notation, we write function and predicate applications as $f\ x$ rather than $f(x)$.
+\item Given a term variable $x : \tau_1$ and a term $y : \tau_2$, we have that $\lambda x. y$ is a term such that $\lambda x. y : \tau_1 \rightarrow \tau_2$. These lambda abstractions consume everything to the right, so $\lambda x. f\ x\ y$ parses as $\lambda x. ((f\ x)\ y)$.
+\end{enumerate}
+
+The idea here is that an object of type $\alpha \rightarrow \beta$ is a function with domain $\alpha$ and codomain $\beta$. A lambda abstraction in this type is then a function literal, and the notation $\lambda x. f\ x$ can be understood in much the same way as the notation $x \mapsto f\ x$ which is perhaps more familiar to mathematicians.
+
+It should be clear from these definitions that the set of possible terms is now constrained by types, \added{and in such a way that the classic Russell paradox is thwarted. If we understand negation as a function $\neg$, then the paradox would need to lie with the term $\lambda x. \neg(x\ x)$. But this is not well-typed, since the $x$ cannot be given a type consistent with rules~2 and~3.}
+
+The syntax unifies several ideas from first-order logic. Rather than having a separate syntax for formulas and terms, we just declare that formulas \emph{are} terms but in the type of truth values. Predicates, functions and relations are also unified in a single syntax for higher-order functions. A predicate is now just a function sending objects of some type $\alpha$ to $\top$ when they satisfy the predicate, and to $\bot$ when they do not. These predicates can be used to represent sets, and we can recover simple set-theoretic operations such as union and intersection as functions from predicates to predicates.
+
+All functions in simple type theory have arity 1. If one wants an $n$-ary function with \mbox{$n>1$}, they either turn the single argument into an $n$-tuple, or they have the function map its first argument to another function which expects the remaining $n-1$ arguments. This is known as currying, and its pervasiveness explains why function application is left-associative in simple type theory. We want to write a two-argument function application as $f\ x\ y$, rather than the more cumberson $(f\ x)\ y$.
+
+\subsubsection{Calculus}\label{sec:HOLInferenceRules}
+For inference rules, HOL~Light needs to introduce a primitive type $\code{bool}$ which is to be inhabited by truth values, and one primitive constant representing equality \linebreak$(=)\ :\ \alpha \rightarrow \alpha \rightarrow \code{bool}$. With these, we can introduce the notion of \emph{judgements} or \emph{sequents}, which have the form $\{A_1:\code{bool},A_2,\ldots,A_n\} \vdash C\ :\ \code{bool}$. We are to understand these judgements as saying that $C$ is judged true in the context of assumptions $\{A_1,A_2,\ldots,A_n\}$. These judgements are then linked by inference rules, which say how new judgements arise from existing judgements. In other words, we prove judgements, rather than propositions.
+
+The rules of HOL~Light's calculus (Figure~\ref{fig:HOLInferenceRules}) are few, and admit only one redundancy: the transitivity inference rule is provided as an optimisation. Each rule is expressed as a horizontal line, with sequents below the line being derivable from sequents above. We omit all types, since these can always be inferred from the terms.
+
+\begin{figure}
+  \begin{gather*}
+    \begin{aligned}
+      \infer[\code{REFL}]{P\vdash P}{} &\qquad&
+      \infer[\code{TRANS}]{\Gamma\cup\Delta\vdash s=u}{\Gamma\vdash s=t&\Gamma\vdash t=u}\\
+      \infer[\code{MK\_COMB}]{\Gamma\cup\Delta\vdash f\ x=f\ y}{\Gamma\vdash x = y & f = g} &&
+      \text{for any $x$,}\quad \infer[\code{ABS}]{(\lambda x. s) = \lambda x. t}{s = t}\\
+      \infer[\code{BETA}]{(\lambda x. t)\ x = t}{}&&
+      \infer[\code{ASSUME}]{\{A\} \vdash A}{}
+    \end{aligned}\\
+    \infer[\code{EQ\_MP}]{\Gamma\cup\Delta\vdash Q}{\Gamma\vdash P = Q & \Delta\vdash P}\\
+    \infer[\code{DEDUCT\_ANTISYM\_RULE}]{(\Gamma - \{P\})\cup(\Delta - \{Q\})\vdash P = Q}{\Gamma\vdash P & \Delta\vdash Q}\\
+  \end{gather*}
+  \caption{Inference Rules}
+  \label{fig:HOLInferenceRules}
+\end{figure}
+
+Finally, we have a few rules to handle instantiations of free variables and type variables. We have a rule to substitute terms $t_1$, $\ldots$, $t_n$ for term variables $x_1$, $\ldots$, $x_n$ (avoiding variable capture). We have another rule to substitute types $\tau_1$, $\ldots$, $\tau_n$ with type variables $\alpha_1$, $\ldots$, $\alpha_n$ with 
+\begin{align*}
+  \infer[\code{INST}]{\Gamma[t_1,\ldots,t_n]
+    \vdash p[t_1,\ldots,t_n]}
+  {\Gamma[x_1,\ldots,x_n]\vdash p[x_1,\ldots,x_n]}&&
+  \infer[\code{INST\_TYPE}]{\Gamma[\alpha_1,\ldots,\alpha_n]
+    \vdash p[t_1,\ldots,t_n]}
+  {\Gamma[\tau_1,\ldots,\tau_n]\vdash p[\tau_1,\ldots,\tau_n]}
+\end{align*}
+
+We omit the formal definitions of substitution here. We just mention that $\lambda$ \emph{binds} free variables just like a quantifier does.
+
+\subsection{Higher-order Logic}
+These inference rules embed a full (intuitionistic) higher-order logic (hereafter \emph{HOL}). For instance, it is possible to convince oneself that a conjunction $p \wedge q$ can be formulated as $(p,q) = (\top,\top)$ which can, in turn, be formulated as
+\begin{displaymath}
+(\lambda f. f\ p\ q) = \lambda f. f\ ((\lambda x. x) = \lambda x. x)\ ((\lambda x. x) = \lambda x. x).
+\end{displaymath}
+
+Indeed, with a suitable formulation of implication $\implies$, we can verify the full specification for these two symbols:
+\begin{gather}
+  \begin{aligned}
+    p \wedge q \implies p &\qquad& p \wedge q \implies q
+  \end{aligned}\\
+    (r \implies p) \wedge (r \implies q) \implies r \implies p \wedge q.
+\end{gather}
+
+All other connectives and quantifiers can similarly be embedded, and from here on, we will assume the following pieces of derived syntax, in order of precedence.
+
+\begin{center}
+\begin{tabular}{|c|c|}
+\hline
+$\neg$   & Negation\\
+$\wedge$ & Conjunction\\
+$\vee$   & Disjunction\\
+$\implies$ & Implication\\
+$\iff$   & Equivalence\\
+$\forall$ & Universal quantification\\
+$\exists$ & Existential quantification\\
+$\code{let}\ x_1=t_1,\ldots, x_n=t_n\ \ldots$ & Local variable declaration\\
+$\code{if}\ldots\code{then}\ldots\code{else}\ldots$ & Conditionals\\
+\hline
+\end{tabular}
+\end{center}
+
+Quantifiers are ``greedy'', having a scope which binds everything to their right.
+
+\section{Proof Assistant}\label{sec:LCF}
+Our chosen proof assistant is HOL~Light~\cite{HOLLight}, though throughout this thesis we shall mention earlier work~\cite{ScottMScThesis} that was carried through in Isabelle/HOL~\cite{Isabelle}. Both systems use the exact same object logic, and we developed them in such a way that it is reasonably straightforward to port our formalisations between them.
+
+\deleted{We should say a brief word on notation. To make the thesis more accessible, we try, wherever possible, to use conventional mathematical notation rather than HOL~Light syntax. Those wishing to see the syntactic translations we assume in our formalisation should consult Appendix~\ref{app:Translations}.}
+
+\subsection{Edinburgh LCF}
+HOL~Light is an interactive proof assistant in the tradition of Edinburgh LCF~\cite{LCF}, implemented in the Ocaml programming language. The roots of both go back to the original statically typed functional language ML.
+
+If natural languages serve as the metalanguages for defining object logics for human proof checkers, then ML serves as the metalanguage for defining \replaced{the object logic of HOL~Light}{the object logics of \emph{computerised} proof checkers}. Accordingly, when we define the syntax of an object logic, ML understands ``inductive data type'' where we understand ``inductive definition'', and ML understands ``function from sequents to sequent'' in place of ``inference rule''.
+
+The use of a programming language can actually clarify a lot. Consider the definition of the $\code{ABS}$ inference rule in Figure~\ref{fig:HOLInferenceRules}, where we say ``for any $x$'', a qualification which is absent from the definition of say, $\code{BETA}$. The ML code makes the difference here very clear: the function implementing the inference rule $\code{ABS}$ takes a metavariable $x$ as an additional argument, while that for $\code{BETA}$ does not.
+
+While programming languages clarify, they might also be viewed suspiciously. We want our formal verifications to inspire a virtually indefeasible level of confidence, and as of writing, computers are justifiably untrustworthy. ML and HOL~Light are notable by being part of a tradition which puts safety first. We define the data-type of sequents as \emph{abstract}, thereby hiding the implementation and exposing only the term data-type and inference rules.
+
+ML's strong type system enforces this boundary between a \emph{trusted kernel} and the outside world. Because of this enforcement, it is impossible to construct a HOL sequent through any method other than correct derivation from inference rules, assuming we trust the implementation of the kernel.
+
+In order to acquire trust in HOL~Light's implementation, one should carefully peruse its modest 672 line kernel. Many of the implementation details in this kernel are trivial. The only non-trivial parts which recommend careful inspection are the 160 or so lines of code needed to deal with free variable substitutions, instantiations, and testing whether two terms are equivalent up to a consistent renaming of bound variables (formally, testing for ``$\alpha$-equivalence''). That the code implementing these behaviours is less trivial than the rest of the kernel implementation is reflected in the fact that, when defining a correct logical calculus in ordinary mathematics, one usually has to pay careful attention to the behaviour of free-substitutability. \added{In fact, two bugs were identified and fixed in this part of the HOL~Light code circa 2003.}
+
+\subsection{Additional Functionality}
+HOL~Light extends the simple theory of types by allowing us to add new term and type definitions, and new axioms~(see \ref{sec:ClassicalAxioms}). Definitions cannot contain free variables on their right hand sides, nor can they be recursive. Thus, it is trivial that they lead only to conservative extensions of the theory. We could potentially substitute the right hand sides of all our definitions throughout a theory without affecting the validity of the derivations.
+
+HOL~Light also extends the simple theory of types by allowing one to define an abstract type of values in bijection with a non-empty subset of an existing type. This feature is particularly useful for enforcing that derived definitions are used in a way which ``respects'' the abstraction.
+
+For instance, in geometry, we might wish to define a ``ray'' as a particular kind of set of points, and we may wish to define an ``endpoint'' of a ray as a set of points with additional constraints (see Chapter~\ref{chapter:HalfPlanes}). We will want to use expressions such as ``endpoint of a ray'', but we probably wish to declare expressions such as ``endpoint of a line'' or ``endpoint of a plane'' as meaningless. These expressions break the abstraction of ``ray'', but the abstraction can be reinforced by using a derived abstract type. As an added benefit, because HOL Light types can always be mechanically reconstructed from expressions, abstract types can keep our formal statements short by pushing the constraints on what defines a ray into an automatically inferred type.
+
+\section{Classical Logic}\label{sec:ClassicalAxioms}
+HOL~Light as described so far is non-classical. The only primitive values we have considered are those of type $\code{bool}$, and contrary to classical logic, the calculus does not require that $\code{bool}$ has only two inhabitants.
+
+\subsection{Choice and Extensionality}
+To make HOL classical, a new term is introduced, $\epsilon$, and two new axioms:\footnote{Here, $\epsilon$ acts as a binder, like $\lambda$, $\forall$ and $\exists$, but this is syntax sugar. In reality, $\epsilon$ is a term of type $(\alpha \rightarrow \code{bool}) \rightarrow \alpha$.}
+\begin{displaymath}
+\forall P\ x.\ P\ x \implies P\ (\epsilon x. P\ x) \qquad \forall t. (\lambda x. t\ x) = t
+\end{displaymath}
+
+We are to understand $\epsilon x. P$ as ``the arbitrarily chosen $x$ satisfying $P$''. This construct is used both as a definitional tool, but it is also equivalent, with the other classical axioms, to the full axiom of choice. It should be contrasted with the weaker $\iota$ binder, which yields expressions $\iota x. P$ to be read as ``the uniquely specified $x$ satisfying $P$.'' The distinction is discussed further in \S\ref{sec:UseOfIota}.
+
+The axiom governing this notion clarifies how simple type theory handles undefined or non-referring terms. Consider what happens when $P$ is unsatisfiable. In this case, $\epsilon x. P\ x$ is still in some sense, well-defined, since from the perspective of the logic's model theory, all terms must refer. But from a proof-theoretic point of view, since the condition on the axiom can never be discharged for this particular $P$, nothing interesting can ever be shown true of $\epsilon x. P\ x$.
+
+More accurately, the only statements we can derive of $\epsilon x. P\ x$ are logical truths. If we take Wittgenstein at his word in the \emph{Tractacus}, we might say that when all we can derive are logical truths, we have nothing. It is in this sense that we can formalise the notion of undefined terms and the undefined values of partial functions in HOL. Each one is just $\epsilon x. \bot$.
+
+The other axiom is the axiom of extensionality, or the $\eta$-reduction axiom. With it, one can prove that any two lambda expressions $\lambda x. f\ x$ and $\lambda x. g\ x$ are equal precisely when we can prove $f\ x = g\ x$ for arbitrary $x$.
+
+It turns out that with these two axioms we can derive the law of excluded-middle~\cite{AxiomChoiceExcludedMiddle}, by exploiting the fact that $\epsilon$ terms with extensionally equivalent bodies must now pick out the same value. In particular, we consider $u = \epsilon x. x \vee P$ and $v = \epsilon x. \neg x \vee P$. The bodies of these epsilon terms can be satisfied (take $\top$ and $\bot$ respectively), and so by the axiom of choice:
+\begin{equation}
+  (u \vee P) \wedge (\neg v \vee P) \iff (u \wedge \neg v) \vee P \label{eq:AxiomChoiceDerive}
+\end{equation}
+
+Now on the hypothesis of $P$, the axiom of extensionality tells us that the $\epsilon$ terms must pick out the same object. That is, $P \implies u = v \implies \neg (u \wedge \neg v)$, or alternatively, $u \wedge \neg v \implies \neg P$. We then conclude from \eqref{eq:AxiomChoiceDerive} that $\neg P \vee P$.\footnote{The propositional inferences here are all intuitionistically valid.}
+
+\subsection{Axiom of Infinity}\label{sec:InfinityDescription}
+The final classical axiom in HOL~Light is the axiom of infinity. We will discuss this axiom in some detail in Chapter~\ref{chapter:LinearOrder}. For now, we will only say in advance that it is provably redundant when we have Hilbert's first two groups of axioms. We have therefore deleted it from our verification. This is not intended to be a serious philosophical statement, but we might draw a parallel here between our \emph{post-hoc} deletion of the axiom of infinity from higher-order logic with Hilbert's later expressed scepticism on the security of infinite sets~\cite{OnInfinite}: \added{``[the infinite] neither exists in nature nor provides a legitimate basis for rational thought.''}
+
+\section{Verification Tools}
+Outside of the relatively tiny HOL~Light kernel is a huge collection of verification tools written in ML. We can think of these tools as programs which generate derivations, whose validity is guaranteed by the enforced boundary between the HOL~Light kernel and the outside world. In many cases, we do not care how these tools work, or whether they even contain bugs: if they generate the sequent we want, encapsulation of the kernel tells us that their generated derivation was nevertheless correct.
+
+\subsection{Tactics}
+HOL~Light implements the LCF tactic system~\cite{Tactics}, in which we understand the process of verifying a theorem $T$ as the solving of a goal by breaking it into subgoals. We will need to briefly discuss the implementation of tactics for \S\ref{sec:DeclarativeProof}, since we make use of some of the lower level details.
+
+As far as tactics go, a \emph{goal} is a pair consisting of a term $T$ together with \emph{hypotheses}. There is some confusing overloading here, since a sequent is similarly a pair, where we have a conclusion together with \emph{assumptions}. In our experience, it is essential not to confuse the two, since in HOL~Light, the hypotheses are actually \emph{sequents}!
+
+The purpose of a tactic is to input a goal and to produce subgoals. These are then collected onto a goal stack, which acts like an agenda of problems that the user must solve. The user's aim is to apply tactics until the agenda is empty, after which, a fully machine verified theorem can be recovered.
+
+Many tactics correspond to inference rules but applied in reverse. For instance, there is a tactic $\code{DISCH\_TAC}$ which can be applied when one's goal is an implication $P \implies Q$. This deletes the current subgoal and replaces it with the goal $Q$ but now under the \emph{hypothesis} $P$.
+
+\subsection{Fully Automated Procedures}
+Some tactics in HOL~Light are decision procedures or otherwise fully automated verification tools. Generally, these are used to solve a goal \emph{outright}, without generating any new subgoals. HOL~Light has decision procedures for checking tautologies, a decision procedure for linear arithmetic, and for computing ideal elements via Gr\"{o}bner bases~\cite{BuchbergerGrobner}.
+
+More recently, the tools have expanded outside of ML. Eekelen et al~\cite{HOLLightBoolean} have implemented HOL~Light code to take verification certificates from external ``off-the-shelf'' checkers for universally quantified propositional logic. These are formally verified by being converted to derivations of HOL~Light sequents (the verification is fully expansive~\cite{FullyExpansive}). Similar progress has been made in HOL4~\cite{HOLBoolean} and Isabelle~\cite{IsabelleSledgehammer}.
+
+\section{Declarative Proof}\label{sec:DeclarativeProof}
+Proof assistants accept formal texts in broadly two types: declarative and procedural. The difference is analogous to that between declarative and procedural programming languages. In the procedural approach, the user employs tactics to compose automated tools in order to verify formalised theorems.
+
+Different tactic languages have their own styles and idioms, but they usually support both \emph{forward} reasoning from the premises of a formalised theorem to its conclusion, and \emph{backward} reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural \emph{transformations} rather than logical formulas, which are sometimes entirely absent from procedural verifications.
+
+Declarative proof assistants on the other hand, beginning with \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The verifications show the flow of argument as trees of intermediate results, branching at subproofs, with each intermediate result stated with its dependencies. The flow of the script always moves \emph{forward} from assumptions to goal, with the focus on \emph{what} the logical relations between formulas are, rather than \emph{how} the proof state is transformed to represent such relations. This latter detail is left to the internal operation of the proof assistant, which tries to use automated verification tools to bridge the inferential gaps.
+
+Declarative style verification seemed natural to us when it came to formalising synthetic geometry, and we felt that so long as we were striving to analyse Hilbert's prose arguments, it made sense to try to produce verifications that matched the prose at least structurally. We would also suggest that procedural verifications, relying so often on contextual rewriting, do not work particularly well in the domain of synthetic geometry. This is a difficult claim to back up, because it might be that we could have fixed the ``problem'' with better representations. For now, we just note that the majority of our formalised lemmas and theorems are non-equational formulas with large numbers of hypotheses. These are difficult to apply as simplification rules.
+
+\subsection{Mizar~Light}\label{sec:MizarLight}
+Mizar~Light, developed by Wiedijk~\cite{MizarLight}, is a declarative style language embedded in HOL~Light and inspired by the primitives of the declarative proof assistant, Mizar~\cite{MizarMathematicalVernacular}. We give an overview of its primitives in Figure~\ref{fig:MizarLight}. With the exception of \code{using}, we have emphasised a declarative semantics: rather than describing \emph{how} each primitive affects the state of the prover, we describe \emph{what} each primitive asserts at a given point in a script.
+
+\begin{figure}
+  \centering
+  \begin{tabular}{|l|l|}
+    \hline
+    Primitive & Meaning \\
+    \hline\hline
+    \code{theorem} $term$ & Begins a proof of $term$. \\
+    \hline
+    \multirow{2}{*}\code{proof} $proof$ & Asserts $proof$ as a justification\\&for the current step. \\
+    \hline
+    \multirow{2}{*}\code{assume} $term$ & Asserts $term$ as a justified \\&assumption at this point. \\
+    \hline
+    \multirow{2}{*}\code{so} & Refers to the previous step as\\& justifying the current step.\\
+    \hline
+    \code{have} $term$ & Asserts $term$ as derivable at this point. \\
+    \hline
+    \multirow{2}{*}\code{thus} $term$ & Asserts $term$ as derivable at which\\&point the (sub)theorem is justified. \\
+    \hline
+    \code{hence} $term$ & As \code{so thus} $term$ \\
+    \hline
+    \multirow{2}{*}\code{take} $var$ & Identifies $var$ as the witness for the \\&(sub)theorem. \\
+    \hline
+    \multirow{2}{*}\code{fix} $vars$ & Establishes $vars$ as fixed but \\&arbitrary variables.\\
+    \hline
+    \multirow{2}{*}\code{consider} $vars$ \code{st} $term$ & Introduces $vars$ witnessing \\& $term$. \\
+    \hline
+    \multirow{2}{*}\code{from} $steps$ & Refers to proof steps $steps$ as \\&justifications for the current step.\\
+    \hline
+    \multirow{3}{*}\code{by} $thms$ & Refers to previously established theorems \\&$thms$ as justifications for the current\\&step. \\
+    \hline
+    \multirow{2}{*}\code{using} $tactics$ & Augments the justification of this step\\&with $tactics$.\\
+    \hline
+    \multirow{2}{*}\code{per cases} $cases$ & Begins a case-split into $cases$ with their\\&proofs.\\
+    \hline
+    \multirow{2}{*}\code{suppose} $term$ & Syntactic sugar to identify the\\&supposition of each $case$. \\
+    \hline
+    \multirow{3}{*}\code{otherwise} $proof$ & Indicates that the (sub)theorem $thm$ can\\&be established by $proof$, which derives\\&a contradiction from $\neg thm$. \\
+    \hline
+    \code{set} $bindings$ & Introduces local variable bindings.\\
+    \hline
+    \multirow{2}{*}\code{qed} & Asserts that the (sub)theorem is justified\\&at this point.\\
+    \hline
+  \end{tabular}\\
+  \caption{An overview of Mizar Light}
+  \label{fig:MizarLight}
+\end{figure}
+
+As noticed by Harrison~\cite{MizarHOL}, the operational semantics of these verification steps can be given in terms of tactics and simplified goals. The tree of goal-stacks becomes the tree of subproofs. The hypotheses of each goal become the intermediate lemmas one has verified during the verification. The various syntactic primitives of the declarative verification language become tactics which drive the verification \emph{forward}. Here, for instance, is a typical line one might read in one of our Mizar~Light verifications:
+\begin{center}
+\code{consider}\ $P$ \code{such that}\ $\neg$\code{on\_line}\ P\ a \code{by}\ \eqref{eq:g12},\eqref{eq:g13a}.
+\end{center}
+This $\code{consider}$ step translates to a tactic which introduces the subgoal\linebreak \code{$\exists$P. $\neg$on\_line P a}. The goal is solved outright using the step's \emph{justification}. By default, steps are justified by HOL~Light's generic \code{MESON} tactic~\cite{HarrisonMESON}, but additional tactics can be composed with the \code{using} keyword. The justification tactic usually needs some help to solve its goals, and in declarative verification, we name justifying theorems using the keyword \code{by}. In this example, we have added some theorems (\ref{eq:g12} and \ref{eq:g13a}) which are passed directly to \code{MESON}.
+
+These Mizar~Light commands are ordinary ML functions, and the Mizar~Light language is really just a combinator language~\cite{CombinatorLanguages}. This has been useful to us, since it is almost trivial to modify and extend Mizar~Light by just writing new combinators.
+
+That combinators make it easy to extend a system is a feature we find particularly attractive. Tactics themselves are implemented as combinators, which makes it easy for users to write their own (we describe a few of ours in Chapters~\ref{chapter:Automation} and~\ref{chapter:LinearOrder}). Another feature of tactics is that they compose algebraically. There are tensoring operators, sums, identities and a zero. In trying to keep to the spirit of HOL~Light, we have designed our own automation, described in Chapter~\ref{chapter:Automation}, in terms of an algebraic combinator language.
+
+\subsection{Extending Mizar~Light for Interactivity}\label{sec:MizarLightExtend}
+Wiedijk's basic combinators are based on the original Mizar system, a batch prover, and in this spirit,  Mizar~Light verifications are written in their entirety and then evaluated in one. We find this undesirable, firstly, because the error reporting is not rich enough to show where errors occur in the case of a failed verification. Secondly, we have chosen to implement our automation (described in Chapter~\ref{chapter:Automation}) so that it runs concurrently as a user writes a verification. Here, the tool works best when it can exploit the user's idle time when working \emph{interactively} as opposed to \emph{batch} mode.
+
+The problem here lies with case-splitting. Here are the original combinators at work in an extract of one of Wiedijk's example verifications (the details of which are not important):
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \code{...}
+
+  \code{have "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+
+  \code{proof}
+
+  \code{\enspace [fix ["p1:Point"; "p2:Point"];}
+
+  \code{\quad per cases}
+
+  \code{\quad\enspace[[suppose "p1 = p2";}
+
+  \code{\qquad\enspace qed from [0] by [LEMMA1]];}
+
+  \code{\qquad [suppose "$\neg$(p1 = p2)";}
+
+  \code{\qquad\enspace qed from [1]]]];}
+
+  \code{...}
+\end{minipage}
+\vspace{0.5cm}
+
+Notice firstly that this is a subproof within a larger verification. Notice secondly that it contains two nested subproofs, case-splitting on the propositions \code{p1 = p2} and\linebreak \code{$\neg$(p1 = p2)}. The steps of each subproof are collected in lists, which makes for a neatly structured verification, where the proof tree is reflected by ML data-structures. However, the steps of an interactive verification are supposed to be applied \emph{linearly}, one-by-one, traversing the implicit proof tree. Here is what we prefer to write at the top-level (\code{>} marks the ML prompt):
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \code{> have "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+
+  \code{> proof}
+
+  \code{> fix ["p1:Point"; "p2:Point"]}
+
+  \code{> per cases}
+
+  \code{> suppose "p1 = p2"}
+
+  \code{> qed from [0] by [LEMMA1]}
+
+  \code{> suppose "$\neg$(p1 = p2)"}
+
+  \code{> qed from [1]}
+\end{minipage}
+\vspace{0.5cm}
+
+We could probably achieve this linearisation by rewriting Wiedijk's proof system in a continuation-passing style. However, the development of HOL~Light has emphasised backward-compatibility, and so wherever possible, we wish to build on existing implementation.
+
+\subsubsection{Interactive Case-splits}
+Case splits are ultimately justified by proving a disjunction of all considered cases. However, in the Mizar-style verification and as is common in ordinary mathematical proof, the particular disjunction is never stated explicitly. Consider again the extract of Mizar Light code:
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \code{\quad per cases}
+
+  \code{\quad\enspace[[suppose "p1 = p2";}
+
+  \code{\qquad\enspace qed from [0] by [LEMMA1]];}
+
+  \code{\qquad [suppose "$\neg$(p1 = p2)";}
+
+  \code{\qquad\enspace qed from [1]]]];}
+\end{minipage}
+\vspace{0.5cm}
+
+{\samepage Here, there are two cases being considered \code{p1 = p2} and \code{$\neg$(p1 = p2)}. The disjunction which justifies them as exhaustive
+\begin{center}\code{p1 = p2 $\vee$ $\neg$(p1 = p2)}\end{center}}
+
+\noindent does not appear in the verification. Instead, it is assembled by the \code{per} combinator from the first element of each subproof. The step then folds a case-splitting tactic over the list of cases, incorporating the tactics generated by their respective subproofs.
+
+The important point here is that the implicit disjunction must be determined before any of the subproof tactics are applied. This is possible, because \code{per cases} takes the full list of cases, from which the disjunction can be assembled. But this strategy will not work if we are to linearise the subproofs and apply each step interactively, since the full disjunction will not be known until all cases are interactively solved.
+
+Harrison's original Mizar mode for HOL Light had better support for interactive case-splitting~\cite{MizarHOL}. In his system, the disjunction is assembled at the end of the full verification, when all goals have been solved and a forward verification reconstituted from the tactic justification. The drawback is that the user is only made aware of an unsuccessful case-split at the very end of the verification.
+
+To overcome this drawback, we have implemented two functions \code{case} and \code{end}. The \code{case} function is used to introduce a new case term $\phi$. It then generates two subgoals, the first with $\phi$ as hypothesis, and the second with $\neg\phi$ as hypothesis. The \code{case} step, therefore, has performed a case-split on $\phi\vee\neg\phi$. The user must first prove the goal on the hypothesis of $\phi$. Once the goal is solved, the one remaining goal will have $\neg\phi$ as its hypothesis.
+
+The user now proceeds by introducing the \emph{next} case, using the \code{case} function again with a new term, say $\psi$. Two subgoals are again generated, one with $\psi$ and the other with $\neg\psi$ as hypothesis.
+
+By the time the user has considered and proven all cases, the one remaining subgoal will have the negations of every considered case in its hypotheses. If the cases are exhaustive, these negations will entail a contradiction\footnote{We assume we are only interested in \emph{classical} proofs. Otherwise, this does not necessarily follow.}. This is where the \code{end} step is used. It will automatically take all the negated cases, identifying them by a case-label \code{Case} in the goal-stack, and use them as a justification for $\bot$.
+
+Suppose, for example, that we have a formal theorem $\phi \implies P \vee Q \vee R$ and suppose that each of $P$, $Q$ and $R$ can solve a goal $G$ using the implicit automation built into Mizar~Light. Then we can write the verification:
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \code{> theorem "$G$"}
+
+  \code{> case "$P$" }
+
+  \code{>\quad qed}
+
+  \code{> case "$Q$"}
+
+  \code{>\quad qed}
+
+  \code{> case "$R$"}
+
+  \code{> end by $\phi$}
+\end{minipage}
+\vspace{0.5cm}
+
+The resulting tree of goal-stacks is depicted Figure~\ref{fig:CaseProofTree}.
+
+\begin{figure}
+\begin{center}
+\includegraphics{background/ProofTree}
+\end{center}
+\caption{Case-splitting Proof Tree}
+\label{fig:CaseProofTree}
+\end{figure}
+
+The final \code{end} step is justified since
+\begin{displaymath}
+P \vee Q \vee R, \neg P, \neg Q, \neg R \vdash \bot
+\end{displaymath}
+
+This approach does not have the drawback of Harrison's solution. Whenever the case splitting is not exhaustive, the \code{end} step will fail at the point at which it is evaluated, rather than at the very end of the verification when the final justification is assembled.
+
+Returning to our example verification, our functions \code{case} and \code{end} allow us to write
+
+\vspace{0.5cm}
+\begin{minipage}{\linewidth}
+  \footnotesize
+  \code{> lemma "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+
+  \code{>\quad fix ["p1:Point"; "p2:Point"]}
+
+  \code{>\quad case "p1 = p2" }
+
+  \code{>\qquad qed from [0] by [LEMMA\_1] }
+
+  \code{>\quad case "$\neg$(p1 = p2)" }
+
+  \code{>\qquad qed from [1]}
+
+  \code{>\quad end}
+\end{minipage}
+\vspace{0.5cm}
+
+\subsection{Concluding Remarks}
+Allowing interactive case-splitting worked well in practice. We would write our verifications interactively, and when completed, package them up as batch verifications. The translation between flattened verification and the normal batch \code{per cases} combinator was always straightforward.
+
+Further modifications to Mizar~Light are described in Chapter~\ref{chapter:Automation}.
+
+\section{Conventions}
+\added{As with any thesis of this sort, there are certain ambiguities which arise from overloading and which ought to be clarified. We have decided to adopt the following terminology. The term ``theorem'' shall be used specifically to refer to the natural language statements of mathematical results given by other authors. When we want specifically to refer to theorems given by Hilbert in the \emph{Grundlagen der Geometrie}, we shall use the uppercase ``THEOREM''. For our own theorems, we shall reserve the term ``proposition''. Finally, the term ``proof'' shall be used to refer to natural language arguments which serve to justify these theorems and propositions.
+
+The adjective ``formal'', as in ``formal theorem'', ``formal proposition'' and ``formal proof'', shall be used to indicate the translation of the natural language statements into the symbolic language of higher-order logic. The word ``verification'' will then be reserved for the actual proof scripts which have been machine-checked by the HOL~Light theorem prover.
+
+Throughout the thesis, we shall give sample verifications. These depict actual Ocaml code, but for readability, we elide various pieces of syntax such as brackets and semi-colons. We also introduce our own syntactic sugar, shown in the following table.}
+
+\begin{center}\label{sec:Translations}
+  \begin{tabular}{|c|c|}
+    \hline
+    Notation   & Translation \\
+    \hline
+    $\neg$     & \code{\tt\char`~} \\
+    $\wedge$   & \code{/{\tt\char`\\}} \\
+    $\vee$     & \code{{\tt\char`\\}/} \\
+    $\implies$ & \code{==>} \\
+    $\iff$     & \code{<=>} \\
+    $\forall$  & \code{!} \\
+    $\exists$  & \code{?} \\
+    $\lambda x.$  & \code{\tt\char`\\ x.} \\
+  $P \neq Q$ & \code{\tt\char`~(P=Q)}\\
+  $\alpha$, $\beta$, $\gamma$ & \code{'a}, \code{'b}, \code{'c}\\
+  $x,y \in A,B$ & \code{x IN A /{\tt\char`\\} y IN A /{\tt\char`\\} x IN B /{\tt\char`\\} y IN A}\\
+  \hline
+  \end{tabular}
+\end{center}
+
+\added{The Mizar~Light language uses expressions of the form $\code{at } m$ to label an intermediate result with the number $m$. This number is then used by the combinator $\code{from}$ to justify later steps by cross-referencing. 
+
+We have adapted the $\code{at}$ Mizar~Light slightly. It now takes a list, so that an expression such as $\code{at [}m\code{, } n\code{, } p\code{]}$ can be used to label the individual conjuncts (in this case, three of them) of an intermediate step, each of which can be cross-referenced separately. In the sample verifications in this thesis, we shall elide the combinator $\code{at}$ and instead set $m$, $n$ and $p$ as right-justified labels in the verification. 
+
+Many of our ideas evolved during the verification development, and, as of writing, there are legacy naming conventions which need to be refactored and brought into line with the present thesis. For now, we can only claim that the verifications reproduced in the thesis are alpha-equivalent to the originals.}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "../thesis"
+%%% End:

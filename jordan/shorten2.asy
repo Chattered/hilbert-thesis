@@ -19,10 +19,21 @@ LPt[] ps = {LPt((1,1),"$P$",NW),
 
 pair p = midpoint(ps[0].pt--ps[6].pt);
 dot(p);
+dot("$X$",p,SW);
+dot("$Y$",p-(0.5,0),W);
+dot("$Z$",p+(0.5,0),E);
+draw(p--p+(0.5,0),p=dashed);
+draw(p--p+(-0.5,0),p=dashed);
 
 draw((0,-0.5)--(0.5,0)--(1.5,0)--(2,0.5)--(2,0.8)--(2.5,0.3));
-dot("$A$",(0,-0.5),SW);
-dot("$B$",(2.5,0.3),3*NE);
+dot("$B$",(0,-0.5),SW);
+dot("$A$",(2.5,0.3),3*NE);
+
+dot("$B'$",midpoint((0.8,0)--(1.5,0)),NE);
+draw(midpoint((0.8,0)--(1.5,0))--p+(0.5,0),p=dashed);
+
+dot("$R$",extension((1,1),(1,-2),(0.5,0),(1.5,0)),SW);
+dot("$S$",extension((2.5,0),(1.5,0.75),(1.5,0),(2,0.5)),S);
 
 drawPoly(pen=dashed,ps[0],ps[6]);
 dotLPt(...ps[0:12]);

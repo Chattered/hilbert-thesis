@@ -113,11 +113,17 @@
     CLOSED: [2013-02-03 Sun 17:10]
 *** DONE ...So we cannot ray-cast in the direction of a parallel line
     CLOSED: [2013-02-03 Sun 17:10]
-*** TODO More than aesthetic reasons: interesting proofs, it explains our initial strategy, and we will be referring back to it, and ideas in this proof became incorporated into the main verification.
-*** TODO 8.4.1: Explain that theorem is only easy now with hindsight.
-*** TODO Delete paragraph about skipping or strengthen hindsights.
+*** DONE More than aesthetic reasons: interesting proofs, it explains our initial strategy, and we will be referring back to it, and ideas in this proof became incorporated into the main verification.
+    CLOSED: [2013-02-04 Mon 19:52]
+*** DONE 8.4.1: Explain that theorem is only easy now with hindsight.
+    CLOSED: [2013-02-04 Mon 19:52]
+*** DONE Delete paragraph about skipping or strengthen hindsights.
+    CLOSED: [2013-02-04 Mon 19:52]
 *** TODO A diagram for IH4. Mention we use contraposition of IH5.
-*** TODO Ambiguous between inductive hypothesis and proof of step case of inductive hypothesis. Use dashes for step cases.
-*** TODO /Give/ contraposition of IH5
+*** DONE Ambiguous between inductive hypothesis and proof of step case of inductive hypothesis. Use dashes for step cases.
+    CLOSED: [2013-02-04 Mon 19:52]
+*** DONE /Give/ contraposition of IH5
+    CLOSED: [2013-02-04 Mon 19:53]
+** TODO Jordan formalisation
 *** TODO Change path_connected to rel_path_connected
-*** TODO Conclude chapter 9
+*** TODO Conclude

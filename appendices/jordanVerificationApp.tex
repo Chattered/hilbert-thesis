@@ -17,7 +17,12 @@ Function specifications marked with $\dag$ have been contributed.
 \begin{align*}
   &\code{butlast}\,:\,[\alpha] \rightarrow [\alpha]\\
   &\code{butlast}\ [] = []\\
-  &\code{butlast}\ (\cons{x}{xs}) = \code{if}\ xs=[]\ \code{then}\ [] \code{else}\ \cons{x}{(\code{butlast}\ xs)}
+  &\code{butlast}\ (\cons{x}{xs}) = \code{if}\ xs=[]\ \code{then}\ []\ \code{else}\ \cons{x}{(\code{butlast}\ xs)}
+\end{align*}
+\begin{align*}
+  &\code{el}\,:\,\code{int} \rightarrow [\alpha] \rightarrow \alpha\\
+  &\code{el}\ 0\ xs = \code{head}\ xs\\
+  &\code{el}\ (\code{suc}\ n)\ xs = \code{el}\ n\ (\code{tail}\ xs)
 \end{align*}
 \begin{align*}
   & \code{mem}\,:\,\alpha \rightarrow [\alpha] \rightarrow \code{bool} &\qquad\qquad
@@ -46,18 +51,18 @@ Function specifications marked with $\dag$ have been contributed.
 
 \section{Polygon Definitions}
 \begin{align*}
-  &\code{on\_polyseg}\,:\,[\code{point}] \rightarrow \code{point} \rightarrow \code{bool}\\
-  &\code{on\_polyseg}{Ps}{P} \iff\\
+  &\code{on\_polypath}\,:\,[\code{point}] \rightarrow \code{point} \rightarrow \code{bool}\\
+  &\code{on\_polypath}{Ps}{P} \iff\\
   &\quad\code{mem}\ P\ Ps\vee\,\exists x\ y.\; \code{mem}\ (x,y)\ (\code{adjacent}\ Ps) \wedge \between{x}{P}{y}.
 \end{align*}
 
 \begin{align*}
-  &\code{seg\_connected}\,:\,\code{plane}\rightarrow(\code{point} \rightarrow \code{bool}) \rightarrow    \code{point} \rightarrow \code{point}\\
-  &\code{seg\_connected}\ \alpha\ figure\ P\ Q \iff\\
+  &\code{poly\_path\_connected}\,:\,\code{plane}\rightarrow(\code{point} \rightarrow \code{bool}) \rightarrow \code{point} \rightarrow \code{point} \rightarrow \code{bool}\\
+  &\code{poly\_path\_connected}\ \alpha\ figure\ P\ Q \iff\\
   &\quad\exists path.\; path \neq []\\
   &\qquad\wedge\,(\forall R.\ \code{mem}\ R\ path \implies \onplane{R}{\alpha})\\
   &\qquad\wedge\,\code{head}\ path = P \wedge \code{last}\ path = Q\\
-  &\qquad\wedge\,\code{disjoint}\ (\code{on\_polyseg}\ path)\ figure.
+  &\qquad\wedge\,\code{disjoint}\ (\code{on\_polypath}\ path)\ figure.
 \end{align*}
 
 \begin{align*}
@@ -160,8 +165,6 @@ Function specifications marked with $\dag$ have been contributed.
 %   \code{disjoint}\ s\ t \iff& s \cap t = \emptyset
 % \end{align*}
 
-
 %%% Local Variables: 
-%%% mode: latex
-%%% TeX-master: "thesis"
+%%% TeX-master: "../thesis"
 %%% End: 

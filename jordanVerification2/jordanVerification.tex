@@ -12,7 +12,7 @@ The basic intuition behind the proof is similar to the ones presented by Veblen~
 
 We are required to show that, given three points in the plane and not on a polygon, at least two of them are connected by a polygonal path. Let us reinterpret this and understand the three points as three players trying to navigate a polygonal maze. Each edge of the polygon can then be thought of as a maze \emph{wall}.
 
-Our basic goal is to get the three players ``next to'' the same wall. Then we just need to find a path between whichever of the two players are on the same side of that wall. We will find that the difficulty here lies in getting the players through potentially very tight corridors, and around difficult corners. We must show how to obtain paths for the players without recourse to notions such as comparable directions, parallel lines or distances. This will rule out common approaches to the theorem, such as the one given by Tverberg~\cite{TverbergJordan}. In Tverberg's proof, we just need to consider a sufficiently small region around the walls of the maze (an ``offset curve'' ), which we know to be path-connected. Without notions of distance, this description is out of scope of Hilbert's ordered geometry.
+Our basic goal is to get the three players ``next to'' the same wall. Then we just need to find a path between whichever of the two players are on the same side of that wall. We will find that the difficulty here lies in getting the players through potentially very tight corridors, and around difficult corners. We must show how to obtain paths for the players without recourse to notions such as comparable directions, parallel lines or distances. This will rule out common approaches to the theorem, such as the one given by Tverberg~\cite{TverbergJordan}. In Tverberg's proof, we just need to consider a sufficiently small region around the walls of the maze (an ``offset curve'' ), which we know to be polygonal path-connected. Without notions of distance, this description is out of scope of Hilbert's ordered geometry.
 
 One way to formulate the idea that the players are ``next to'' the same wall of the maze is to assert that all three have line-of-sight to that wall. This metaphor does not appear explicitly in Veblen or Feigl's proof, but it can be read into both, and we found it extremely helpful in providing an intuitive grasp of the formalisation.
 
@@ -373,7 +373,7 @@ We would like to draw special attention to the hypotheses in the verified theore
     &\wedge \neg(\exists Z. \between{X}{Z}{X'} \wedge \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z)\\
     &\wedge \neg(\exists Z. \between{P_1}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Z)\\
     &\wedge \neg(\exists Z. \between{P_2}{Z}{P_3} \wedge \code{on\_polypath}\ (\cons{P_3}{Ps})\ Z)\\
-    &\implies \exists Y\; Y'. \code{path\_connected}\ (\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}}))\ X\ Y\\
+    &\implies \exists Y\; Y'. \code{poly\_path\_connected}\ (\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}}))\ X\ Y\\
     &\qquad\wedge \between{P_2}{Y'}{P_3}\wedge \neg\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Y)\\
     &\qquad\wedge \neg\exists Z. \between{Y}{Z}{Y'} \wedge (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z)
   \end{split}
@@ -449,7 +449,7 @@ This puts the wall at the front of the list, as we require to apply Theorem~\ref
 \section{Moving to Any Wall}
 At this stage, we are able to move between any two walls of a polygon. This takes us a significant way towards a verification of this half of the Polygonal Jordan Curve Theorem, and is a significant step towards verifying our alternative sketch proof from Chapter~\ref{chapter:JordanInformal}. 
 
-To formalise it, we say that, in particular, we have shown that, given a point $X$ with line-of-sight to a point $X'$ on some wall, there must be a path-connected point $Y$ which has line-of-sight to a point $Y'$ on the \emph{first} wall. Formally, we verified:
+To formalise it, we say that, in particular, we have shown that, given a point $X$ with line-of-sight to a point $X'$ on some wall, there must be a polygonal path-connected point $Y$ which has line-of-sight to a point $Y'$ on the \emph{first} wall. Formally, we verified:
 \begin{equation}
   % "!'a Ps X P Q hand.
   %  simple_polygon 'a Ps
@@ -464,7 +464,7 @@ To formalise it, we say that, in particular, we have shown that, given a point $
 \vdash    &\code{simple\_polygon}\ Ps \wedge \neg\code{on\_polypath}\ Ps\ X\\
     &\wedge \code{mem}\ (P,Q)\ (\code{adjacent}\ Ps) \wedge \between{P}{X'}{Q}\\
     &\neg(\exists Z. \between{X}{Z}{X'} \wedge \code{on\_polypath}\ Ps\ Z)\\
-    &\qquad\implies \exists Y\; Y'.\; \code{path\_connected}\ (\code{on\_polypath}\ Ps)\ X\ Y\\
+    &\qquad\implies \exists Y\; Y'.\; \code{poly\_path\_connected}\ (\code{on\_polypath}\ Ps)\ X\ Y\\
     &\qquad\qquad\qquad\wedge \between{(\code{head}\ Ps)}{Y'}{(\code{head}\ (\code{tail}\ Ps))}\wedge\neg\code{on\_polypath}\ Ps\ Y\\
     &\qquad\qquad\qquad\wedge \neg\exists Z. \between{Y}{Z}{Y'} \wedge \code{on\_polypath}\ Ps\ Z
   \end{split}
@@ -487,7 +487,7 @@ To conclude this section, we will give some perspective on what is involved in t
 \end{figure}
 
 \section{Final Steps}
-We are almost there. To finish the proof, we will need to show that when two points are on the same side of the same wall, then they are path-connected. We shall deal with this matter in \S\ref{sec:SameSideWallConnected}. First, we shall deal with the neglected matter of how we are able to obtain line-of-sight to a wall in the first place. Both problems will have us reusing our near ubiquitous Theorem~\ref{eq:Squeeze2}.
+We are almost there. To finish the proof, we will need to show that when two points are on the same side of the same wall, then they are polygonal path-connected. We shall deal with this matter in \S\ref{sec:SameSideWallConnected}. First, we shall deal with the neglected matter of how we are able to obtain line-of-sight to a wall in the first place. Both problems will have us reusing our near ubiquitous Theorem~\ref{eq:Squeeze2}.
 
 \subsection{Getting onto the Maze}
 If we take an arbitrary point $X$ in the plane and an arbitrary point $X'$ on a simple polygon, then a simple ray-cast gives us line-of-sight to some other point $X''$ of the maze. If this point $X''$ lies between two other vertices, we have a line-of-sight to a wall. 
@@ -534,7 +534,7 @@ We have formalised the result retaining the without-loss-of-generality assumptio
 We can now put any point on to the maze, and thus we can connect every point in the plane to another point with line-of-sight to any wall. This means that, if we have three points in the plane, we can find three paths which bring them together at the same wall. It is enough now to verify that two of the three points are segment-connected.
 
 \subsection{There are at most Two Regions}\label{sec:SameSideWallConnected}
-Here is where we are: we have three points with line-of-sight to a wall $P_1P_2$ (without loss of generality). We know that two of these points $X$ and $Y$ are on the same side of $P_1P_2$. We will show that these two points can be path-connected.
+Here is where we are: we have three points with line-of-sight to a wall $P_1P_2$ (without loss of generality). We know that two of these points $X$ and $Y$ are on the same side of $P_1P_2$. We will show that these two points can be polygonal path-connected.
 
 First off, we have to consider that $X$ and $Y$ have line-of-sight to \emph{different} points $X'$ and $Y'$. Our diagrams so far in this chapter have given a different impression, but most of the points obtained in our proofs up to now ultimately rely on Axiom~\ref{eq:g22}. This axiom allows us to extend a line-segment, but there are many possible witnesses for its existential conclusion, and we have generally allowed the abstraction to proliferate in our theory, rather than eliminating it with the epsilon-operator. 
 
@@ -575,7 +575,7 @@ The final extract of the verified proof, witnessing the final path and showing t
     &\wedge\neg(\exists Z. \between{P_1}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{Ps})\ Z)\\
     &\wedge \code{on\_line}\ P1\ \code{line\_of\_half\_plane}\ hp) \wedge \code{on\_line}\ P2\ \code{line\_of\_half\_plane}\ hp)\\
     &\wedge \code{on\_half\_plane}\ hp\ X \wedge \code{on\_half\_plane}\ hp\ Y\\
-    &\implies \code{path\_connected}\ (\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{Ps}})\ X\ Y
+    &\implies \code{poly\_path\_connected}\ (\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{Ps}})\ X\ Y
   \end{split}
 \end{equation}
 
@@ -635,7 +635,7 @@ The final extract of the verified proof, witnessing the final path and showing t
 One final remark: in our sketch proof from \S\ref{sec:JordanCurveFirstProof}, we actually assumed we could carry out this argument when establishing IH3 and IH5. Once again, we are making progress towards a verification of our first point-in-polygon proof. It is interesting to realise that, even if the two proofs are conceptually very different, many of the same arguments are needed for both.
 
 \section{Conclusion}
-The proof of the final theorem puts all of the pieces together. We start from three arbitrary points in the plane not on the polygonal segment, have each obtain a line-of-sight to a wall of the maze, and then use polygon rotations and Theorem~\ref{eq:PolygonMove} to find three paths to three points with line-of-sight to the first wall of the maze. We then apply  Theorem~\ref{eq:HalfPlaneCover} which says that two of these points must be on the same side of the first wall, and thus, from Theorem~\ref{eq:SameSideWallConnected}, we know that that these two points are path-connected.
+The proof of the final theorem puts all of the pieces together. We start from three arbitrary points in the plane not on the polygonal segment, have each obtain a line-of-sight to a wall of the maze, and then use polygon rotations and Theorem~\ref{eq:PolygonMove} to find three paths to three points with line-of-sight to the first wall of the maze. We then apply  Theorem~\ref{eq:HalfPlaneCover} which says that two of these points must be on the same side of the first wall, and thus, from Theorem~\ref{eq:SameSideWallConnected}, we know that that these two points are polygonal path-connected.
 
 As with the final theorem in the last chapter, the final theorem here is much more readable than the lemmas considered up to now. The theory so far builds theorems with large numbers of complicated hypotheses, such as those for Theorem~\ref{eq:SameSideWallConnected} (and remember that we have not even bothered to mention all the planar hypotheses needed for every one of these theorems). When developing a theory such as this, where theorems are almost made opaque by their hypotheses, we have to pay particularly close attention to be confident that we are making progress. It was some relief when the development paid off.
 

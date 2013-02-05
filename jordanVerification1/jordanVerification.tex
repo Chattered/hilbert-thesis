@@ -958,7 +958,7 @@ This is to be contrasted with the verification in the next section. There, the a
     &\code{simple\_polygon}\ \alpha\ Ps\\
     &\implies \exists P\ Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
     &\qquad\wedge \neg\code{on\_polypath}\ Ps\ P \wedge \neg\code{on\_polypath}\ Ps\ Q\\
-    &\qquad\wedge \neg\code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q.
+    &\qquad\wedge \neg\code{poly\_path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q.
   \end{split}\tag{\ref{eq:jordanFormal1}}
 \end{equation}
 
@@ -1024,12 +1024,12 @@ This is to be contrasted with the verification in the next section. There, the a
 % \begin{align*}
 %   &\code{simple\_polygon}\ Ps \wedge (\forall P. \code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha) \implies\\
 %   &\qquad(\exists P\ Q.\ \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
-%   &\qquad\quad \implies   \neg\code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q)\\
+%   &\qquad\quad \implies   \neg\code{poly\_path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q)\\
 %   &\qquad\wedge \forall P\ Q\ R.\ \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha \wedge \code{on\_plane}\ R\ \alpha \implies\\
 
-%   &\qquad\qquad \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q\\
-%   &\qquad\qquad \vee \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ R\\
-%   &\qquad\qquad \vee \code{path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ Q\ R
+%   &\qquad\qquad \code{poly\_path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q\\
+%   &\qquad\qquad \vee \code{poly\_path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ R\\
+%   &\qquad\qquad \vee \code{poly\_path\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ Q\ R
 % \end{align*}
 
 % We should once again that half the conditions in this statement are those concerning the plane $\alpha$, showing again the added complexity we get when we cannot assume, as Hilbert did, to be working relative to an ambient plane.
@@ -1089,16 +1089,16 @@ This is to be contrasted with the verification in the next section. There, the a
 
 % \begin{itemize}
 % \item
-% Any two interior points of a triangle are path-connected.
+% Any two interior points of a triangle are polygonal path-connected.
 % \item 
-% A point in the interior of a triangle is \emph{not} path-connected to an exterior point.
+% A point in the interior of a triangle is \emph{not} polygonal path-connected to an exterior point.
 % \item
-% Any two exterior points of a triangle are path-connected.
+% Any two exterior points of a triangle are polygonal path-connected.
 % \end{itemize}
 
 % The first is trivial from the definition of half-planes. By Lemma~\ref{lemma:betOnHalfPlane2}, the segment of two interior points of a triangle lies in all the same half-planes defining the triangle as the interior points themselves, and therefore does not intersect the boundary of the triangle. 
 
-% \section{Interior points are not Path-Connected to Exterior Points}
+% \section{Interior points are not Polygonal Path-Connected to Exterior Points}
 % The second claim is slightly more involved. Suppose we are given an interior point $P$ and an exterior point $Qs$ of a triangle $ABC$ (see Figure~\ref{fig:triSegClosed}, and consider the segment between them. We will first find a point $X$ on this segment which is also on one of the line $AB$, $AC$ or $BC$.
 
 % If $Qs$ lies on one of these lines, we are done. Otherwise $P$ and $Qs$ must lie on opposite sides of one of the lines $AB$, $AC$ and $BC$. Assume without loss of generality that they are on opposite sides of $AC$. Then by the definition of half-planes, there exists a point $X$ on the line $AC$ such that $X$ is between $P$ and $Qs$.
@@ -1114,9 +1114,9 @@ This is to be contrasted with the verification in the next section. There, the a
 % \label{fig:triSegClosed}
 % \end{figure}
 
-% This proof formalises almost exactly, requiring just 48 proof steps. With it, we know that adjacent points in a polygonal path that does not intersect a triangle and which begins with an interior point must also end with an interior point. In other words, interior and exterior points of a triangle are not path-connected. 
+% This proof formalises almost exactly, requiring just 48 proof steps. With it, we know that adjacent points in a polygonal path that does not intersect a triangle and which begins with an interior point must also end with an interior point. In other words, interior and exterior points of a triangle are not polygonal path-connected. 
 
-% \section{Exterior points are Path-Connected}
+% \section{Exterior points are Polygonal Path-Connected}
 
 % \section{The Base Case of Veblen's Proof}
 % One of the main lemmas in proofs of the Polygonal Jordan Curve Theorem states that if the segment $P_iP_{i+1}$ intersects a polygon exactly once at between two of its vertices, then $P$ and $Qs$ must lie on opposite sides of the polygon. Veblen proves this lemma by reducing it to the case of a triangle. We prove the base case here.

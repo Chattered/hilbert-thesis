@@ -124,6 +124,9 @@
     CLOSED: [2013-02-04 Mon 19:52]
 *** DONE /Give/ contraposition of IH5
     CLOSED: [2013-02-04 Mon 19:53]
-** TODO Jordan formalisation
-*** TODO Change path_connected to rel_path_connected
-*** TODO Conclude
+** TODO Jordan formalisation*
+*** TODO Alan suggests referencing when verification of JCT began in HOL Light.
+*** DONE Change path_connected to rel_path_connected
+    CLOSED: [2013-02-07 Thu 19:42]
+*** DONE Conclude
+    CLOSED: [2013-02-07 Thu 19:42]

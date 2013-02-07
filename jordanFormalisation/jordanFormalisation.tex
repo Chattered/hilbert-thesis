@@ -1,16 +1,16 @@
 \chapter{The Formalisation of the Jordan Curve Theorem for Polygons}\label{chapter:JordanFormalisation}
 % In this chapter, we will analyse our HOL~Light~\cite{HOLLight} verification of the Jordan Curve Theorem for Polygons. This theorem appears as Theorem~9 in the 10th edition of Hilbert's \emph{Grundlagen der Geometrie}. The verification might stand on its own: the theorem's formulation does not appeal to earlier definitions or theorems, and of all the proofs we have considered, its verification is the most complicated by an order of magnitude. But the theorem also serves as a useful case-study for the tools that we have developed up to this point: the linear reasoning tactic from Chapter~\ref{chapter:LinearOrder} was used pervasively in verifying the theorem, becoming the crucial work-horse for solving and exploring complex linear ordering problems. We leveraged the theory of Half-Planes from Chapter~\ref{chapter:HalfPlanes} as the basis for key lemmas on two-dimensional ordering. Lastly, the discovery algebra described in Chapter~\ref{chapter:Automation} was needed throughout to verify incidence problems and to identify case-splits and suggest proof strategies based on discovered facts. 
 
-In this chapter, we will introduce our HOL~Light formalisation of the polygonal Jordan Curve Theorem (\emph{JCT} for short). This theorem appears as Theorem~9 in the 10th edition of Hilbert's \emph{Grundlagen der Geometrie}. The verification might stand on its own: the theorem's formulation does not appeal to earlier definitions or theorems, and of all the proofs we have considered, its verification is the most complicated by an order of magnitude. The theorem also serves as a useful case-study for the tools that we have developed up to this point: the linear reasoning tactic from Chapter~\ref{chapter:LinearOrder} was used pervasively in verifying the theorem, becoming the crucial work-horse for solving and exploring complex linear ordering problems. We leveraged the theory of Half-Planes from Chapter~\ref{chapter:HalfPlanes} as the basis for key lemmas on two-dimensional ordering. And, as always, the discovery algebra described in Chapter~\ref{chapter:Automation} was needed throughout to handle incidence problems, to identify case-splits and suggest proof strategies based on discovered theorems. 
+In this chapter, we will introduce our HOL~Light formalisation of the polygonal Jordan Curve Theorem (\emph{JCT} for short). This theorem appears as Theorem~9 in the 10th edition of Hilbert's \emph{Grundlagen der Geometrie}. The verification might stand on its own: the theorem's formulation does not appeal to earlier definitions or theorems, and of all the proofs we have considered, its verification is the most complicated by an order of magnitude. The theorem also serves as an informative case-study for the tools that we have developed up to this point: the linear reasoning tactic from Chapter~\ref{chapter:LinearOrder} was used pervasively in verifying the theorem, becoming the crucial work-horse for solving and exploring complex linear ordering problems. We leveraged the theory of Half-Planes from Chapter~\ref{chapter:HalfPlanes} as the basis for key lemmas on two-dimensional ordering. And, as always, the discovery algebra described in Chapter~\ref{chapter:Automation} was needed throughout to handle incidence problems, to identify case-splits and suggest proof strategies based on discovered theorems. 
 
 \section{Organisation}
-The verification is divided neatly into two parts, corresponding to the verification of two theorems:
+The verification is divided neatly into two parts, corresponding to the verification of two theorems, which we formulate in in \S\ref{sec:JordanFormulation}:
 \begin{enumerate}
-  \item there are two points in the plane of a simple polygon such that any polygonal path between them must cross the simple polygon;
-  \item given three points in the plane of a simple polygon, there is a polygonal path between two of them.
+  \item there are two points in the plane of a simple polygon such that any polygonal path between them must cross the simple polygon (verified in Chapter~\ref{chapter:JordanVerification1});
+  \item given three points in the plane of a simple polygon, there is a polygonal path between two of them (verified in Chapter~\ref{chapter:JordanVerification2}).
 \end{enumerate}
 
-The formulation of these two lemmas is discussed in \S\ref{sec:JordanFormulation}. This chapter covers everything one needs to know about \emph{what} we have verified, and can be read independently. The auxiliary concepts and associated lemmas which are needed to get the verification through will be covered in the next two chapters.
+The present chapter covers everything one needs to know about \emph{what} we have verified, and can be read independently. The auxiliary concepts and associated lemmas which are needed to get the verification through will be covered in the next two chapters. 
 
 When we discuss the verifications, we will cover the same general topics. First, we shall give an overview of the theory structure, effectively amounting to a sketch proof of the theorem. From this, we shall give the formalisations of the key concepts mentioned in the proof. In the case of the first part of the Polygonal Jordan Theorem, these are the concepts of triangle interiors and exteriors and the concept of a ``crossing'' of a triangle by a polygonal path. For the second part of the theorem, we have the concept of ``lines-of-sight'' and polygon rotations. 
 
@@ -21,7 +21,7 @@ We present some extracts of what we hope are interesting verifications, ones whi
 We remind the reader that we use the word ``formulate'' to refer to the translating of intuitive ideas into a mathematically precise form, and the word ``proof'' to refer to mathematically rigorous arguments of formulated theorems. We reserve the word ``formalise'' for the translation of a mathematically precise statement into the language of higher-order logic, and the word ``verification'' for the HOL~Light proof script which verifies the formalised theorem.
 
 \section{Related Work}
-The Jordan Curve Theorem has some notoriety within the formal verification community, and has long been regarded as a major milestone, one which  demonstrates the feasibility of formal verification on non-trivial mathematic problems. The MIZAR~\cite{MizarMathematicalVernacular} community first began a verification in 1991, and completed the special case for polygons in 1996. The full proof was completed in 2005. In the same year, Hales completed the proof in HOL~Light~\cite{HalesJordanCurve}. 
+The Jordan Curve Theorem has some notoriety within the formal verification community, and has long been regarded as a major milestone, one which  demonstrates the feasibility of formal verification on non-trivial mathematics problems. The MIZAR~\cite{MizarMathematicalVernacular} community first began a verification in 1991, and completed the special case for polygons in 1996. The full proof was completed in 2005. In the same year, Hales completed an independent proof in HOL~Light~\cite{HalesJordanCurve}. 
 
 Both proofs use the special case for polygons as a lemma, though in a restricted form: in the case of the MIZAR proof, only polygons with edges parallel to axes are considered. In Hales' proof, the polygon is restricted to lie on a grid. Moreover, the formulations are algebraic rather than synthetic, and so are outside the scope of Hilbert's and Veblen's formulations.
 
@@ -40,7 +40,7 @@ In 2009, Dufourd~\cite{DufourdJordanCurve} formally verified a constructive proo
 
 \section{Formulation}\label{sec:JordanFormulation}
 \begin{quote}
-  DEFINITION. A set of segments $AB$, $BC$, $CD$, $\ldots$, $KL$ is called a \emph{polygonal path} that connects the points $A$ and $L$. Such a polygonal path will also be briefly denoted by $ABCD\ldots KL$. The points inside the segments $AB$, $BC$, $CD$, $\ldots$, $KL$ as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ are collectively called the \emph{points of the polygonal path}. 
+  DEFINITION. A set of segments $AB$, $BC$, $CD$, $\ldots$, $KL$ is called a \emph{polygonal segment} that connects the points $A$ and $L$. Such a polygonal path will also be briefly denoted by $ABCD\ldots KL$. The points inside the segments $AB$, $BC$, $CD$, $\ldots$, $KL$ as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ are collectively called the \emph{points of the polygonal segment}. 
 
 In addition, for a polygonal path $A$, $B$, $C$, $\ldots$, $L$, we shall call the segments $AB$, $BC$, $CD$, $\dots$, $KL$ the \emph{edges} of the polygonal path.
 
@@ -68,14 +68,14 @@ Had Hilbert given a proof of the polygonal Jordan Curve Theorem, he would have p
 
 %As we described Hilbert's Theorem~6 (see \S\ref{sec:Theorem6}) as a metatheorem, we would describe Veblen's argument here as a \emph{metaproof}. The use of such metatheoretical arguments in axiomatic geometry probably goes back to Euclid, who 
 
-Nevertheless, the notation is still doing heavy lifting, and so we should formalise the notation. We opted to represent polygonal paths as their finite sequence of points, from which the original polygonal paths can be recovered. With this definition, the clumsy constraint about segments sharing endpoints is handled implicitly. The heavy lifting will be carried out as computations on concrete list instances. Lists are available to us in the logic, ultimately being defined in terms of natural numbers, which as we saw in Chapter~\ref{chapter:LinearOrder}, are represented by geometric figures. We have something of a claim here that our lists are geometric rather than computational entities.
+Nevertheless, the notation is still doing heavy lifting, and so we should formalise the notation. We opted to represent polygonal paths as their finite sequence of points, from which the original polygonal paths can be recovered. With this definition, the clumsy constraint about segments sharing endpoints is handled implicitly. The heavy lifting will be carried out as computations on concrete list instances. Lists are available to us in the logic, ultimately being defined in terms of natural numbers, which as we saw in Chapter~\ref{chapter:LinearOrder}, are represented by geometric figures. We can claim here that our lists are geometric rather than computational entities.
 
 %TODO: Discuss or refer to an earlier discussion about using lists to handle ``metalevel'' definitions, and why lists are somewhat justified by the fact that all infinite structures are now abstractions over geometric objects since we have derived the axiom of infinity.
 
-Now the list library in HOL Light is slightly impoverished (at least compared with, say, that of Isabelle/HOL), and so our verification had to take a detour as we added new function definitions and theorems for lists. For instance, in order to recover the edges of a polygonal path, we must take adjacent pairs of the points in its vertex list. We can do this by following a standard pattern in functional programming, shown in Figure~\ref{fig:AdjacentSpec}, which zips all but the last element of a list with its tail. However, it is generally easier and requires much less unfolding to compute directly with the recursive specification of the function. All other definitions and specifications of auxiliary functions, such as the list indexing function $\code{el}$, are given in Figure~\ref{fig:listDefinitions}.
+Now the list library in HOL Light is slightly impoverished (at least compared with, say, that of Isabelle/HOL), and so our verification had to take a detour as we added new function definitions and theorems for lists. For instance, in order to recover the edges of a polygonal path, we must take adjacent pairs of the points in its vertex list. We can do this by following a standard pattern in functional programming, shown in Figure~\ref{fig:AdjacentSpec}, which zips all but the last element of a list with its tail. However, it is generally easier and requires much less unfolding to compute directly with the recursive specification of the function. All other definitions and specifications of auxiliary functions, such as the list indexing function $\code{el}$, are given in Figure~\ref{fig:ListDefinitions}.
 
 \begin{boxedfigure}
-Function specifications marked with $\dag$ have been contributed.
+Definitions marked with $\dag$ have been contributed.
 \begin{alignat*}{3}
   & \code{head}\,:\,[\alpha] \rightarrow \alpha &\qquad
   & \code{tail}\,:\,[\alpha] \rightarrow [\alpha]\dag &\qquad
@@ -114,6 +114,8 @@ Function specifications marked with $\dag$ have been contributed.
   & \code{disjoint}\,:\,(\alpha\rightarrow\code{bool})\rightarrow(\alpha\rightarrow\code{bool})\rightarrow\code{bool}\\
   & \code{disjoint}\ S\ T = S \cap T = \emptyset
 \end{align*}
+\caption{List Definitions and Specifications}
+\label{fig:ListDefinitions}
 \end{boxedfigure}
 
 \begin{boxedfigure}
@@ -209,9 +211,9 @@ Combining this with the definition of polygon gives us the following formalisati
 
 In this definition, we have introduced the polygon's plane as a parameter, but we are aware of that this could be more elegantly refactored. Any simple polygon uniquely determines the plane on which it lies, and so it might have been more elegant to hide the plane witness by an existential in the body of the definition. A function could then be defined to extract the unique witness from the list $Ps$ when $Ps$ is known to be a simple polygon. 
 
-The definition would still be rather unweildly. First, we have a ``magic'' number 3,\footnote{The number $4$ would do just as well.} which is needed to rule out the degenerate case of a point polygon $[P,P]$ which slips past Hilbert's constraints. The next two clauses are straightforward, and define $Ps$ to be a polygon according to Hilbert's definitions. The real complexity is in the last three clauses which define the polygon as \emph{simple}. 
+The definition would still be rather unwieldy. First, we have a ``magic'' number 3,\footnote{The number $4$ would do just as well.} which is needed to rule out the degenerate case of a point polygon $[P,P]$ which slips past Hilbert's constraints. The next two clauses are straightforward, and define $Ps$ to be a polygon according to Hilbert's definitions. The real complexity is in the last three clauses which define the polygon as \emph{simple}. 
 
-Given the unweildiness of this formalisation, we must be wary of subtle mistakes. These could lead either to some figures being classed as simple polygons when they should not be, or some figures not being classed as simple polygons when they should. The first sort of error must show up in the verification. The second sort of error is more insidious, since it will only cause our verification to become all too easy. In the worst case, the definition will be unsatisfiable and all theorems of simple polygons will become trivial. This might happen if, say, we had removed the use of \code{butlast} above (in fact, it almost \emph{did}).
+Given the unwieldiness of this formalisation, we must be wary of subtle mistakes. These could lead either to some figures being classed as simple polygons when they should not be, or some figures not being classed as simple polygons when they should. The first sort of error must show up in the verification. The second sort of error is more insidious, since it will only cause our verification to become all too easy. In the worst case, the definition will be unsatisfiable and all theorems of simple polygons will become trivial. This might happen if, say, we had removed the use of \code{butlast} above (in fact, it almost \emph{did}).
 
 Because of these concerns, we must pay attention to the behaviour of the function $\code{pairwise}$. One might think that $\code{pairwise}\, R$ would check whether the relation $R$ holds across all pairs of elements drawn from its argument list, which would be the case if $\code{pairwise}$ were equivalent to $\code{all} \circ \code{lift2}\ R$ for the usual list monad. If this were the case, the definition would be unsatisfiable, since it is always possible to draw some pair $(P,P)$ from a non-empty list, and this pair cannot satisfy $(\neq)$. But in fact, \code{pairwise} only checks half the pairs, and so can be satisfied even when the supplied relation is irreflexive (such as $(\neq)$ above) and even anti-symmetric. Consider the evaluation of $\code{pairwise}\ (<)\ [1,2,3,4]$:
 \begin{align*}
@@ -232,9 +234,9 @@ For now, inspection is the best way to inspire confidence in the definition, but
 \subsection{Goal Theorems}
 In \S\ref{sec:segConnectEquivalence}, we said that we would understand the regions defined by the polygonal Jordan Curve Theorem as equivalence classes under polygonal path-connectedness. If we were to follow the style of Chapter~\ref{chapter:HalfPlanes}, we would quotient an appropriate data-type under this relation and talk of regions as abstract objects.
  
-We shall not, however. We are not planning as of now to build on the Polygonal Jordan Curve Theorem, and so the abstraction can wait. We hope, though, that some of the example proofs in this chapter show that there \emph{was} a substantial pay-off when talking abstractly of \emph{half-planes}, while there was no need to talk abstractly of rays. This gives us some perspective on both Hilbert and Veblen's remarks that the the Polygonal Jordan Curve Theorem is principally founded on the theory of half-planes.
+We shall not, however. We are not planning as of now to build on the Polygonal Jordan Curve Theorem, and so the abstraction can wait. We hope, though, that some of the example verifications in the next two chapters show that there \emph{was} a substantial pay-off when talking abstractly of \emph{half-planes}, while there was no need to talk abstractly of rays. This gives us some perspective on both Hilbert and Veblen's remarks that the Polygonal Jordan Curve Theorem is principally founded on the theory of half-planes.
 
-Abstractly, then, we would express the Polygonal Jordan Curve Theorem by saying that a simple polygon separates the plane into exactly two regions. Talking instead in terms of the underlying representation and polygonal path-connectedness, we say firstly that there are at least two points in the plane and not on the polygon which are not polygonal path-connected. Secondly, we say that of any three points in the plane and not on the polygon, at least two of them can be polygonal path-connected.
+Abstractly, then, the Polygonal Jordan Curve Theorem tells us that a simple polygon separates the plane into exactly two regions, but talking concretely in terms of the underlying representation and polygonal path-connectedness, we say firstly that there are at least two points in the plane and not on the polygon which are not polygonal path-connected. Secondly, we say that of any three points in the plane and not on the polygon, at least two of them can be polygonal path-connected.
 
 There is a final claim: one of the regions is unbounded. This theorem does not appear in Veblen's thesis, and we have left its verification to future work. Hilbert formulates the claim by saying that exactly one of the regions contains straight lines. Since we are avoiding talk of regions directly, we shall generalise and formulate it as follows:
 \begin{itemize}
@@ -246,7 +248,7 @@ In the first part, the rough idea is that there is at least one region containin
 
 We have dropped the unnecessary condition that the polygonal path is a simple polygon from both parts. We have also dropped any mention of polygonal path-connectedness and polygonal path-connected regions from the first part. This condition appears in the second part, and can be obtained for the line $a$ simply by setting $a=b$.
 
-With the breakdown considered, we turn to the formalisation. Again, we must pay careful attention to the details. Our later verification demonstrates that these formalisations are provable, but we have left the matter of whether they are ``too easily provable'' to inspection.
+With the breakdown considered, we turn to the formalisation of all four clauses. Again, we must pay careful attention to the details. Our later verification demonstrates that the first two formalisations yield verified theorems, but we have left the matter of whether they are ``too easily provable'' to inspection.
 \begin{equation}\label{eq:jordanFormal1}
   \begin{split}
     &\code{simple\_polygon}\ \alpha\ Ps\\
@@ -267,16 +269,16 @@ With the breakdown considered, we turn to the formalisation. Again, we must pay 
      \end{split}
 \end{equation}
 
-\begin{equation}
-  \begin{split}\label{eq:jordanFormal3}
+\begin{equation}\label{eq:jordanFormal3}
+  \begin{split}
   &(\forall P. \code{on\_polypath}\ Ps\ P \implies \code{on\_plane}\ P\ \alpha)\\
   &\implies \exists a.\; \forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha
   \wedge \neg\code{on\_polypath}\ P\ Ps.
      \end{split}
 \end{equation}
 
-\begin{equation}
-  \begin{split}\label{eq:jordanFormal4}
+\begin{equation}\label{eq:jordanFormal4}
+  \begin{split}\notag
   &(\forall P.\; \code{on\_polypath}\ Ps\ P \implies \code{on\_plane}\ P\ \alpha)\\
   &(\forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ a)\\
   &(\forall P.\; \code{on\_line}\ P\ b \implies \code{on\_plane}\ P\ b)\\

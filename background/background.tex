@@ -56,8 +56,8 @@ The rules of HOL~Light's calculus (Figure~\ref{fig:HOLInferenceRules}) are few, 
       \infer[\code{REFL}]{P\vdash P}{} &\qquad&
       \infer[\code{TRANS}]{\Gamma\cup\Delta\vdash s=u}{\Gamma\vdash s=t&\Gamma\vdash t=u}\\
       \infer[\code{MK\_COMB}]{\Gamma\cup\Delta\vdash f\ x=f\ y}{\Gamma\vdash x = y & f = g} &&
-      \text{for any $x$,}\quad \infer[\code{ABS}]{(\lambda x. s) = \lambda x. t}{s = t}\\
-      \infer[\code{BETA}]{(\lambda x. t)\ x = t}{}&&
+      \text{for any $x$ not free in $\Gamma$,}\quad \infer[\Gamma \vdash \code{ABS}]{(\lambda x. s) = \lambda x. t}{s = t}\\
+      \infer[\code{BETA}]{\vdash (\lambda x. t)\ x = t}{}&&
       \infer[\code{ASSUME}]{\{A\} \vdash A}{}
     \end{aligned}\\
     \infer[\code{EQ\_MP}]{\Gamma\cup\Delta\vdash Q}{\Gamma\vdash P = Q & \Delta\vdash P}\\
@@ -123,7 +123,7 @@ HOL~Light is an interactive proof assistant in the tradition of Edinburgh LCF~\c
 
 If natural languages serve as the metalanguages for defining object logics for human proof checkers, then ML serves as the metalanguage for defining \replaced{the object logic of HOL~Light}{the object logics of \emph{computerised} proof checkers}. Accordingly, when we define the syntax of an object logic, ML understands ``inductive data type'' where we understand ``inductive definition'', and ML understands ``function from sequents to sequent'' in place of ``inference rule''.
 
-The use of a programming language can actually clarify a lot. Consider the definition of the $\code{ABS}$ inference rule in Figure~\ref{fig:HOLInferenceRules}, where we say ``for any $x$'', a qualification which is absent from the definition of say, $\code{BETA}$. The ML code makes the difference here very clear: the function implementing the inference rule $\code{ABS}$ takes a metavariable $x$ as an additional argument, while that for $\code{BETA}$ does not.
+The use of a programming language can actually clarify a lot. Consider the definition of the $\code{ABS}$ inference rule in Figure~\ref{fig:HOLInferenceRules}, where we say ``for any $x$ not free in $\Gamma$'', a qualification which is absent from the definition of say, $\code{BETA}$. The ML code makes the difference here very clear: the function implementing the inference rule $\code{ABS}$ takes a metavariable $x$ as an additional argument, while that for $\code{BETA}$ does not.
 
 While programming languages clarify, they might also be viewed suspiciously. We want our formal verifications to inspire a virtually indefeasible level of confidence, and as of writing, computers are justifiably untrustworthy. ML and HOL~Light are notable by being part of a tradition which puts safety first. We define the data-type of sequents as \emph{abstract}, thereby hiding the implementation and exposing only the term data-type and inference rules.
 

@@ -21,10 +21,11 @@ dot("$A$",A,W);
 dot("$B$",B,E);
 dot("$C$",C,N);
 dot("$C'$",C2,S);
-dot("$P_i$",P,N);
-dot("$P_{i+1}$",Q,S);
+dot("$P_{i+1}$",P,N);
+dot("$P_{i}$",Q,S);
+dot("$R$",midpoint(P--Q),W);
 
-label("(a)",midpoint(C--B)+(0,2));
+label("(b)",midpoint(C--B)+(0,2));
 
 picture pic2;
 currentpicture = pic2;
@@ -43,11 +44,12 @@ dot("$A$",A,W);
 dot("$B$",B,E);
 dot("$C$",C,N);
 dot("$C'$",C3,N);
-dot("$P_i$",P,N);
-dot("$P_{i+1}$",Q,S);
+dot("$P_{i+1}$",P,N);
+dot("$P_{i}$",Q,S);
+dot("$R$",midpoint(P--Q),W);
 
-label("(b)",midpoint(C3--B)+(0,2));
+label("(a)",midpoint(C3--B)+(0,2));
 
-add(pic2,pic1.fit(),(-7,0));
+add(pic2,pic1.fit(),(7,0));
 
 shipout(format="pdf");

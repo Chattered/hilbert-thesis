@@ -21,6 +21,7 @@
 /CrossingContext.pdf
 /CrossingVertex.asy.log
 /CrossingVertex.pdf
+/CrossingWellDefined.asy.log
 /CrossingWellDefined.pdf
 /IH3CaseSplit.pdf
 /ParityProof1.pdf
@@ -66,6 +67,8 @@
 /parityProof6.pdf
 /rayCast1.pdf
 /triCutHalfPlane.pdf
+/triangleDefs.asy.log
+/triangleDefs.eps
 /triangleDefs.pdf
 /tricut1.pdf
 /tricut3.pdf

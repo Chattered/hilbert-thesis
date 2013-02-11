@@ -130,3 +130,6 @@
     CLOSED: [2013-02-07 Thu 19:42]
 *** DONE Conclude
     CLOSED: [2013-02-07 Thu 19:42]
+** TODO Jordan verification
+*** Small example showing the use of "using" and "MATCH_MP_TAC". See comment on page 187. My recommendation is to forward reference to the next chapter where we see how squeeze is applied with MATCH_MP_TAC. Much easier to understand those ones.
+*** Jacques doesn't like the fact that on page 194 we refer to Appendix C.3, but I really don't want to explain the extra messy detail.

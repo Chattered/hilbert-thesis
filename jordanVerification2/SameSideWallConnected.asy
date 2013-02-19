@@ -37,6 +37,7 @@ drawEye(e2);
 
 dot("$P_1$",ps[18],SE);
 dot("$P_2$",ps[19],N);
+dot("$P_3$",ps[20],SE);
 
 eye e3;
 pair[] qs = ps[19:];
@@ -67,6 +68,7 @@ drawEye(e3,false);
 
 dot("$P_1$",ps[18],SE);
 dot("$P_2$",ps[19],N);
+dot("$P_3$",ps[20],SE);
 
 dot("$X$",e2.pos,SW*2+S);
 dot("$Y$",e1.pos,NE*2);

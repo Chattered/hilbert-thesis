@@ -8,15 +8,15 @@ In discussing our verification, we will cover the same basic ground as we did in
 In the rest of the chapter, we shall look in more detail at how the lemmas are applied to recover all the details of the sketch proof. We provide a few readable extracts of what we hope are interesting proofs, demonstrating how faithfully we can formalise the intuitive synthetic arguments.
 
 \section{Sketch Proof}\label{sec:SketchProofJordan2}
-The basic intuition behind the proof is similar to the ones presented by Veblen~\cite{Veblenphd} and Feigl~\cite{FeiglJordan}. We follow Veblen's proof the most closely. Contary to Guggenheimer's~\cite{GuggenheimerJordanCurve} claim that Veblen's proof only holds for convex polygons, we believe it is basically correct. That said, our verification is based on a more thorough analysis than presented by Veblen.
+The basic intuition behind the proof is similar to the ones presented by Veblen~\cite{Veblenphd} and Feigl~\cite{FeiglJordan}. We follow Veblen's proof the most closely. Contary to Guggenheimer's~\cite{GuggenheimerJordanCurve} claim that Veblen's proof only holds for convex polygons, we believe the evidence of this chapter shows that Veblen was basically correct. That said, our verification is based on a more thorough analysis than presented by Veblen.
 
-We are required to show that, given three points in the plane and not on a polygon, at least two of them are connected by a polygonal path. Let us reinterpret this and understand the three points as three players trying to navigate a polygonal maze. Each edge of the polygon can then be thought of as a maze \emph{wall}.
+We are required to show that, given three points in the plane and not on a polygon, at least two of them are connected by a polygonal path. Let us reinterpret this and understand the three points as three players trying to navigate a polygonal maze.
 
 Our basic goal is to get the three players ``next to'' the same wall. Then we just need to find a path between whichever of the two players are on the same side of that wall. We will find that the difficulty here lies in getting the players through potentially very tight corridors, and around difficult corners. We must show how to obtain paths for the players without recourse to notions such as comparable directions, parallel lines or distances. This will rule out common approaches to the theorem, such as the one given by Tverberg~\cite{TverbergJordan}. In Tverberg's proof, we just need to consider a sufficiently small region around the walls of the maze (an ``offset curve'' ), which we know to be polygonal path-connected. Without notions of distance, this description is out of scope of Hilbert's ordered geometry.
 
 One way to formulate the idea that the players are ``next to'' the same wall of the maze is to assert that all three have line-of-sight to that wall. This metaphor does not appear explicitly in Veblen or Feigl's proof, but it can be read into both, and we found it extremely helpful in providing an intuitive grasp of the formalisation.
 
-In Figure~\ref{fig:SketchProofJordan2}, we show players $Red$, $Black$ and $Blue$ starting at various points of a maze. Players $Red$ and $Black$ are inside the maze, while $Blue$ is on the outside. Here, we depict the paths they follow as they traverse the maze so that they have line-of-sight to the wall $P_iP_{i+1}$. Since $Red$ and $Black$ are on the same side of $P_iP_{i+1}$, we can connect them by a polygonal path.
+To make clear the idea about lines-of-sight, we will depict our players as \emph{eyes}, with a dashed line-of-sight to a point of the maze. In Figure~\ref{fig:SketchProofJordan2}, we show players $Red$, $Black$ and $Blue$ situated and staring at various points of a maze. Players $Red$ and $Black$ are inside the maze, while $Blue$ is on the outside. Here, we depict the paths they follow as they traverse the maze so that they have line-of-sight to the wall $P_iP_{i+1}$. Since $Red$ and $Black$ end up on the same side of $P_iP_{i+1}$, we can connect them by a polygonal path.
 
 \begin{figure}
   \centering\includegraphics[scale=0.75]{jordanVerification2/SketchProof}
@@ -32,7 +32,7 @@ The paths we have drawn through the maze are potential witnesses to the paths we
 and suppose that the witness $C$ in the conclusion is always chosen so that $B$ is half-way between $A$ and $C$. In this case, the paths sketched in Figure~\ref{fig:SketchProofJordan2} are precisely those that we witness in our formal verification.
 
 \section{Formulation and Formalisation}\label{sec:Jordan2Formulation}
-Compared to the last chapter, where we introduce the complex idea of a crossing, the basic ideas needed in the proof for this chapter are relatively straightforward. Firstly, given a simple polygon $Ps$, we will say that a point $X$ has line-of-sight to be a point $X'$ if there is no point of $Ps$ which lies strictly between $X$ and $X'$. In diagrams such as Figure~\ref{fig:SketchProofJordan2}, we shall always depict the point $X$ as an eye pointed at $X'$, with a dashed line indicating the line-of-sight. We shall also say that when the point $X'$ lies between vertices $P_i$ and $P_{i+1}$ of $Ps$, then the point $X$ has line-of-sight to the \emph{wall} $P_iP_{i+1}$. The situation is formalised as
+Compared to the last chapter, where we introduce the complex idea of a crossing, the basic ideas needed in the proof for this chapter are relatively straightforward. Firstly, given a simple polygon $Ps$, we will say that a point $X$ has line-of-sight to be a point $X'$ if there is no point of $Ps$ which lies strictly between $X$ and $X'$. We shall say that when the point $X'$ lies between vertices $P_i$ and $P_{i+1}$ of $Ps$, then the point $X$ has line-of-sight to the \emph{wall} $P_iP_{i+1}$. The situation is formalised as
 \begin{displaymath}
   \begin{aligned}
     &\neg\code{on\_polypath}\ Ps\ X \wedge \between{P_i}{X'}{P_{i+1}}\\
@@ -41,15 +41,13 @@ Compared to the last chapter, where we introduce the complex idea of a crossing,
 \end{displaymath}
 
 Our formalised proof breaks down into three parts. Firstly, we must show how every point not on a simple polygon has a line-of-sight to some wall of the maze. Next, we must show how, if a point $X$ has line-of-sight to a wall $P_iP_{i+1}$, then there is a polygonal path to a point $Y$ which has line-of-sight to the next wall $P_{i+1}P_{i+2}$. As such, for any wall and any point $X$, there is a polygonal path from $X$ to another point which has line-of-sight to that wall. Finally, we must show that if two players have line-of-sight to the same wall, and lie on the same side of that wall, then there is a polygonal path between them.
-We shall describe the informal proofs and verifications of each part in \S\ref{sec:NavigationVerification}.
-
-First, we consider the crucial supporting lemmas.
+We shall describe the informal proofs and verifications of each part in \S\ref{sec:NavigationVerification}. First, we consider the crucial supporting lemmas.
 
 \section{Obtaining Lines-of-Sight}\label{sec:Jordan2Lemmas}
 We have two key theorems: a ray-casting theorem which obtains a new line-of-sight, and a theorem dubbed ``squeeze'' which handles narrow cracks in corridors. In proving the ``squeeze'' theorem, we shall need recourse to many of our earlier theorems about triangles and their interiors, and a new theorem about a triangle containing another triangle.
 
 \subsection{Ray-casting}\label{sec:RayCasting}
-Our ray-casting theorem gives us a line-of-sight to a polygonal path, aimed in an arbitrary direction towards that path. To achieve this, we must find the first point of intersection that the ray makes with the polygonal path. Ray-casting is actually needed in the first half of the Polygonal Jordan Curve Theorem (see \S\ref{sec:FinalProofJordan1}), but it makes more sense to explain it in this section where we are  self-consciously using metaphors from computer graphics.
+Our ray-casting theorem gives us a line-of-sight to a polygonal path, aimed in an arbitrary direction towards that path. To achieve this, we must find the first point of intersection that the ray makes with the polygonal path. Ray-casting is actually needed in the first half of the Polygonal Jordan Curve Theorem (see \S\ref{sec:FinalProofJordan1}), but it makes more sense to explain it here where we are appealing to metaphors from computer graphics.
 
 Ray-casting appears in a weakened form in Veblen's proof, but there he only considers casting a ray which does not intersect any \emph{vertex} of the polygonal path. This can be generalised by considering a few additional cases, after which we have a much more useful theorem.
 
@@ -57,7 +55,7 @@ This ray-casting theorem relies almost exclusively on linear reasoning and we fo
 
 Finding the necessary hypotheses often ended up being a matter of trial and error, but fortunately, the linear reasoning tactic is based on a \emph{decision procedure}. When there were not enough facts available, it would promptly terminate and announce that the goal was not solvable. We could then go back through the problem and try to identify additional facts to feed the tactic and then retry. 
 
-In a few places, we found that what we were missing was a case-split. Sometimes, this reflected two different linear reasoning problems, which meant providing two subproofs. But sometimes we got lucky. If the case split led to a single linear reasoning problem, we could let our incidence-discoverer handle the case-analyses automatically using its internal representation of proof trees.
+In a few places, we found we were missing a case-split. Sometimes, this reflected two different linear reasoning problems, which meant providing two subproofs. But sometimes we got lucky. If the case split led to a single linear reasoning problem, we could let our incidence-discoverer handle the case-analyses automatically using its internal representation of proof trees.
 
 The basic proof applies structural induction on the vertex list, and reduces the problem to that of ray-casting to a single edge. The basic case-analyses are shown in Figure~\ref{fig:RayCast}. We cast rays from the points $A$, $B$ and $C$ to the polygonal path $P_1P_2\ldots P_5$. The salient differences between the three lines-of-sight are as follows: point $A$ has line-of-sight to an endpoint of an edge, but the edge itself is not on the line-of-sight. Point $B$ has line-of-sight to an endpoint of an edge, and the edge itself \emph{is} on the line-of-sight. Finally, point $C$ has line-of-sight to the interior of an edge $P_2P_3$. 
 
@@ -69,25 +67,25 @@ The basic proof applies structural induction on the vertex list, and reduces the
 
 We now give the formalisation of the theorem. From a point $X$, we fire a ray to an arbitrary point $P$ on the polygonal path, and then obtain a point $Y$ to which $X$ has line-of-sight. Though it does not prove necessary in our proofs, we provide some extra information about the point $Y$, namely that it is either strictly between $X$ and $P$, or else we already had line-of-sight to $P$. 
 
-\begin{equation}\label{eq:RayCast}
+\begin{multline}\label{eq:RayCast}
 % |- !Ps X Y.
 %          ~on_polyseg Ps X /\ on_polyseg Ps P
 %          ==> (?Z. on_polyseg Ps Z /\
 %                   (between X Z Y \/ Y = Z) /\
 %                   ~(?R. between X R Z /\ on_polyseg Ps R))
-  \begin{aligned}
-    \vdash&\neg\code{on\_polypath}\ Ps\ X \wedge \code{on\_polypath}\ Ps\ P\\
-    &\implies \exists Y. \code{on\_polypath}\ Ps\ Y \wedge \between{X}{Y}{P} \vee X = P)\\
-    &\qquad\qquad \wedge \neg(\exists Q. \between{X}{Q}{Y} \wedge \code{on\_polypath}\ Ps\ R).
-  \end{aligned}
-\end{equation}
+  \vdash\neg\code{on\_polypath}\ Ps\ X \wedge \code{on\_polypath}\ Ps\ P\\
+  \implies \left(
+    \begin{aligned}&\exists Y. \code{on\_polypath}\ Ps\ Y \wedge \between{X}{Y}{P} \vee X = P)\\
+      &\qquad\qquad\wedge \neg(\exists Q. \between{X}{Q}{Y} \wedge \code{on\_polypath}\ Ps\ R)
+    \end{aligned}\right).
+\end{multline}
 
 Note the first conjunct in the hypothesis of this theorem. We can only cast rays to a polygonal path if we are not on that path. This should clarify a point made in \S\ref{sec:FinalProofJordan1} of the last chapter. There, we said that the final part of the proof showing that there are at least two regions of a simple polygon is based on ray-casting \emph{from} some point $X$ on that polygon. In particular, we are ray-casting to the \emph{rest} of the polygon, and thus, if we are to ray-cast, we need to assume that the rest of the polygon does not have a self-intersection at $X$. This we guarantee based on the fact that the polygon is assumed to be \emph{simple}.
 
 \subsection{Squeeze}\label{sec:Squeeze}
 The most powerful theorem in our development towards the Jordan Curve Theorem is one we dubbed \emph{squeeze}, since the intuition is that it allows us to find segments which squeeze through arbitrarily narrow gaps of a maze. Again, what counts as a narrow gap in the abstract world of ordered geometry is only determined by the three-place \emph{betweenness} relation. Our ability to navigate these gaps must therefore reduce to just the basic axioms governing this relation. We can get some idea of the challenge by realising that, on some interpretations, these gaps are \emph{infinitesimally} narrow. Hilbert's axioms are independent of Archimedes' axiom.
 
-Abstractly, the theorem tells us that if we have a polygonal path $[A,B,C]$ which is not intersected by the polygonal path $Ps$, then there is a point $A'$ between $A$ and $C$ such that $Ps$ intersects $AC$ in at most one place. We can understand this in the context of finding diagonals of simple polygons, as is described in Figure~\S\ref{sec:FindingDiagonal}. In fact, this was the original motivation for \emph{squeeze}, and we have retained its conclusion in a form which is still fit for this purpose. It thus remains an important component of a verification for our sketch proof in \S\ref{sec:JordanCurveFirstProof}. In \S\ref{sec:SqueezeEye}, we will show how to interpret it in terms of lines-of-sight.
+Abstractly, the theorem, formalised as Theorem~\ref{eq:Squeeze}, tells us that if we have a polygonal path $[A,B,C]$ which is not intersected by the polygonal path $Ps$, then there is a point $A'$ between $A$ and $B$ such that $Ps$ intersects $AC$ in at most one place. We can understand this in the context of finding diagonals of simple polygons, as is described in Figure~\S\ref{sec:FindingDiagonal}. In fact, this was the original motivation for \emph{squeeze}, and we have retained its conclusion in a form which is still fit for this purpose. It thus remains an important component of a verification for our sketch proof in \S\ref{sec:JordanCurveFirstProof}. In \S\ref{sec:SqueezeEye}, we will show how to interpret it in terms of lines-of-sight.
 \begin{equation}\label{eq:Squeeze}
   \begin{aligned}
       % "!P start goal 'a polyseg.
@@ -99,10 +97,10 @@ Abstractly, the theorem tells us that if we have a polygonal path $[A,B,C]$ whic
       % /\ (!X. between P X goal ==> ~on_polyseg polyseg X)
       % ==> ?s. between P s start
       %         /\ !X. in_triangle (P,s,goal) X ==> ~on_polyseg polyseg X"
-    \vdash&\neg\code{on\_polypath}\ path\ B\\
-    &\wedge \neg(\exists X. \between{A}{X}{B} \wedge \code{on\_polypath}\ path\ X)\\
-    &\wedge \neg(\exists X. \between{B}{X}{C} \wedge \code{on\_polypath}\ path\ X)\\
-    &\implies \exists A'. \between{A}{A'}{B} \wedge \neg\exists X. \code{in\_triangle}\ (A',B,C) \wedge \code{on\_polypath}\ path\ X.
+    \vdash&\neg\code{on\_polypath}\ Ps\ B\\
+    &\wedge \neg(\exists X. \between{A}{X}{B} \wedge \code{on\_polypath}\ Ps\ X)\\
+    &\wedge \neg(\exists X. \between{B}{X}{C} \wedge \code{on\_polypath}\ Ps\ X)\\
+    &\implies \exists A'. \between{A}{A'}{B} \wedge \neg\exists X. \code{in\_triangle}\ (A',B,C)\ X\wedge \code{on\_polypath}\ Ps\ X.
   \end{aligned}
 \end{equation}
 
@@ -114,11 +112,11 @@ Abstractly, the theorem tells us that if we have a polygonal path $[A,B,C]$ whic
 
 In Figure~\ref{fig:SqueezeDiagonal}, we show how \emph{squeeze} would be used to find a diagonal of the polygon $P_1P_2\ldots P_{11}$. Here, we have set $A = P_1$, $B = P_{11}$, and $C = P_{10}$, while we set $path$ to be the rest of the polygon $P_1P_2P_3\ldots P_{10}$. 
 
-There are two points to note about our conclusion. Firstly, we make a stronger claim than merely declaring the existence of a diagonal. We say instead that the polygonal path does not lie in the interior of $\triangle A'BC$, which means that any point between $A'$ and $B$ yields a diagonal with the point $C$. Secondly, even though the witness $A'$ is defined in our proof to be such that a vertex $P_8$ of $Ps$ lies on $A'B$, we have not provided this additional information in the conclusion. Such information would be needed if our diagonal is to split the polygon into two simpler polygons, as needed for our first sketch proof in \S\ref{sec:JordanCurveFirstProof}. We \emph{have} verified this theorem with the additional information provided. However, for the purposes of the current proof, we present only the version with the simpler conclusion.
+There is an important point to note about the conclusion of Theorem~\ref{eq:Squeeze}, which is relevant to our later discussion of \S\ref{sec:Subtriangles}: we make a stronger claim than merely declaring the existence of a diagonal. We say instead that the polygonal path does not lie in the interior of $\triangle A'BC$, which means that any point between $A'$ and $B$ yields a diagonal with the point $C$. %Secondly, even though the witness $A'$ is defined in our proof to be such that a vertex $P_8$ of $Ps$ lies on $A'B$, we have not provided this additional information in the conclusion. Such information would be needed if our diagonal is to split the polygon into two simpler polygons, as needed for our first sketch proof in \S\ref{sec:JordanCurveFirstProof}. We \emph{have} verified this theorem with the additional information provided. However, for the purposes of the current proof, we present only the version with the simpler conclusion.
 
 The mention of triangle interiors in the conclusion reflects the way the proof recursively verifies that $A'C$ really is a diagonal. Conceptually, the proof starts with the triangle $ABC$, and finds the first vertex in $Ps$ which lies inside this triangle. In the case shown, this would be the vertex $P_3$. We then draw a line through $P_{10}$ and $P_3$ to the point $A_3$, and continue the argument with this new triangle. Eventually, we will be left with a triangle whose interior contains no point of $Ps$. In a sense, the triangle $ABC$ has been ``squeezed'' by $Ps$ into the triangle $A'BC$.
 
-Unhappily, proving that $\triangle A'BC$ contains no point of $Ps$ has us boiled down in case-splits similar to those needed to analyse triangle \emph{crossings} in the last chapter (\S\ref{sec:CrossingVerification}). Rather than go into the details of these, we shall focus on the more illuminating proof that $A'BC$ contains no \emph{vertex} of $Ps$. This only boils down to two more lemmas for triangle interiors.
+Unhappily, proving that $\triangle A'BC$ contains no point of $Ps$ has us boiled down in case-splits similar to those needed to analyse triangle \emph{crossings} in the last chapter (\S\ref{sec:CrossingVerification}). Rather than go into the details of these, we shall focus on the more illuminating proof that $\triangle A'BC$ contains no \emph{vertex} of $Ps$. This only boils down to two more lemmas for triangle interiors.
 
 \subsubsection{Another ``Inner Pasch'' Rule}
 Our first supporting theorem is a point introduction rule which allows us to find the intersection points $A_3$, $A_4$, $A_6$ and $A'$ in Figure~\ref{fig:SqueezeDiagonal}. This theorem is similar in spirit to the Pasch axioms (\ref{eq:InnerPasch}, \ref{eq:OuterPasch}) and its variant for triangle interiors \eqref{eq:tricut1}. It has a very succinct formalisation, but a non-trivial verification:
@@ -126,7 +124,7 @@ Our first supporting theorem is a point introduction rule which allows us to fin
 \vdash\code{in\_triangle}\ (A,B,C)\ P \implies \exists X. \between{B}{X}{C} \wedge \between{A}{P}{X}.
 \end{equation}
 
-The proof is the most interesting of these point introduction rule proofs. Unlike the proof of Theorem~\ref{eq:TriCut3}, we find ourselves back employing Pasch's axiom \eqref{eq:g24} rather than exploiting our theorems of half-planes. First, we use \ref{eq:three} to find a point $X$ on $AB$. Next, we apply \eqref{eq:g24} to the triangle $ABC$ and the line $PX$. This gives us a point $Y$ which is either between $B$ and $C$ or between $A$ and $C$. Here is one of the rare times where both cases are possible. Normally, we would be able refute one of the cases based on incidence reasoning. Here, we need two subproofs.
+The proof is the most interesting of these point introduction rule proofs. Unlike the proof of Theorem~\ref{eq:tricut1} from the last chapter, we find ourselves back employing Pasch's axiom \eqref{eq:g24} rather than exploiting our theorems of half-planes. First, we use \ref{eq:three} to find a point $X$ on $AB$. Next, we apply \eqref{eq:g24} to the triangle $ABC$ and the line $PX$. This gives us a point $Y$ which is either between $B$ and $C$ or between $A$ and $C$. Here is one of the rare times where both cases are possible. Normally, we would be able refute one of the cases based on incidence reasoning. Here, we need two subproofs.
 
 \begin{figure}
 \centering\includegraphics[scale=0.75]{jordanVerification2/TriCut3}
@@ -134,18 +132,19 @@ The proof is the most interesting of these point introduction rule proofs. Unlik
 \label{fig:TriCut3}
 \end{figure}
 
-If $Y$ lies between $B$ and $C$ as in case (a) of Figure~\ref{fig:TriCut3}, then we apply \eqref{eq:g24} to the triangle $BXY$ and the line $AP$ to find a point between $B$ and $Y$. This point is then between $B$ and $C$ (via linear reasoning on $B$, $C$, $Y$ and $Z$). Furthermore, $P$ is between $A$ and $Z$ by~\eqref{eq:inTriangle2}.
+If $Y$ lies between $B$ and $C$ as in case (a) of Figure~\ref{fig:TriCut3}, then we apply \eqref{eq:g24} to the triangle $BXY$ and the line $AP$ to find a point $Z$ between $B$ and $Y$. This point is then between $B$ and $C$ (via linear reasoning on $B$, $C$, $Y$ and $Z$). Furthermore, $P$ is between $A$ and $Z$ by~\eqref{eq:inTriangle2}.
 
-In case (b) of Figure~\ref{fig:TriCut3}, we find that $P$ is now an interior point according to Veblen's definition, in virtue of the points $X$ and $Y$. Here, we apply \eqref{eq:g24} to the triangle $CXY$ and the line $AP$ to find a point $P'$ on $CX$. By the same axiom applied to $\triangle BCX$ and the line $AP'$, we find the desired point $Z$ on $BC$.
+In case (b) of Figure~\ref{fig:TriCut3}, we find that $P$ is now an interior point according to Veblen's definition and the position of the points $X$ and $Y$. Here, we apply \eqref{eq:g24} to the triangle $CXY$ and the line $AP$ to find a point $P'$ on $CX$. By the same axiom applied to $\triangle BCX$ and the line $AP'$, we find the desired point $Z$ on $BC$.
 
-\subsubsection{Subtriangles}
-In our proof of Theorem~\ref{eq:Squeeze}, we consider a sequence of triangles $\triangle ABC$, $\triangle A_3BC$, $\triangle A_4BC$, $\triangle A_6BC$ and $\triangle A'BC$. Each of these is intended to exclude one vertex of $Ps$ from its interior. By the time we reach the last triangle, we can conclude that all vertices of $Ps$ will lie in the exterior. This conclusion assumes a transitivity property, which is given by our second lemma. It shows that the ordering of $A$, $A_3$, $A_4$, $A_6$ and $A'$ along the segment $AB$ yields a sequence of triangles with \emph{nested} interiors. 
+\subsubsection{Subtriangles}\label{sec:Subtriangles}
+In our proof of Theorem~\ref{eq:Squeeze}, we consider a sequence of triangles such as the those of Figure~\ref{fig:SqueezeDiagonal}, namely $\triangle ABC$, $\triangle A_3BC$, $\triangle A_4BC$, $\triangle A_6BC$ and $\triangle A'BC$. Each of these is intended to exclude one vertex of $Ps$ from its interior. By the time we reach the last triangle, we can conclude that all vertices of $Ps$ will lie in the exterior. This conclusion assumes a transitivity property, which is given by our second lemma. It shows that the ordering of $A$, $A_3$, $A_4$, $A_6$ and $A'$ along the segment $AB$ yields a sequence of triangles with \emph{nested} interiors. 
 
 The proof, given in Figure~\ref{fig:SubTriangle}, is extremely short and readable, making use of a number of lemmas we have previously considered, including Theorem~\ref{eq:TriCut3} from the last subsection. With this theorem, we can put a point $Q$ on the line $A'C$, where we know it must be interior to $\triangle ABC$ on the basis of Theorem~\ref{eq:inTriangle1}. It then follows by Theorem~\ref{eq:inTriangle2} that $P$ must also be interior.
 
 \begin{figure}
 \centering\includegraphics[scale=0.75]{jordanVerification2/SubTriangle}
 \caption{Any interior point $P$ of $\triangle ABC$ is an interior point of $\triangle AB'C$.}
+\label{fig:SubTriangle}
 \end{figure}
 
 \begin{boxedfigure}
@@ -173,11 +172,11 @@ As we suggested earlier, Theorem~\ref{eq:Squeeze} is quite powerful, and allows 
 \label{fig:Squeeze1}
 \end{figure}
 
-Consider Figure~\ref{fig:Squeeze1}. Here, we are not interested in diagonals, so we have slightly modified and relabelled the diagram from Figure~\ref{fig:SqueezeDiagonal}. Now we want to interpret the point $A$ is our player's starting location, with line-of-sight to a point $B$ on the wall $P_{11}P_{12}$ of a simple polygon. The goal is to obtain line-of-sight to a given point $C$ on that same wall.
+Consider Figure~\ref{fig:Squeeze1}. Here, we are not interested in diagonals, so we have slightly modified and relabelled the diagram from Figure~\ref{fig:SqueezeDiagonal}. Now we want to interpret the point $A$ as our player's starting location, with line-of-sight to a point $B$ on the wall $P_{11}P_{12}$ of a simple polygon. The goal is to obtain line-of-sight to a given point $C$ on that same wall.
 
 The idea is that if the player proceeds far enough down their initial line-of-sight, we can easily rotate them to the new line-of-sight. We do this by applying Theorem~\ref{eq:Squeeze} and taking $path$ to be the fragment of the polygon $P_{12}P_1P_2\ldots P_{11}$. Let us think about how to fulfill the hypotheses. We are basically being asked to rule out the possibility that the polygonal path $[A,B,C]$ is not intersected by this fragment, save for possible intersections at $A$ and at $C$. 
 
-Well, we know that the segment $AB$ does not lie on the path $P_{11}P_1P_2\ldots P_{11}$, because $AB$ is supposed to be a line-of-sight. We also know that $BC$ does not intersect $P_{11}P_{12}$, because we are assuming \emph{simple} polygons: the polygon should not self-intersect the edge $P_{11}P_{12}$, and this edge contains $BC$. We will still the possibility that $P_{11}P_1P_2\ldots P_{11}$ intersects the lone point $C$, since as we shall see in \S\ref{sec:ConcaveMove}, we will sometimes need to obtain line-of-sight to a vertex, and thus set $C=P_{11}$.
+Well, we know that the segment $AB$ does not lie on the fragment $P_{12}P_1P_2\ldots P_{11}$, because $AB$ is supposed to be a line-of-sight. We also know that $BC$ does not intersect the fragment, because we are assuming \emph{simple} polygons: the polygon should not self-intersect the edge $P_{11}P_{12}$, and this edge contains $BC$. We just leave the possibility that $P_{12}P_1P_2\ldots P_{11}$ intersects the lone point $C$, since, as we shall see in \S\ref{sec:ConcaveMove}, we will sometimes need to obtain line-of-sight to a vertex, where we will set $C=P_{11}$.
 
 Applying Theorem~\ref{eq:Squeeze} is not quite enough. We now have a point $A'$ which \emph{almost} has line-of-sight to $C$. But that point $A'$ was originally intended to give us diagonals of polygons intersecting at least one vertex, and that vertex ($P_8$) is still in our way. We can fix this using \ref{eq:three}, obtaining a point $A''$ and a segment $A''C$ which lies properly in the triangle $A'BC$, and, as per the conclusion of \eqref{eq:Squeeze}, a segment which is a line-of-sight to the point $C$. We capture all of this in a corollary:
 \begin{equation}\label{eq:Squeeze2}
@@ -214,7 +213,7 @@ Therefore, we apply Theorem~\ref{eq:Squeeze} by reversing the order of $A$, $B$ 
 
 Again, we know that $AB$ is not intersected by the fragment, because we assume that the polygon is simple and so does not have such self-intersections, and we know that $BC$ is not intersected by the fragment because $BC$ is assumed to be a line-of-sight. This means we have met the hypotheses. We now obtain the point $A'$ as shown, and as before, we use \ref{eq:three} to obtain a point $A''$ between $B$ and $A'$. This player will now have line-of-sight to a non-vertex point of the segment $AB$.
 
-The reader may have noticed that we have not mentioned the segment $BP_{12}$ shown in the diagram. In fact, this segment could prove a problem. If it were chosen to lie on the other side of $BC$, then it might intersect the segment $A''C$, and if this happens, then $A''C$ will not count as a line-of-sight. Fortunately, we shall be able to rule out this circumstance when we come to apply this version of Axiom~\ref{eq:Squeeze2}. We shall always be assuming that, when we rotate our line-of-sight, the point $P_{12}$ will be known to be on the opposite side of $BC$ as the point $P_{11}$, as shown.
+The reader may have noticed that we have not mentioned the segment $BP_{12}$ shown in the diagram. In fact, this segment could prove a problem. If it were chosen to lie on the other side of $BC$, then it might intersect the segment $A''C$, and if this happens, then $A''C$ will not count as a line-of-sight. Fortunately, we shall be able to rule out this circumstance when we come to apply Theorem~\ref{eq:Squeeze2}. We shall always be assuming that, when we rotate our line-of-sight, the point $P_{12}$ will be known to be on the opposite side of $BC$ as the point $P_{11}$, as shown.
 
 To summarise, we can say that the first use of Theorem~\ref{eq:Squeeze2} allows us to reduce the \emph{distance} to the point $B$ sufficiently and thus obtain a new line-of-sight, while this second use of squeeze is telling us that we can reduce the \emph{angle} $ABC$ sufficiently. What the theorem gives us is the ability to reduce distances and angles even without a general theory for comparing them, and without any sort of arithmetic for them. We ``squeeze'' our distances and angles by working exclusively with a weak order relation and properties of incidence.
 
@@ -242,28 +241,31 @@ In this subsection, we shall deal with the case of locally convex walls. Here, w
 
 In Figure~\ref{fig:Convex1}, we start at a point $X$ which has line-of-sight to $P_1P_2$. Our goal is to reach a point $Y$ with line-of-sight to $P_2P_3$. We start by moving towards $P_1P_2$ by applying Theorem~\ref{eq:Squeeze2} as described in \S\ref{sec:MoveToNew}, seeking a line-of-sight with the vertex~$P_2$. 
 
-Applying squeeze in this way is usually a tricky business, because there are a number of hypotheses which must be fulfilled and it is not always immediately clear how. We typically started procedurally. First, we would assert our goal without any justification:
+%Applying squeeze in this way is usually a tricky business, because there are a number of hypotheses which must be fulfilled and it is not always immediately clear how. We typically started procedurally. First, we would assert our goal without any justification:
 
-\fbox{\begin{minipage}{\linewidth}\setlength\abovedisplayskip{0cm}
-\begin{multline*}
+%\fbox{\begin{minipage}{\linewidth}\setlength\abovedisplayskip{0cm}
+%\begin{multline*}
     % &\neg\code{on\_polypath}\ path\ B\\
     % &\wedge \neg(\exists X. \between{A}{X}{B} \wedge \code{on\_polypath}\ path\ X)\\
     % &\wedge \neg(\exists X. \between{B}{X}{C} \wedge \code{on\_polypath}\ path\ X)\\
     % &\implies \exists A'. \between{A}{A'}{B} \wedge \neg\exists X. \between{A'}{X}{C} \wedge \code{on\_polypath}\ path\ X.
-\small
-\code{consider}\ Y\ \code{such that}\ \between{X}{Y}{X'}\\ \wedge \neg\exists Z. \between{Y}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Z.
-\end{multline*}\end{minipage}}
+%\small
+%\code{consider}\ Y\ \code{such that}\ \between{X}{Y}{X'}\\ \wedge \neg\exists Z. \between{Y}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Z.
+%\end{multline*}\end{minipage}}
 
-Mizar~Light's default prover rapidly fails to prove this as a logical truth, and as a lucky consequence of the implementation, we are dumped back at the interpreter as if we had split off the asserted claim as a new subgoal. 
+%Mizar~Light's default prover rapidly fails to prove this as a logical truth, and as a lucky consequence of the implementation, we are dumped back at the interpreter as if we had split off the asserted claim as a new subgoal. 
 
-We then use $\code{MATCH\_MP}$ to retrieve our hypotheses as a big conjunction, and then split each off into its own subgoal. We then tackle these one at a time. Afterwards, we can gather up all the dependent assumptions and prove the original goal in one step. We just need a bit of tactic script to help \code{MESON}, but as usual, we make sure not to destructively modify the goal state, and we reference our justifying theorem \eqref{eq:Squeeze2}. The step is still largely declarative.
+\label{sec:InjectingProcedural}Applying squeeze in this way is usually a tricky business, because there are a number of hypotheses which must be fulfilled and it is not always immediately clear how. Even when we had found all the necessary hypotheses, the default \code{MESON} prover would struggle to apply them all, and so we would have to inject some procedural code as justification. In doing this, we tried to respect the aims of declarative proof. For instance, at no point do we destructively modify the proof context, and we always insist that whenever our tactics apply an assumption, we include the assumption label so that a reader can at least track the dependencies. Here, we use \code{EXISTS\_TAC} followed by \code{MATCH\_MP\_TAC}, which leaves \code{MESON} just having to discharge the assumptions of \eqref{eq:Squeeze2}.
 
+%We then use $\code{MATCH\_MP}$ to retrieve our hypotheses as a big conjunction, and then split each off into its own subgoal. We then tackle these one at a time. Afterwards, we can gather up all the dependent assumptions and prove the original goal in one step. We just need a bit of tactic script to help \code{MESON}, but as usual, we make sure not to destructively modify the goal state, and we reference our justifying theorem \eqref{eq:Squeeze2}. The step is still largely declarative.
+
+\fbox{\begin{minipage}{\linewidth}\setlength\abovedisplayskip{0cm}
 \begin{align*}
 \small
 &\code{obviously by\_incidence so consider}\ Y\ \code{such that}\ \between{X}{Y}{X'}\\
 &\qquad\wedge \forall Z. \between{Y}{Z}{P_2} \implies \neg\code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Y\\ &\qquad\code{from}\ \ldots\ \code{by}\ \code{on\_polypath},\eqref{eq:g22}\\
 &\qquad\code{using K (MATCH\_MP\_TAC}\ \eqref{eq:Squeeze2}\ \code{THEN EXISTS\_TAC}\ \alpha) & 16,17
-\end{align*}
+\end{align*}\end{minipage}}
 
 This done, we have our desired path $XY$. We know that this path does not intersect any part of the simple polygon, since it is part of our original line-of-sight. All that remains then is to rotate ourselves slightly to obtain a line-of-sight $YY'$ with some point on $P_2P_3$. This we do in Figure~\ref{fig:Convex2}, using Theorem~\ref{eq:Squeeze2} as described in \S\ref{sec:RotateToNew}. 
 
@@ -344,7 +346,7 @@ The discoverer also showed that $YY'$ does not intersect the wall $P_1P_2$. We o
 This almost completes the proof. We have not talked about the case that $P_1P_2P_3$ are collinear, which requires one application of Theorem~\ref{eq:Squeeze2}, but we hope by this stage it is clear how we achieved this, and how powerful our ``squeeze'' theorem is in allowing us to move between walls of a maze in a geometrically intuitive way.
 
 \subsection{Putting it all Together}
-We have packaged the theorem into a single declarative proof consisting of 119 steps. That we can manage such long proofs shows how easily Mizar~Light, with our additional automated tools, can scale to long and complex proofs. 
+We have packaged all the details discussed so far in this section into a single declarative proof consisting of 119 steps. That we can manage such long proofs shows how easily Mizar~Light, with our additional automated tools, can scale to long and complex proofs. 
 
 We would like to draw special attention to the hypotheses in the verified theorem \eqref{eq:PolygonMove}. Note that we do not need to assume that we are dealing with simple polygons. We just have to assume that $P_1P_2$ does not intersect the rest of the path $P_2P_3\ldots P_n$, and that $P_2P_3$ does not intersect the rest of the path $P_3P_4\ldots P_n$. These are the minimal hypotheses we need to apply Theorem~\ref{eq:Squeeze2} as described in this section. We can think of them as saying that the polygon appears \emph{locally} simple.
 
@@ -431,7 +433,7 @@ The presence of $\code{adjacent}$ is troublesome, but we have proved a theorem t
   % (`!x:a y xs. MEM (x,y) (ADJACENT xs)
   %      <=> ?ys zs. xs = APPEND ys (CONS x (CONS y zs))`,
 \vdash  \code{mem}\ (x,y)\ (\code{adjacent}\ xs) \iff 
-\exists ys\; zs.\; xs = \append{ws}{\append{[x,y]}{zs}}
+\exists ws\; zs.\; xs = \append{ws}{\append{[x,y]}{zs}}
 \end{equation*}
 
 This gives us just about everything we need to perform a rotation. We know that if the witnessed $ys$ is empty, then our wall $[x,y]$ must already be at the front of the list. Otherwise, we know that the list $xs$ is of the form
@@ -487,7 +489,7 @@ To conclude this section, we will give some perspective on what is involved in t
 \end{figure}
 
 \section{Final Steps}
-We are almost there. To finish the proof, we will need to show that when two points are on the same side of the same wall, then they are polygonal path-connected. We shall deal with this matter in \S\ref{sec:SameSideWallConnected}. First, we shall deal with the neglected matter of how we are able to obtain line-of-sight to a wall in the first place. Both problems will have us reusing our near ubiquitous Theorem~\ref{eq:Squeeze2}.
+We are almost there. To finish the proof, we will need to show that when two points are on the same side of the same wall, then they are polygonal path-connected. We shall deal with this matter in \S\ref{sec:SameSideWallConnected}. First, we shall deal with the neglected matter of how we are able to obtain line-of-sight to a wall in the first place. Both problems will have us reusing our near ubiquitous Squeeze Theorem~\eqref{eq:Squeeze2}.
 
 \subsection{Getting onto the Maze}
 If we take an arbitrary point $X$ in the plane and an arbitrary point $X'$ on a simple polygon, then a simple ray-cast gives us line-of-sight to some other point $X''$ of the maze. If this point $X''$ lies between two other vertices, we have a line-of-sight to a wall. 
@@ -635,17 +637,17 @@ The final extract of the verified proof, witnessing the final path and showing t
 One final remark: in our sketch proof from \S\ref{sec:JordanCurveFirstProof}, we actually assumed we could carry out this argument when establishing IH3 and IH5. Once again, we are making progress towards a verification of our first point-in-polygon proof. It is interesting to realise that, even if the two proofs are conceptually very different, many of the same arguments are needed for both.
 
 \section{Conclusion}
-The proof of the final theorem puts all of the pieces together. We start from three arbitrary points in the plane not on the polygonal segment, have each obtain a line-of-sight to a wall of the maze, and then use polygon rotations and Theorem~\ref{eq:PolygonMove} to find three paths to three points with line-of-sight to the first wall of the maze. We then apply  Theorem~\ref{eq:HalfPlaneCover} which says that two of these points must be on the same side of the first wall, and thus, from Theorem~\ref{eq:SameSideWallConnected}, we know that that these two points are polygonal path-connected.
+The proof of the final result, Theorem~\ref{eq:jordanFormal2}, puts all of the pieces together. We start from three arbitrary points in the plane not on the polygonal segment, have each obtain a line-of-sight to a wall of the maze, and then use polygon rotations and Theorem~\ref{eq:PolygonMove} to find three paths to three points with line-of-sight to the first wall of the maze. We then apply  Theorem~\ref{eq:HalfPlaneCover} which says that two of these points must be on the same side of the first wall, and thus, from Theorem~\ref{eq:SameSideWallConnected}, we know that that these two points are polygonal path-connected.
 
-As with the final theorem in the last chapter, the final theorem here is much more readable than the lemmas considered up to now. The theory so far builds theorems with large numbers of complicated hypotheses, such as those for Theorem~\ref{eq:SameSideWallConnected} (and remember that we have not even bothered to mention all the planar hypotheses needed for every one of these theorems). When developing a theory such as this, where theorems are almost made opaque by their hypotheses, we have to pay particularly close attention to be confident that we are making progress. It was some relief when the development paid off.
+As with the final theorem in the last chapter, the final theorem here is much more readable than the lemmas considered up to now. The theory so far builds theorems with large numbers of complicated hypotheses, such as those for Theorem~\ref{eq:SameSideWallConnected} (and remember that for brevity, we have omitted all the planar hypotheses needed for every one of these theorems). When developing a theory such as this, where theorems are almost made opaque by their hypotheses, we have to pay particularly close attention to be confident that we are making progress. It was some relief when the development paid off.
 
-\begin{align*}
+\begin{align}\ref{eq:jordanFormal2}
 \vdash &\code{simple\_polygon}\ Ps\\
        &\wedge \neg\code{on\_polyseg}\ Ps\ P\wedge \neg\code{on\_polyseg}\ Ps\ Q\wedge \neg\code{on\_polyseg}\ Ps\ R\\
        &\implies \code{seg\_connected}\ (\code{on\_polyseg}\ Ps)\ P\ Q\\
        &\qquad\quad\vee \code{seg\_connected}\ (\code{on\_polyseg}\ Ps)\ P\ R\\
        &\qquad\quad\vee \code{seg\_connected}\ (\code{on\_polyseg}\ Ps)\ Q\ R
-\end{align*}
+\end{align}
 
 To end this chapter, we provide the diagram in Figure~\ref{fig:JordanTheoryOutline} showing the major dependencies needed to prove both parts of the Polygonal Jordan Curve Theorem. Individual boxes show the major hurdles in the theory, with their size roughly correlated with the size of the proofs needed to overcome that particular hurdle. 
 

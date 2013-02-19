@@ -58,6 +58,7 @@ dot("$X'$",e.target,N);
 dot("$X''$",ps[22],NW);
 dot("$P_1$",ps[21],NE);
 dot("$P_3$",ps[23],2*W);
+dot("$P_4$",ps[24],N);
 label("$X$",e.pos,SE);
 
 shipout(prefix="SightToWall",format="pdf");

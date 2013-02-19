@@ -36,6 +36,7 @@ drawEye(e2);
 dot("$P_1$",ps[1],NW);
 dot("$P_2$",ps[2],NE);
 dot("$P_3$",ps[3],NE);
+dot("$P_4$",ps[4],NE);
 dot("$X$",e1.pos,NE+NNE);
 dot("$X'$",e1.target,N);
 dot("$Y$",e2.pos,NE+NNE);
@@ -59,6 +60,7 @@ drawEye(e2);
 dot("$P_1$",ps[1],NW);
 dot("$P_2$",ps[2],NE);
 dot("$P_3$",ps[3],NE);
+dot("$P_4$",ps[4],NE);
 
 dot("$Y$",e2.pos,NE+NNE);
 dot("$Y'$",e2.target,E);

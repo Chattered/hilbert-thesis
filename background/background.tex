@@ -56,7 +56,7 @@ The rules of HOL~Light's calculus (Figure~\ref{fig:HOLInferenceRules}) are few, 
       \infer[\code{REFL}]{P\vdash P}{} &\qquad&
       \infer[\code{TRANS}]{\Gamma\cup\Delta\vdash s=u}{\Gamma\vdash s=t&\Gamma\vdash t=u}\\
       \infer[\code{MK\_COMB}]{\Gamma\cup\Delta\vdash f\ x=f\ y}{\Gamma\vdash x = y & f = g} &&
-      \text{for any $x$ not free in $\Gamma$,}\quad \infer[\Gamma \vdash \code{ABS}]{(\lambda x. s) = \lambda x. t}{s = t}\\
+      \text{for any $x$ not free in $\Gamma$,}\quad\infer[\code{ABS}]{\Gamma \vdash (\lambda x. s) = \lambda x. t}{\Gamma \vdash s = t}\\
       \infer[\code{BETA}]{\vdash (\lambda x. t)\ x = t}{}&&
       \infer[\code{ASSUME}]{\{A\} \vdash A}{}
     \end{aligned}\\

@@ -60,7 +60,9 @@
 
 %\abstract{The \emph{Grundlagen der Geometrie} was the first systematic attempt to fill the logical gaps of Euclid's \emph{Elements}. With the aid of a theorem prover, we take several significant steps towards concluding this story by formalising the first two groups of Hilbert's axiomatics and their elementary consequences. We endeavour to stay faithful to Hilbert's prose and use a readable declarative language in the aims of producing a critical appraisal of Hilbert's original text. We develop automation in terms of general-purpose search combinators which we then tailor to Hilbert's axiomatics. These allow us to recover implicit details that are not illuminating and to explore the proof space independently of the user. Our thesis ends by describing a verified proof of the Jordan Curve Theorem for Polygons from very weak axioms.}
 
-\abstract{In this thesis, we formally verify David Hilbert's axiomatisation of ordered geometry, as it appears in the tenth and current edition of his celebrated \emph{Grundlagen der Geometrie}. Using Hilbert as a case-study, we argue that an interactive proof assistant enables us to critically analyse the structure of mathematical arguments with an unprecedented level of confidence, provided we stay faithful to the text itself. We use a readable declarative language to support this, verify proofs synthetically as much as possible, and embed automation to recover the computational detail that a mathematician would find tedious. The thesis ends in a large case study, verifying a proof of the Polygonal Jordan Curve Theorem in the very general setting of ordered geometry.}
+%\abstract{In this thesis, we formally verify David Hilbert's axiomatisation of ordered geometry, as it appears in the tenth and current edition of his celebrated \emph{Grundlagen der Geometrie}. Using Hilbert as a case-study, we argue that an interactive proof assistant enables us to critically analyse the structure of mathematical arguments with an unprecedented level of confidence, provided we stay faithful to the text itself. We use a readable declarative language to support this, verify proofs synthetically as much as possible, and embed automation to recover the computational detail that a mathematician would find tedious. The thesis ends in a large case study, verifying a proof of the Polygonal Jordan Curve Theorem in the very general setting of ordered geometry.}
+
+\abstract{In this thesis, we formalise two groups of axiomatics which characterise \emph{ordered geometry} in Hilbert's tenth and current edition of his celebrated \emph{Grundlagen ger Geometrie}. By using these axiomatics as a case-study, we provide evidence that if we can follow our sources closely, then we can use an interactive proof assistant to critically analyse the deep structure of mathematical arguments with an unprecedented level of confidence. To make the analysis easier, we choose a declarative proof language which keeps the verifications of proofs human-readable. To prevent the proofs become burdened with fussy detail typical in formalised mathematics, we implement an algebraic language that allows us to describe search strategies tailored to the domain and to declarative proof. We show how to reduce problems of ordering along a line to decision procedures for linear arithmetic, and then, armed with this powerful toolkit for formalising Hilbert's axiomatics, we tackle a major and neglected verification in ordered geometry: that the Jordan Curve Theorem for polygons follows from its very simple axiomatic foundations.}
 
 \begin{document}
 
@@ -69,13 +71,6 @@
 
 %% This creates the title page
 \maketitle
-
-%% Acknowledgements
-%\begin{acknowledgements}
-%The purpose of formal verification is to eliminate the need for peer review in mathematics and programming, and instead create a world where one only needs to exchange arguments with machine. Thankfully, we have not yet reached this uptopia, and thus, I get to thank the following human beings: 
-
-% My supervisor, Jacques Fleuriot, for helping me maintain perspective and for his excellent writing tips; my supervisors, Jacques and Alan Smaill, for reading through drafts of my thesis, complete with annoying typos; Grant Passmore for his general enthusiasm; and Steven Obua for helping me with a proof at the final hurdles.
-%\end{acknowledgements}
 
 %% Next we need to have the declaration.
 \standarddeclaration

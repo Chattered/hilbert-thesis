@@ -83,4 +83,4 @@ label("$ws$",rn2,N);
 draw("$X$",rn2--(rn2.x,Xn.y),NW);
 label("$ys'+us'$",(rn2.x,Xn.y),S);
 
-shipout(prefix="FullSimpTree2",format="pdf");
+shipout(prefix="FullSimpTree4",format="pdf");

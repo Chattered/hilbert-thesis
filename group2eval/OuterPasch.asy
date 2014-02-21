@@ -1,49 +1,58 @@
-picture original;
-currentpicture = original;
+picture veblen;
+currentpicture = veblen;
 
 unitsize(40);
 
-pair A = (2,2);
-pair B = (0,0);
+pair A = (0,0);
 pair C = (3,0);
+pair F = (2,2);
 
-draw(A--B--C--cycle);
-dot("$A$",A,N);
-dot("$B$",B,W);
-dot("$C$",C,S);
+pair G = C + 1.5*(F - C);
+pair E = midpoint(A--F);
+pair D = extension(A,C,E,G);
 
-pair D = B + 1.5*(C-B);
-pair E = midpoint(A--C);
-pair F = extension(D,E,A,B);
+draw(A--C--F--cycle,p=red);
+dot("$A$",A,W);
+dot("$B$",C,SE);
+dot("$C$",F,NE);
 
-draw(C--D);
-draw(D--F);
+draw(F--G);
+draw(G--D,p=blue);
 
-dot("$D$",D,SE);
-dot("$E$",E,NE);
-dot("$F$",F,NW);
+dot("$D$",G,N);
+dot("$E$",E,NW);
+dot("$F$",D,S);
 
-label("(a) Original Diagram",midpoint(B--D)+(0,-1));
-
-picture relabelled;
-currentpicture = relabelled;
+label("(a) Veblen's Proof",midpoint(A--C)+(0,-1));
 
 unitsize(40);
 
-draw(A--B--C--cycle);
-dot("$A$",A,N);
-dot("$C$",B,W);
-dot("$F$",C,S);
+picture hilbert;
+currentpicture = hilbert;
 
-draw(C--D);
-draw(D--F);
+unitsize(40);
 
-dot("$G$",D,SE);
-dot("$E$",E,NE);
-dot("$D$",F,NW);
+pair A = (0,0);
+pair C = (3,0);
+pair F = (2,2);
 
-label("(b) Relabelled Diagram",midpoint(B--D)+(0,-1));
+draw(A--C--F--cycle,p=red);
+dot("$A$",A,W);
+dot("$C$",C,E);
+dot("$F$",F,N);
 
-add(original.fit(),(-6,0));
+pair G = F + 1.5*(C - F);
+pair D = midpoint(A--C);
+pair E = extension(D,G,A,F);
+
+draw(C--G);
+draw(G--E,p=blue);
+
+dot("$D$",D,S);
+dot("$E$",E,NW);
+dot("$G$",G,SE);
+
+add(veblen.fit(),(-6,0));
+label("(b) Hilbert's Proof",midpoint(A--C)+(0,-1));
 
 shipout(format="pdf");

@@ -26,7 +26,7 @@ dot("$B$",B,S);
 dot("$E$",E2,E);
 dot("$G$",G,NW);
 
-label("(a) $\triangle ADG$ from $\triangle ABG$",midpoint(A--D)+(0,-1));
+label("(a) $\triangle ABG$ from $\triangle ABE$",midpoint(A--D)+(0,-1));
 
 picture pic2;
 currentpicture = pic2;
@@ -66,7 +66,7 @@ dot("$D$",D,E);
 dot("$G$",G,NW);
 dot("$H$",H,NE);
 
-label("(c) $\triangle ADG$ from $\triangle ABG$",midpoint(A--D)+(0,-1));
+label("(c) $\triangle AGH$ from $\triangle ADG$",midpoint(A--D)+(0,-1));
 
 picture pic4;
 currentpicture = pic4;

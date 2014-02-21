@@ -7,6 +7,8 @@ In \S\ref{sec:LCF}, we review the LCF approach to implementing interactive proof
 
 In \S\ref{sec:DeclarativeProof}, we introduce the idea of a declarative verification, and in \S\ref{sec:MizarLight}, we discuss the Mizar~Light language that we have used. In \S\ref{sec:MizarLightExtend}, we present previously unpublished material on some useful extensions and modifications to the Mizar~Light language.
 
+We direct the reader's attention to \S\ref{sec:Conventions}, in which we explain a few conventions on our usage of the words ``theorem'', ``formal theory'', ``verification'' and ``formalisation'' throughout the rest of the thesis.
+
 \section{Object Logic}\label{sec:ObjectLogic}
 The logic of our proof assistant is Church's Simple Theory of Types~\cite{ChurchTheoryOfTypes} or the simply-typed lambda calculus. This calculus is typically associated with the foundations of programming languages, but it was originally conceived as a foundation for logic~\cite{UntypedTheoryLambdaCalculus}, one which avoided the paradoxes of the n\"{a}ive set theories in a way that was less ``artificial'' than both ZF set theory and Russell's Ramified Type Theory~\cite{RussellTheoryOfTypes}.
 
@@ -48,7 +50,7 @@ The calculus for simple type theory used in HOL~Light is based on the primitive 
 \end{displaymath}
 We are to understand these sequents as saying that $C$ is judged true in the context of assumptions $\{A_1,A_2,\ldots,A_n\}$. The sequents are linked by inference rules, which tell us how new sequents arise from existing sequents. In other words, we prove sequents, rather than propositions.
 
-The rules of the calculus as used in HOL~Light (Figure~\ref{fig:HOLInferenceRules}) are few, and so far as we know, admit only one redundancy: the transitivity inference rule is provided as an optimisation. Each rule is expressed as a horizontal line, with sequents below the line being derivable from sequents above. We omit all types, since these can always be inferred from the terms. In fact, theorem provers based on this logic, including HOL~Light, will automatically infer the most general type of all terms~\cite{HindleyMilner}.
+The rules of the calculus as used in HOL~Light (Figure~\ref{fig:HOLInferenceRules}) are few, and so far as we know, admit only one redundancy: the transitivity inference rule is provided as an optimisation. Each rule is expressed as a horizontal line, with sequents below the line being derivable from sequents above. We omit all types, since these can always be inferred from the terms. In fact, proof assistants based on this logic, including HOL~Light, will automatically infer the most general type of all terms~\cite{HindleyMilner}.
 
 \begin{figure}
   \begin{gather*}
@@ -121,7 +123,7 @@ Sequents and inference rules in HOL~Light, as in all LCF systems, are implemente
 
 User code, again written in ML, calls the inference rules of the kernel in order to construct sequents and thereby mechanically verify theorems. All the mechanical verifications mentioned in this thesis consist of such code. However, it is rare that we use the kernel directly. Having a full programming language available to user code means that LCF systems typically offer powerful derived rules, embedded proof languages, and fully automated tools to assist in constructing sequents. HOL~Light is no exception, and we discuss some of its offerings in \S\ref{sec:UserTools}, and in Chapter~\ref{chapter:Automation}, we describe our own forward search tool.
 
-We are not expected to exploit the implementation of sequents and inference rules, and indeed \emph{cannot}. The sequent data type is made \emph{abstract} to user code, and only the kernel's inference rules are visible. ML's strong type system guarantees that user code cannot break this abstraction. Any sequent constructed in user code is a sequent that was ultimately constructed legitimately via the kernel's inference rules.
+We are not expected to exploit the implementation of sequents and inference rules, and indeed \emph{cannot}. Unlike the term data-type (\code{term} in HOL~Light), the sequent data type (\code{thm}) is made \emph{abstract} to user code, and only the kernel's inference rules are visible. ML's strong type system guarantees that user code cannot break this abstraction. Any sequent constructed in user code is a sequent that was ultimately constructed legitimately via the kernel's inference rules.
 
 \subsection{Additional Functionality}
 HOL~Light extends the simple theory of types by allowing us to add new axioms~(see \S\ref{sec:ClassicalAxioms}) and add new term and type definitions. Definitions cannot contain free variables on their right hand sides, nor can they be recursive. Thus, they are a conservative extension. We could potentially substitute the right hand sides of any definitions through all terms without affecting the validity of the derivations.
@@ -183,17 +185,17 @@ HOL~Light implements the LCF tactic system~\cite{Tactics}, in which we understan
 
 As far as tactics go, a \emph{goal} is a pair consisting of a goal formula together with \emph{hypotheses}. The purpose of a tactic is to input a goal and produce zero or more subgoals. These are then collected onto a goal stack, which acts like an agenda of problems that the user must solve. The user's aim is to apply tactics until the agenda is empty, after which, a sequent is constructed.
 
-Many tactics correspond to inference rules but applied in reverse. For instance, there is a tactic $\code{DISCH\_TAC}$ which can be applied when one's goal formula is an implication $P \implies Q$. This deletes the current subgoal and replaces it with a goal whose formula is $Q$ but now under an additional \emph{hypothesis} $P$.
+Many tactics correspond to inference rules but applied in reverse. For instance, there is a tactic $\code{DISCH\_TAC}$ which can be applied when one's goal formula is an implication $P \implies Q$. This deletes the current subgoal and replaces it with a goal whose formula is $Q$ but now under an additional hypothesis $P$.
 
 \subsection{Fully Automated Procedures}
-Some tactics in HOL~Light are decision procedures or otherwise fully automated verification tools. Generally, these are used to solve a goal \emph{outright}, thus without generating any new subgoals. Among HOL~Light's decision procedures are those for checking tautologies, for deciding problems in linear arithmetic, and for computing ideal elements via Gr\"{o}bner bases~\cite{BuchbergerGrobner}.
+Some tactics in HOL~Light are decision procedures or otherwise fully automated verification tools. Generally, these are used to solve a goal outright, thus without generating any new subgoals. Among HOL~Light's decision procedures are those for checking tautologies, for deciding problems in linear arithmetic, and for computing ideal elements via Gr\"{o}bner bases~\cite{BuchbergerGrobner}.
 
 More recently, the tools have expanded outside of ML. Eekelen et al~\cite{HOLLightBoolean} have implemented HOL~Light code to take proof certificates from external ``off-the-shelf'' checkers for universally quantified propositional logic. The certificates are processed into sequents. Similar progress has been made in HOL4~\cite{HOLBoolean} and Isabelle~\cite{IsabelleSledgehammer}.
 
 \section{Declarative Proof}\label{sec:DeclarativeProof}
 Proof assistants input verifications in broadly two forms: declarative and procedural. The difference is analogous to that between declarative and procedural programming languages. 
 
-In a procedural language, the user employs tactics to compose automated tools in order to produce the desired sequents. Different tactic languages have their own styles and idioms, but they usually support both \emph{forward} reasoning from the premises of an argument to its conclusion, and \emph{backward} reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural \emph{transformations} rather than logical formulas, which are sometimes entirely absent from procedural verifications. 
+In a procedural language, the user employs tactics to compose automated tools in order to produce the desired sequents. Different tactic languages have their own styles and idioms, but they usually support both forward reasoning from the premises of an argument to its conclusion, and backward reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural transformations rather than logical formulas, which are sometimes entirely absent from procedural verifications. 
 
 % Consider our procedural verification of the fact that $xs ++ ys = us ++ vs \iff xs = us \wedge ys = vs$ for lists $xs$, $ys$, $us$ and $vs$ where $xs$ and $ys$ have the same length:
 
@@ -207,7 +209,7 @@ In a procedural language, the user employs tactics to compose automated tools in
 % \end{align*}
 % \end{scriptsize}
 
-Declarative proof assistants on the other hand, beginning with \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The verifications show the flow of argument as \emph{steps} which introduce intermediate formulas, with branches at subproofs and case-splits. The flow of the script always moves \emph{forward} from assumptions to conclusion, focusing on \emph{what} the logical relations between formulas are, rather than \emph{how} the internal state (the goal stack in the case of tactics) is transformed to represent such relations. This style of proof assistant relies heavily on automation, guided by how the user breaks the proof down into intermediate formulas.
+Declarative proof assistants on the other hand, beginning with \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The verifications show the flow of argument as \emph{steps} which introduce intermediate formulas, with branches at subproofs and case-splits. The flow of the script always moves forward from assumptions to conclusion, focusing on \emph{what} the logical relations between formulas are, rather than \emph{how} the internal state (the goal stack in the case of tactics) is transformed to represent such relations. This style of proof assistant relies heavily on automation, guided by how the user breaks the proof down into intermediate formulas.
 
 Declarative style verification was a natural choice for verifying synthetic geometry. We wanted to directly compare our verifications with Hilbert's prose arguments,  so it made sense to produce verifications that matched the prose at least structurally. We would also suggest that procedural verifications, relying so often on contextual rewriting, do not work particularly well in the domain of synthetic geometry. This is a difficult claim to back up, because it might be that we could have fixed the ``problem'' with better representations. For now, we just note that the majority of our lemmas and theorems are non-equational and have large numbers of hypotheses. These are difficult to apply as contextual rewrite rules.
 
@@ -261,7 +263,7 @@ Mizar~Light, developed by Wiedijk~\cite{MizarLight}, is a declarative style lang
   \label{fig:MizarLight}
 \end{figure}
 
-As noticed by Harrison~\cite{MizarHOL}, the operational semantics of these primitives can be given in terms of tactics and simplified goals. The tree of goal-stacks becomes a tree of subproofs and case-splits. The hypotheses of each goal become the intermediate lemmas. Each step becomes a tactic which drives the verification \emph{forward}. Here, for instance, is a typical step one might read in one of our Mizar~Light verifications:
+As noticed by Harrison~\cite{MizarHOL}, the operational semantics of these primitives can be given in terms of tactics and simplified goals. The tree of goal-stacks becomes a tree of subproofs and case-splits. The hypotheses of each goal become the intermediate lemmas. Each step becomes a tactic which drives the verification forward. Here, for instance, is a typical step one might read in one of our Mizar~Light verifications:
 \begin{center}
 \code{consider}\ $P$ \code{such that}\ $\neg$\code{on\_line}\ P\ a \code{by}\ \eqref{eq:g12},\eqref{eq:g13a}.
 \end{center}
@@ -301,7 +303,7 @@ The problem lies with case-splitting. Here are the original combinators at work 
 \end{minipage}
 \vspace{0.5cm}
 
-Within this verification is nested a case-split on the formulas \code{p1 = p2} and \linebreak\code{$\neg$(p1 = p2)}. The steps in each case are collected in lists, which makes for a neatly structured verification, where trees of subproofs and case-splits are reflected by ML data-structures. However, the steps of an interactive verification are supposed to be applied \emph{linearly}, one-by-one, traversing an implicit tree. Here is what we prefer to write at the top-level (\code{>} marks the ML prompt):
+Within this verification is nested a case-split on the formulas \code{p1 = p2} and \linebreak\code{$\neg$(p1 = p2)}. The steps in each case are collected in lists, which makes for a neatly structured verification, where trees of subproofs and case-splits are reflected by ML data-structures. However, the steps of an interactive verification are supposed to be applied linearly, one-by-one, traversing an implicit tree. Here is what we prefer to write at the top-level (\code{>} marks the ML prompt):
 
 \vspace{0.5cm}
 \begin{minipage}{\linewidth}
@@ -351,9 +353,9 @@ Case splits are ultimately justified by proving a disjunction of all considered 
 
 Harrison's original Mizar mode for HOL Light had better support for interactive case-splitting~\cite{MizarHOL}. The drawback appears to be that it relies on potentially invalid tactics, being tactics which succeed but from which a final verification cannot be recovered. Our implementation is different. We use two functions \code{case} and \code{end}. The \code{case} function is used to introduce a new case term $P$. It then generates two subgoals, the first with $P$ as hypothesis, and the second with $\neg P$ as hypothesis. The \code{case} step, therefore, has performed a case-split on $P\vee\neg P$. The user must first prove the goal on the hypothesis of $P$. Once the goal is solved, the one remaining goal will have $\neg P$ as its hypothesis.
 
-The user now proceeds by introducing the \emph{next} case, using the \code{case} function again with a new term, say $Q$. Two subgoals are again generated, one with $Q$ and the other with $\neg Q$ as hypothesis.
+The user now proceeds by introducing the next case, using the \code{case} function again with a new term, say $Q$. Two subgoals are again generated, one with $Q$ and the other with $\neg Q$ as hypothesis.
 
-By the time the user has considered and proven all cases, the one remaining subgoal will have the negations of every considered case in its hypotheses. If the cases are exhaustive, the negations will entail a contradiction\footnote{We assume we are only interested in \emph{classical} proofs. Otherwise, this does not necessarily follow.}. This is where the \code{end} step is used. It will automatically take all the negated cases, identifying them by a case-label \code{Case} in the goal-stack, and use them as a justification for $\bot$.
+By the time the user has considered and proven all cases, the one remaining subgoal will have the negations of every considered case in its hypotheses. If the cases are exhaustive, the negations will entail a contradiction.\footnote{This only follows classically, but we have precedent here. The \code{assume} primitive is also implemented using the law of excluded middle.} This is where the \code{end} step is used. It will automatically take all the negated cases, identifying them by a case-label \code{Case} in the goal-stack, and use them as a justification for $\bot$.
 
 Suppose, for example, that we have a sequent $\vdash P \vee Q \vee R$ assigned to $\phi$ and suppose that a goal with term $G$ can be solved on each of the hypotheses $P$, $Q$ and $R$ using just the implicit automation built into Mizar~Light. Then we can write the verification:
 
@@ -419,10 +421,16 @@ Allowing interactive case-splitting worked well in practice. We would write our 
 
 Further modifications to Mizar~Light are described in Chapter~\ref{chapter:Automation}.
 
-\section{Conventions}
+\section{Conventions}\ref{sec:Conventions}
 As with any thesis of this sort, there are certain ambiguities which arise from overloading and which ought to be clarified. We will adopt some terminology.
 
-We use ``proposition'' to refer to ordinary mathematical results given in natural language and proven in prose. When we refer specifically to propositions given by Hilbert in the \emph{Grundlagen der Geometrie}, we shall use the uppercase ``THEOREM''. We then reserve the words ``theorem'' and ``lemma'' for sequents $\vdash t$ produced in HOL~Light where $t$ formalises a natural language theorem. When we talk of theorems and lemmas from here on, we are referring to mechanically verified propositions. Finally, the words ``verification'' and ``formal proof'' will be used variously for the proof scripts we use to produce our theorems.
+We use \emph{formalise} to refer to the translation of natural language statements into the term language of HOL~Light. We then reserve the words \emph{theorem} and \emph{lemma} for sequents $\emptyset \vdash t$ we have produced in HOL~Light where $t$ formalises a natural language theorem. When we talk of theorems and lemmas from here on, we are referring to results that have been mechanically verified. If we want to talk more generally about sequents $\Gamma\vdash t$ which appear during proofs, we shall use the word \emph{sequent} specifically.
+
+The term \emph{formal} definition shall be used to refer to types and terms introduced using the definitional facilities of HOL~Light, often yielding new equational theorems between the left and right hand sides of the definition which we shall notate by $\vdash_{def} x = t$.
+
+The word \emph{verification}  will be used for the ML used to construct a theorem. When we say that we \emph{verify} a proposition, we mean that we have a verification of a theorem which formalises the proposition.
+
+Finally, the word \emph{formal theory} will be used to refer to a logically coherent body of formal definitions and theorems.
 
 Throughout the thesis, we shall give sample verifications. These depict actual Ocaml code, but for readability, we elide various pieces of syntax such as brackets and semi-colons. We also introduce our own syntactic sugar, shown in the following table.
 

@@ -36,14 +36,14 @@ filldraw(fside2,project(side2),cyan+opacity(op));
 filldraw(fside3,project(side3),blue+opacity(op));
 filldraw(fside4,project(side4),red+opacity(op));
 
-dot(L="$P_1$",fside1,project(p1),S);
-dot(L="$P_2$",fside1,project(p2),E);
-dot(L="$P_3$",fside1,project(p3),W);
-dot(L="$P_4$",fside1,project(p4),N);
+dot(L="$p_1$",fside1,project(p1),S);
+dot(L="$p_2$",fside1,project(p2),E);
+dot(L="$p_3$",fside1,project(p3),W);
+dot(L="$p_4$",fside1,project(p4),N);
 
 label(L="$a_1$",fside1,project(midpoint(p1--p2)),SE);
-label(L="$a_2$",fside1,project(midpoint(p2--p3)),N);
-label(L="$a_3$",fside1,project(midpoint(p3--p1)),SW);
+label(L="$a_2$",fside1,project(midpoint(p3--p1)),SW);
+label(L="$a_3$",fside1,project(midpoint(p2--p3)),N);
 label(L="$a_4$",fside2,project(midpoint(p1--p4)),E);
 label(L="$a_5$",fside1,project(midpoint(p2--p4)),E);
 label(L="$a_6$",fside1,project(midpoint(p3--p4)),W);

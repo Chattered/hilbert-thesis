@@ -1,5 +1,6 @@
 \documentclass[phd,cisa]{infthesis}
 
+\usepackage{attrib}
 \usepackage{proof}
 \usepackage{amssymb}
 \usepackage{amsmath}
@@ -32,44 +33,31 @@
 \newcommand{\bind}{\vartriangleright}
 \newcommand{\code}{\texttt}
 \newcommand{\adjoin}[2]{\{#1\}\,\cup\,#2}
-\newcommand{\cons}[2]{#1\,:\,#2}
+\newcommand{\cons}[2]{#1\,::\,#2}
 \newcommand{\append}[2]{#1 ++ #2}
 \newcommand{\el}[2]{\code{el}\ #1\ #2}
 \renewcommand{\between}[3]{\code{between}\ #1\ #2\ #3}
 \newcommand{\online}[2]{\code{on\_line}\ #1\ #2}
 \newcommand{\onplane}[2]{\code{on\_plane}\ #1\ #2}
 \newcommand{\onpolyseg}[2]{\code{on\_polyseg}\ #1\ #2}
-\newcommand{\collinearthree}[3]{($\exists$a. #1 on a $\wedge$ #2 on a $\wedge$ #3 on a)}
-\newcommand{\collinearfour}[4]{($\exists$a. #1 on a $\wedge$ #2 on a $\wedge$ #3 on a $\wedge$ #4 on a)}
-\newcommand{\collinearfive}[5]{($\exists$a. #1 on a $\wedge$ #2 on a $\wedge$ #3 on a $\wedge$ #4 on a $\wedge$ #5 on a)}
-\newcommand{\planarthree}[3]{($\exists\alpha$. #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on a)}
-\newcommand{\planarfour}[4]{($\exists\alpha$. #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on $\alpha$ $\wedge$ #4 on a)}
-\newcommand{\planarfive}[5]{($\exists\alpha$. #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on $\alpha$ $\wedge$ #4 on $\alpha$ $\wedge$ #5 on a)}
-\newcommand{\planarsix}[6]{($\exists\alpha$. #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on $\alpha$ $\wedge$ #4 on $\alpha$ $\wedge$ #5 on a $\wedge$ #6 on a)}
-\newcommand{\planarseven}[7]{($\exists\alpha$. #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on $\alpha$ $\wedge$ #4 on $\alpha$ $\wedge$ #5 on a $\wedge$ #6 on a $\wedge$ #7 on a)}
-\newcommand{\ttriangle}[3]{$\neg$($\exists$a. #1 on a $\wedge$ #2 on a $\wedge$ #3 on a)}
+\newcommand{\collinearthree}[3]{($\exists$a.\; #1 on a $\wedge$ #2 on a $\wedge$ #3 on a)}
+\newcommand{\collinearfour}[4]{($\exists$a.\; #1 on a $\wedge$ #2 on a $\wedge$ #3 on a $\wedge$ #4 on a)}
+\newcommand{\collinearfive}[5]{($\exists$a.\; #1 on a $\wedge$ #2 on a $\wedge$ #3 on a $\wedge$ #4 on a $\wedge$ #5 on a)}
+\newcommand{\planarthree}[3]{($\exists\alpha$.\; #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on a)}
+\newcommand{\planarfour}[4]{($\exists\alpha$.\; #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on $\alpha$ $\wedge$ #4 on a)}
+\newcommand{\planarfive}[5]{($\exists\alpha$.\; #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on $\alpha$ $\wedge$ #4 on $\alpha$ $\wedge$ #5 on a)}
+\newcommand{\planarsix}[6]{($\exists\alpha$.\; #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on $\alpha$ $\wedge$ #4 on $\alpha$ $\wedge$ #5 on a $\wedge$ #6 on a)}
+\newcommand{\planarseven}[7]{($\exists\alpha$.\; #1 on $\alpha$ $\wedge$ #2 on $\alpha$ $\wedge$ #3 on $\alpha$ $\wedge$ #4 on $\alpha$ $\wedge$ #5 on a $\wedge$ #6 on a $\wedge$ #7 on a)}
+\newcommand{\ttriangle}[3]{$\neg$($\exists$a.\; #1 on a $\wedge$ #2 on a $\wedge$ #3 on a)}
 
-\newcommand{\Triangle}[4]{\neg(\exists #1.\online{#2}{a}\wedge \online{#3}{a}\wedge \online{#4}{a})}
+\newcommand{\Triangle}[4]{\neg(\exists #1.\; \online{#2}{a}\wedge \online{#3}{a}\wedge \online{#4}{a})}
 \newcommand{\fourbet}[4]{\between{#1}{#2}{#3}\wedge\between{#1}{#3}{#4}}
 \newcommand{\bounds}[3]{\text{bounds}\,#1\,#2\,#3}
 
 \title{Ordered Geometry in Hilbert's \emph{Grundlagen der Geometrie}}
 \author{Phil Scott}
 
-\abstract{In the \emph{Foundations of Geometry}, Hilbert brought Euclid's ancient axioms up to the standards of modern logic, anticipating a completely mechanical verification of their theorems. In this thesis, we use an interactive proof assistant to formalise and mechanically verify the subset of Hilbert's axioms and theorems which characterise \emph{ordered geometry}.
-
-Aiming for a 
-
-To aid our analysis, we have implemented a search algebra to explore  automated proofs conform to the structure of Hilbert's own proofs by adapting its automation to implicitly fill gaps that we feel only end up \emph{obscuring} our analysis. We end with a large critical case study, where we verify a proof of the Polygonal Jordan Curve Theorem in Hilbert's very general setting of \emph{ordered geometry}.}
-
-%\abstract{The \emph{Grundlagen der Geometrie} was the first systematic attempt to fill the logical gaps of Euclid's \emph{Elements}. Now with the aid of an interactive theorem prover, we can definitively conclude that story by mechanising Hilbert's axiomatics and their elementary consequences. Keeping as faithful to Hilbert's prose as possible, we use a readable mechanisation language that allows us to go beneath the proofs and reveal the deeper logical structure behind them. Where this structure is not illuminating, we develop new automated tools, tailored to Hilbert's axiomatics, so that the structure can be integrated \emph{implicitly} into a readable proof script. In achieving this, we shall describe a new language for proof automation.}
-
-%\abstract{The \emph{Grundlagen der Geometrie} was the first systematic attempt to fill the logical gaps of Euclid's \emph{Elements}. With the aid of a theorem prover, we take several significant steps towards concluding this story by formalising the first two groups of Hilbert's axiomatics and their elementary consequences. We endeavour to stay faithful to Hilbert's prose and use a readable declarative language in the aims of producing a critical appraisal of Hilbert's original text. We develop automation in terms of general-purpose search combinators which we then tailor to Hilbert's axiomatics. These allow us to recover implicit details that are not illuminating and to explore the proof space independently of the user. Our thesis ends by describing a verified proof of the Jordan Curve Theorem for Polygons from very weak axioms.}
-
-%\abstract{In this thesis, we formally verify David Hilbert's axiomatisation of ordered geometry, as it appears in the tenth and current edition of his celebrated \emph{Grundlagen der Geometrie}. Using Hilbert as a case-study, we argue that an interactive proof assistant enables us to critically analyse the structure of mathematical arguments with an unprecedented level of confidence, provided we stay faithful to the text itself. We use a readable declarative language to support this, verify proofs synthetically as much as possible, and embed automation to recover the computational detail that a mathematician would find tedious. The thesis ends in a large case study, verifying a proof of the Polygonal Jordan Curve Theorem in the very general setting of ordered geometry.}
-
-%\abstract{In this thesis, we formalise two groups of axiomatics which characterise \emph{ordered geometry} in Hilbert's tenth and current edition of his celebrated \emph{Grundlagen ger Geometrie}. By using these axiomatics as a case-study, we provide evidence that if we can follow our sources closely, then we can use an interactive proof assistant to critically analyse the deep structure of mathematical arguments with an unprecedented level of confidence. To make the analysis easier, we choose a declarative proof language which keeps the verifications of proofs human-readable. To prevent the proofs become burdened with fussy detail typical in formalised mathematics, we implement an algebraic language that allows us to describe search strategies tailored to the domain and to declarative proof. We show how to reduce problems of ordering along a line to decision procedures for linear arithmetic, and then, armed with this powerful toolkit for formalising Hilbert's axiomatics, we tackle a major and neglected verification in ordered geometry: that the Jordan Curve Theorem for polygons follows from its very simple axiomatic foundations.}
-
+\abstract{The \emph{Grundlagen der Geometrie} brought Euclid's ancient axioms up to the standards of modern logic, anticipating a completely mechanical verification of their theorems. The axioms are divided into five groups, each focused on a logical feature of Eucliean geometry, with the first two groups together giving us \emph{ordered geometry}, a highly limited setting where there is to be no talk of measure or angle. From these axioms, we have mechanically verified the Polygonal Jordan Curve Theorem, a result of much generality given the setting, and subtle enough to warrant a full verification.}
 \begin{document}
 
 %% First, the preliminary pages
@@ -79,8 +67,9 @@ To aid our analysis, we have implemented a search algebra to explore  automated 
 \maketitle
 
 %% Acknowledgements
-%\begin{acknowledgements}
-%\end{acknowledgements}
+\begin{acknowledgements}
+Many thanks go to my supervisor for his support and encouragement.
+\end{acknowledgements}
 
 %% Next we need to have the declaration.
 \standarddeclaration

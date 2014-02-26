@@ -10,7 +10,7 @@ pair Qn = rn + branchR;
 pair Rn = Qn + labelDepth + branchL;
 pair Sn = Qn + labelDepth + branchR;
 
-Label("$[\phi_1,\phi_2,\ldots,\phi_n]$",rn,N);
+label("$[\phi_1,\phi_2,\ldots,\phi_n]$",rn,N);
 draw("$P$",rn--Pn,NW);
 draw("$Q$",rn--Qn,NE);
 label("$[\psi_1,\psi_2,\ldots,\psi_n]$",Pn,S);

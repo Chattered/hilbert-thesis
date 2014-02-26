@@ -30,10 +30,9 @@ picture base;
 currentpicture = base;
 unitsize(30);
 
-fillPoly(pen=red, quad[0], quad[2], quad[3]);
-fillPoly(pen=lightred, quad[0], quad[1], quad[2]);
-drawPoly(quad[0],quad[2],quad[3],quad[0]);
-drawPoly(pen=dashed,quad[0],quad[1],quad[2]);
+drawPoly(pen=dashed, quad[0], quad[3], quad[2]);
+fillPoly(pen=red, quad[0], quad[1], quad[2],quad[0]);
+drawPoly(quad[0], quad[1], quad[2],quad[0]);
 dotLPt(quad[0],quad[1],quad[2],quad[3]);
 
 shipout(prefix="quadDiff2",format="pdf");

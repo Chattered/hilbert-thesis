@@ -1,38 +1,36 @@
 \chapter{Ordering in the Plane}\label{chapter:HalfPlanes}
-In the last chapter, we considered the theory of linear-ordering based on Hilbert's three-place $\code{between}$ relation. This culminated in a tactic for solving problems arranging points along a line by reducing them to a decision procedure for linear problems in natural numbers. The use of natural numbers was explicitly permitted in Veblen's ordered geometry~\cite{Veblenphd}, but not in Hilbert's. So in the last chapter, we showed how they can be recovered in higher-order logic from geometry without the axiom of infinity.
+In the last chapter, we used linear arithmetic to settle problems of points ordered along a line. But what if we want to reason about the relative positions of points in a \emph{plane}? 
 
-Our tactic reduces geometry problems to linear arithmetic, and thus allows us to reason about the relative positions of points along a line. But what if we want to reason about the relative positions of points in a \emph{plane}? For this, we can think about a line in the plane and ask which \emph{side} of the line a point in the plane must lie on. This idea of \emph{sides} is introduced next in the \emph{Grundlagen der Geometrie}, followed by analogous ideas which culminate in the definition of a \emph{ray}. The two ideas shall be the subject of this chapter. 
+For this, we note that a line partitions a plane into two sides. We can then compare points in the plane by asking on which side they are on. \emph{Sides} are formally defined in the \emph{Grundlagen der Geometrie} in Hilbert's next result, THEOREM~8, which he cites as the key theorem needed for the Polygonal Jordan Curve Theorem.
 
 \section{Definitions and Formalisation}
-After stating that there are an infinite number of points on a line in THEOREM~7, Hilbert gives the following result and definitions:
-
 \begin{quotation}
 THEOREM~8. Every line $a$ that lies in a plane $\alpha$ separates the points which are not on the plane $\alpha$ into two regions with the following property: Every point $A$ of one region determines with every point $B$ of the other region a segment $AB$ on which there lies a point of the line $a$. However any two points $A$ and $A'$ of one and the same region determine a segment $AA'$ that contains no point of $a$.
 
 \begin{center}\includegraphics{halfPlanes/halfPlanesDef}\end{center}
 
-DEFINITION. \emph{The points $A$,$A'$ are said to lie in the plane $\alpha$ on one and the same side of the line $a$ and the points $A$, $B$ are said to lie in the plane $\alpha$ on different sides of $a$.}
+DEFINITION. \emph{The points $A$, $A'$ are said to lie in the plane $\alpha$ on one and the same side of the line $a$ and the points $A$, $B$ are said to lie in the plane $\alpha$ on different sides of $a$.}
 
 DEFINITION. Let $A$, $A'$, $O$, $B$ be four points of the line $a$ such that $O$ lies between $A$ and $B$ but not between $A$ and $A'$. The points $A$, $A'$ are then said to lie \emph{on the line $a$ on one and the same side of the point $O$ and the points $A$, $B$ are said to lie on the line on different sides of the point $O$. The totality of points of the line $A$ that lie on one and the same side of $O$ is called a \emph{ray} emanating from $O$. Thus every point of a line partitions it into two rays.}
 \end{quotation}
 
-While \emph{rays} make for a useful abstraction in later definitions and axioms (see earlier work on axiomatising Group~III~\cite{ScottMScThesis}), a four-place relation $\code{same\_side}$
-relating the point $O$ and line $a$ with every other pair of points seems grossly unweildy. Besides, once we have a notion of rays, we can just say that two points are on the line $a$ on the same side of $O$ when they lie on a \emph{ray} lying on $a$ and emanating from~$O$.
+Though we shall not need the notion of rays in our verifications, we shall describe some of its formalisation. The definition is effectively the one-dimensional analogue of THEOREM~8, and we will use it to explain the general approach to verifying that theorem. We also mention that \emph{rays} make for a useful abstraction in later definitions and axioms (see \S\ref{sec:RaysDef} below).
 
-We decided we would only formalise the notion of \emph{ray}, and we took a similar attitude for the two-dimensional analogue by introducing the notion of \emph{half-planes}. A \emph{half-plane}, then, is the totality of points on the same side of a line $a$ in the plane $\alpha$. To say that two points lie on the same side of the line $a$ is precisely to say that they lie on a single half-plane in $\alpha$ and bounded by $a$. This appears to take us away from Hilbert's prose, but in \S\ref{sec:HalfPlaneTranslations}, we explain how the prose rendering can easily be recovered from the formalisation.
+Now for rays, a three-place relation $\code{same\_side}$
+relating a point with every other pair of points in space is redundant when we can just say that the two points lie on the same ray with the same origin. So we drop the relation. Similarly, we drop the relation for planes and instead introduce the two-dimensional analogue of rays, namely \emph{half-planes}. A half-plane will be the totality of points on the same side of a line $a$ in the plane $\alpha$. Instead of saying that two points lie on the same side of the line $a$ in the plane $\alpha$, we shall instead say that they lie on a single half-plane in $\alpha$ and bounded by $a$. This appears to take us away from Hilbert's prose, but in \S\ref{sec:HalfPlaneTranslations}, we explain how the prose rendering can easily be recovered from the formalisation.
 
-\subsection{Rays}
-It turned out, as we shall see in Chapters~\ref{chapter:JordanVerification1} and~\ref{chapter:JordanVerification2}, that the notion of a ray was not particularly useful in formal proofs. In this subsection, we will nevertheless justify keeping it in our formalisation. Rays are useful in Group~III, where Hilbert introduces an axiom governing congruence of angles:
+\subsection{Rays}\label{sec:RaysDef}
+We briefly justify keeping the definition of rays in our formalisation. Rays are useful in Group~III, where Hilbert introduces an axiom governing congruence of angles:
 
 \begin{quotation}
   Let $\alpha$ be a plane and $h$, $k$ any two distinct rays emanating from $O$ in $\alpha$ and lying on {\bfseries distinct lines}. The pair of rays $h$, $k$ is called an \emph{angle} and is denoted by $\angle(h,k)$ or by $\angle(k,h)$.
 
 \ldots
 
-III,4. \emph{Let $\angle (h,k)$ be an angle in a plane $\alpha$ and $a'$ a line in a plane $\alpha'$ and let a definite side of $a'$ in $\alpha'$ be given. Let $h'$ be a ray on the line $a'$ that emanates from the point $O'$. Then there exists in the plane $\alpha'$ one and only one ray $k'$ such that the angle $\angle (h,k)$ is congruent or equal to the angle $\angle (h',k')$ and at the same time all interior points of the angle $\angle (h',k')$ lie on the given side of $a'$.}
+III,~4. \emph{Let $\angle (h,k)$ be an angle in a plane $\alpha$ and $a'$ a line in a plane $\alpha'$ and let a definite side of $a'$ in $\alpha'$ be given. Let $h'$ be a ray on the line $a'$ that emanates from the point $O'$. Then there exists in the plane $\alpha'$ one and only one ray $k'$ such that the angle $\angle (h,k)$ is congruent or equal to the angle $\angle (h',k')$ and at the same time all interior points of the angle $\angle (h',k')$ lie on the given side of $a'$.}
 \end{quotation}
 
-Notice how much more complicated Hilbert's axioms have become by this group. Here, we have an axiom which juggles eight geometric entities, six of which are not even primitiv. It is easy to make a mistake in formalising this axiom if one is starting from just Hilbert's primitives. We recommend that, if this axiom is to be reliably formalised, that the notions of \emph{angle}, and thus, the dependent notion of \emph{ray} must be fully formalised and a decent theory developed before we can trust that the definitions and axiom are correct. In simple type theory, one can gain further confidence by keeping the definitions reasonably type-safe. We develop that theory in the current chapter.
+Notice how much more complicated Hilbert's axioms have become by this group. Here, we have an axiom which juggles eight geometric entities, six of which are not even primitive. It is easy to make a mistake in formalising this axiom if one is starting from just Hilbert's primitives. We recommend that, if this axiom is to be reliably formalised, that the notions of \emph{angle}, and thus, the dependent notion of \emph{ray} must be fully formalised and a decent theory developed before we can trust that the definitions and axiom are correct. In simple type theory, one can gain further confidence by introducing rays as an abstract type, which can simplify the formalisation of Axiom~III,~4 by pushing constraints into the type-checker (see earlier work~\cite{ScottMScThesis}). 
 
 \subsection{Quotienting}\label{sec:RayQuotienting}
 With a slight clarification, the ``same side'' relations in Hilbert's definitions define equivalence relations, and rays and half-planes emerge as the equivalence classes. In particular, the relation ``same side of the point $O$'' quotients the set of points in space other than a point $O$ into the set of all rays emanating from $O$, or alternatively, with \emph{origin} $O$. Note that we do not restrict the dimension here, and thus allow rays to emanate from a point in all directions. Similarly, the relation ``same side of the line $a$'' quotients the set of points in space not on the line $a$ into the set of all half-planes bounded by $a$. 
@@ -47,13 +45,14 @@ Unfortunately, we do not have this sort of equivalence relation. The ``same side
 We were not sure how best to tackle this problem, and we have not implemented a generic solution. Instead, in this section, we review one possible strategy which takes us to our new quotiented type via an intermediate type. Here, we will only consider the strategy applied to rays. The half-planes case is exactly analogous.
 
 \subsubsection{Intermediate Types}
-For any point $O$, we must consider the set of all points $P$ in space which are not on $O$. We can do this by pushing $O$ and $P$ into a pair and abstract their distinctness into a new type \code{arrow}. This is the type of \emph{arrows} $\overrightarrow{OP}$ where $O \neq P$. The origin of the arrow is the point $O$, and the arrow \emph{points} in the direction $P$.
+For any point $O$, we must consider the set of all points $P$ in space which are not on $O$. We can do this by pushing $O$ and $P$ into a pair and abstract their distinctness into a new type \code{arrow}. This is the type of directed line-segments, or \emph{arrows} $\overrightarrow{OP}$, where $O \neq P$. The origin of the arrow is the point $O$, and the arrow \emph{points} in the direction $P$.
 
 The relation ``same side of'' can now be reinterpreted on these arrows. Our relation will effectively ask whether two arrows have the same position and direction. With some abuse of HOL~Light notation (we pretend that we can extract the two endpoints of an arrow with a pattern match), we have:
 \begin{equation}\label{eq:EquivArrowDef}
   \begin{split}
     &\code{equiv\_arrow}\ :\ \code{arrow} \rightarrow \code{arrow}\rightarrow \code{bool}\\
-    &\code{equiv\_arrow}\ \overrightarrow{OP}\ \overrightarrow{OQ}\iff O = O' \wedge (P = Q \vee \between{O}{P}{Q} \vee \between{O}{Q}{P})
+    \vdash_{def} &\code{equiv\_arrow}\ \overrightarrow{OP}\ \overrightarrow{OQ}\\
+    &\qquad\iff O = O' \wedge (P = Q \vee \between{O}{P}{Q} \vee \between{O}{Q}{P})
   \end{split}
 \end{equation}
 
@@ -75,7 +74,7 @@ With the equivalence relation verified, it is a simple matter to define the quot
 \begin{displaymath}
   \code{define\_quotient\_type}\ \code{"ray"}\ (\code{"mk\_ray"},\code{"dest\_ray"})\ \code{equiv\_arrow}
 \end{displaymath}
-we introduce a new type \code{ray} into the theory, together with abstraction and representation functions $\code{mk\_ray}$ and $\code{dest\_ray}$ which map between equivalence classes of arrows and the rays they represent. These functions are typical in typed theorem provers when we want to carve out a type from a subset of an existing type. They are used to prove the most elementary theorems of the new type, the ones which require reasoning in terms of the representatives.
+we introduce a new type \code{ray} into the theory, together with abstraction and representation functions $\code{mk\_ray}$ and $\code{dest\_ray}$, similar to $\code{mk\_ind}$ and $\code{dest\_ind}$ from the last chapter. These map back-and-forth between equivalence classes of arrows and the rays they represent. 
 
 The great thing about HOL~Light's quotienting facilities is that we have no need to deal with these particular abstraction and representation functions. All formal proofs of lifted theorems will apply these functions automatically. 
 
@@ -83,15 +82,15 @@ However, HOL~Light will not automatically plumb theorems about the endpoints of 
 \begin{gather}
   \vdash_{def}\code{arrow\_origin}\ \overrightarrow{OP} = O\\
   \begin{split}
-    &\vdash\code{on\_ray\_of\_arrow}\ P\ \code{a}\\
+    &\vdash_{def}\code{on\_ray\_of\_arrow}\ P\ \code{a}\\
     &\qquad\iff P \neq \code{arrow\_origin}\ a\\
-    &\qquad\qquad\quad\wedge \code{equiv\_arrow}\ a\ (\code{mk\_arrow}\ (\code{arrow\_origin}\ a, P))
+    &\qquad\qquad\quad\wedge \code{equiv\_arrow}\ a\ (\code{mk\_arrow}\ (\code{arrow\_origin}\ a, P)).
   \end{split}
 \end{gather}
 
 It is trivial to verify that this relation is well-defined, but to use it effectively in proofs relating points of an arrow to points on the ray of an arrow, we need to manually fold and unfold the definition of arrows. It is tedious enough to verify that
 \begin{equation}
-  \vdash\code{on\_ray\_of\_arrow}\ P\ \overrightarrow{OQ} \iff P = Q\;\vee\;\between{O}{P}{Q}\;\vee\;\between{O}{Q}{P}
+  \vdash\code{on\_ray\_of\_arrow}\ P\ \overrightarrow{OQ} \iff P = Q\ \vee\ \between{O}{P}{Q}\ \vee\ \between{O}{Q}{P}.
 \end{equation}
 
 This could potentially be fixed by extending HOL~Light's quotienting facilities to handle indexed families of equivalence relations, and we would like to propose such extensions as further work. As it stands, we believe that Hilbert's geometry offers a nice example of where such facilities would be useful.
@@ -101,7 +100,7 @@ For completeness, we briefly mention the intermediate type for half-planes and t
 Our equivalence relation is unfortunately convoluted by constraints, since the main property saying when two points are on the same side of a line is a negative one and thus quite weak.
 \begin{equation}\label{eq:SameSidePlaneDef}
   \begin{split}
-    & \code{equiv\_half\_plane}\ (P,a)\ (Q,b)\\
+    \vdash_{def}& \code{equiv\_half\_plane}\ (P,a)\ (Q,b)\\
     & \qquad\iff\ a=b \\
     & \qquad\quad\qquad \wedge (\exists \alpha. \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
     & \qquad\quad\qquad\qquad \wedge \forall P. \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha)\\
@@ -113,9 +112,9 @@ Our equivalence relation is unfortunately convoluted by constraints, since the m
 The correctness of this definition may not be immediately obvious. If the reader needs more confidence than simple inspection provides, they can perhaps be assured by the fact that we have derived many of the expected theorems about half-planes. We consider these next.
 
 \section{Theory of Half-Planes}\label{sec:HalfPlaneTheory}
-The theory of rays is largely trivial when we have our linear reasoning tactic. Everything we want to know about linear order is bound up in THEOREM~6, from which that tactic was derived. Two-dimensional order is another story. We get this impression from Hilbert himself, who justifies the definition of half-planes with a distinguished theorem (THEOREM~8). He gives no corresponding theorem for rays, but instead, just assumes his definition is sound.
+The theory of rays is largely trivial when we have our linear reasoning tactic. Everything we want to know about linear order is bound up in THEOREM~6, from which that tactic was derived. Two-dimensional order is less straight forward. We get this impression from Hilbert himself, who justifies the definition of half-planes with a distinguished theorem (THEOREM~8). He gives no corresponding theorem for rays, but instead, just assumes his definition is sound.
 
-As with the theory of rays, our theory is based on lifting from an intermediate type. Many of the theorems are trivial, and are only provided to link the primitive types $\code{point}$, $\code{line}$ and $\code{plane}$ with our new type of $\code{half\_plane}$. The two non-trivial theorems we need to verify are, firstly, that the relation defined above is transitive, and secondly, that there are exactly two half-planes to each plane. As we shall see, this can be understood as a strengthening of Pasch's Axiom~\eqref{eq:g24}.
+As with the theory of rays, our theory is based on lifting from an intermediate type. Many of the theorems are trivial, and are only provided to link the primitive types $\code{point}$, $\code{line}$ and $\code{plane}$ with our new type of $\code{half\_plane}$. The two non-trivial theorems we need to verify are, firstly, that the relation defined above is transitive, and secondly, that there are exactly two half-planes to each plane. As we shall see, both theorems together can be understood as a strengthening of Pasch's Axiom~\eqref{eq:g24}.
 
 \subsection{Transitivity}
 Consider the transitivity problem. Suppose that the points $A$ and $B$ are on the same side of the line $a$, and that $B$ and $C$ are also on the same side. We must show that $A$ and $C$ are then on the same side.
@@ -126,7 +125,7 @@ Pasch's axiom \eqref{eq:g24} asserts that, given a triangle $ABC$, if a line $a$
 
 But actually, this assumption on Pasch's axiom is not necessary. The conclusion holds even if $A$, $B$ and $C$ lie on a line, though we have not been able to prove it up until now. The verification, which uses THEOREM~6 via our linear reasoning tactic, is given in Figure~\ref{fig:PaschColCase}. 
 
-Now we had proven the transitivity relation for half-planes in our earlier work in Isabelle~\cite{ScottMScThesis}, but there, we derived two lemmas whose proofs are based on numerous messy case-splits. In our new formalisation, these messy details are handled automatically, and we see the enormous usefulness our linear reasoning tactic once again.
+Now we had proven the transitivity relation for half-planes in our earlier work in Isabelle~\cite{ScottMScThesis}, but there, we derived two lemmas whose proofs are based on numerous messy case-splits. In our new formalisation, these messy details are handled automatically, and we see the usefulness of our linear reasoning tactic once again.
 
 \begin{boxedfigure}
 % let g24_col_case = theorem
@@ -173,7 +172,7 @@ Bernays thought the mere claim of a proof's existence was insufficient. In Suppl
 \begin{quotation}\label{sec:SupplementI}
 It behooves one to deduce the proof by means of THEOREM~4. It can be carried out as follows: If the line $a$ met the segments $BC$, $CA$, $AB$ at the points $D$, $E$, $F$ then these points would be distinct. By THEOREM~4 one of these points would lie between the other two.
 
-If, say, $D$ lay between $E$ and $F$, then an application of Axiom~II,4 to the triangle $AEF$ and the line $BC$ would show that this line would have to pass through a point of the segment $AE$ or $AF$. In both cases a contradiction of Axiom~II,3 or Axiom~I,2 would result.
+If, say, $D$ lay between $E$ and $F$, then an application of Axiom~II,~4 to the triangle $AEF$ and the line $BC$ would show that this line would have to pass through a point of the segment $AE$ or $AF$. In both cases a contradiction of Axiom~II,~3 or Axiom~I,~2 would result.
 \end{quotation}
 
 \begin{figure}
@@ -185,13 +184,14 @@ If, say, $D$ lay between $E$ and $F$, then an application of Axiom~II,4 to the t
 This is an indirect proof, effectively based on an impossible diagram. The key inference is in the second paragraph; that is, if $A$, $C$ and $E$ are collinear, then we can use Pasch's Axiom to conclude that $C$ must lie between $A$ and $E$, contradicting our assumptions. The diagram shows the situation in Figure~\ref{fig:SupplementI}, and shows how this step corresponds precisely to a use of the \emph{outer Pasch} version of the axiom~\eqref{eq:OuterPasch}.
 
 \begin{boxedfigure}
+  \small
   \begin{align*}
     &\code{assume}\ \Triangle{a}{A}{B}{C} & 0\\
     &\qquad\qquad \code{on\_line}\ D\ a \wedge \code{on\_line}\ E\ a \wedge \code{on\_line}\ F\ a & 1\\
     &\code{assume}\ \between{A}{D}{B} \wedge \between{A}{E}{C} \wedge \between{B}{F}{C} & 2\\
     &\code{obviously have}\ D\neq E \wedge D\neq F \wedge E\neq F\ \code{from}\ 0,2\\
     &\code{hence}\ \between{D}{E}{F}\vee\between{D}{F}{E}\vee\between{F}{D}{E}\ \code{from}\ 1\ \code{by} \ \eqref{eq:four}&3\\
-    &\code{have}\ \forall A'\;B'\;C'\;D'\;E'\;F'. \Triangle{a}{A'}{B'}{C'}\\
+    &\code{have}\ \forall A'\ B'\ C'\ D'\ E'\ F'.\; \Triangle{a}{A'}{B'}{C'}\\
     &\qquad \between{A'}{F'}{B'} \wedge \between{A'}{E'}{C'} \wedge \between{B'}{D'}{C'}\\
     &\qquad \implies \neg\between{E'}{D'}{F'}\\ 
     &\code{proof}\\
@@ -207,7 +207,7 @@ This is an indirect proof, effectively based on an impossible diagram. The key i
   \label{fig:SupplementIProof}
 \end{boxedfigure}
 
-The formal proof is shown in Figure~\ref{fig:SupplementIProof}. Our incidence discoverer from Chapter~\ref{chapter:Automation} helps keep the proof steps almost one to one with the prose. We start by concluding as Bernays does that the points $D$, $E$ and $F$ are distinct and then apply THEOREM~4 to show that one of the points lies between the other two.
+The verification is shown in Figure~\ref{fig:SupplementIProof}. Our incidence discoverer from Chapter~\ref{chapter:Automation} helps keep the proof steps almost one to one with the prose. We start by concluding as Bernays does that the points $D$, $E$ and $F$ are distinct and then apply THEOREM~4 to show that one of the points lies between the other two.
 
 Bernays next makes a without-loss-of-generality assumption. We capture this with a subproof. There is some ugly repetition here with our $\code{assume}$ steps, but after this comes the two key inferences. Note that we use the outer Pasch axiom \eqref{eq:OuterPasch}, but, unlike Bernays, we leave out any mention of \eqref{eq:g12}. If we had to be consistently fussy in citing this axiom, it would have already appeared in the first step of the proof when showing that $D$, $E$ and $F$ are distinct. We leave it to implicit automation with our $\code{obviously}$ step.
 
@@ -229,57 +229,12 @@ Our final rendition of THEOREM~8 is a theorem lifted from our intermediate type.
 \begin{equation}\label{eq:HalfPlaneCover}
   \begin{split}
     \vdash&(\forall P. \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha)\\
-    &\implies \exists hp\; hq.\; hp \neq hq\\
+    &\implies \exists hp\ hq.\; hp \neq hq\\
     &\qquad \wedge a = \code{line\_of\_half\_plane}\ hp \wedge a = \code{line\_of\_half\_plane}\ hq\\
     &\qquad \wedge (\forall P. \code{on\_plane}\ P\ \alpha\\
     &\qquad\qquad \iff \code{on\_line}\ P\ a \vee \code{half\_plane\_contains}\ hp\ P \vee \code{on\_half\_plane}\ hq\ P)
   \end{split}
 \end{equation}
-
-
-\begin{figure}
-  \begin{equation}\label{eq:halfPlaneOnPlane}
-    \begin{split}
-      &\code{half\_plane\_contains}\ hp\ P \wedge \code{on\_plane}\ P\ \alpha \\
-      &\wedge (\forall R.\;\code{on\_line}\ R\ (\code{line\_of\_half\_plane}\ hp) \implies \code{on\_plane}\ R\ \alpha) \\
-      &\implies \code{half\_plane\_contains}\ hp\ Q \implies \code{on\_plane}\ Q\ \alpha
-    \end{split}
-  \end{equation}
-  
-  \begin{equation}\label{eq:halfPlaneNotOnLine}
-    \code{half\_plane\_contains}\ hp\ P \implies \neg\code{on\_line}\ P\ (\code{line\_of\_half\_plane}\ hp)
-  \end{equation}
-  
-  \begin{equation}\label{eq:onHalfPlaneNotBet}
-    \begin{split}
-      &(\forall R.\; \code{half\_plane\_contains}\ hp\ R \implies \code{on\_plane}\ R\ \alpha) \wedge \code{on\_half\_plane}\ hp\ P\\
-      &\implies (\code{half\_plane\_contains}\ hp\ Q\\
-      &\qquad \iff \neg(\exists R. \code{on\_line}\ R\ (\code{line\_of\_half\_plane}\ hp) \wedge \between{P}{R}{Q})\\
-      &\qquad\qquad\quad \wedge \code{on\_plane}\ Q\ \alpha \wedge \neg\code{on\_line}\ Q\ (\code{line\_of\_half\_plane hp}))
-    \end{split}
-  \end{equation}
-  
-  \begin{equation}\label{eq:betOnHalfPlane1}
-    % !hp P Q R. on_line P (line_of_half_plane hp)
-    % /\ on_half_plane hp Q
-    % /\ (between P Q R \/ between P R Q) ==> on_half_plane hp R
-    \begin{split}
-      &\code{on\_line}\ P\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{half\_plane\_contains}\ hp\ Q\\
-      &\implies \between{P}{Q}{R} \vee \between{P}{R}{Q} \implies \code{half\_plane\_contains}\ hp
-    \end{split}
-  \end{equation}
-  
-  \begin{equation}\label{eq:betOnHalfPlane2}
-    \begin{split}
-      % "!P Q R hp. on_half_plane hp P /\ on_half_plane hp R /\ between P Q R 
-      % ==> on_half_plane hp Q"
-      &\code{half\_plane\_contains}\ hp\ P \wedge \code{on\_half\_plane}\ hp\ R\\
-      &\implies \between{P}{Q}{R} \implies \code{half\_plane\_contains}\ hp\ Q
-    \end{split}
-  \end{equation}
-\caption{Additional Theorems for Half-Planes}
-\label{fig:HalfPlanesAdditional}
-\end{figure}
 
 Note that we have broken convention with the name for our incidence relation, using 
 \begin{displaymath}
@@ -291,24 +246,71 @@ and not
 \end{displaymath}
 We can understand why this is necessary by considering exactly what we would have to say is well-defined to obtain this relation. It is a set of points which are incident with a given representative of half-planes from our intermediate type. 
 
-Now as predicates, point-sets are functions of type $\code{point} \rightarrow \code{bool}$, and it is a function of this form which we must verify as well-defined. We obtain the function by partial application of our intermediate incidence relation:
-\begin{multline}
-\vdash\code{same\_half\_plane}\ x\ y \implies \code{half\_plane\_intermediate\_contains}\ x \\= \code{on\_half\_plane\_intermediate\_contains}\ y
-\end{multline}
+Now as predicates, point-sets are functions of type $\code{point} \rightarrow \code{bool}$, and it is a function of this form which we must verify as well-defined. We obtain the function by partial application of an intermediate incidence relation $\code{half\_plane\_intermediate\_contains}$:
+\begin{multline*}
+\vdash\code{equiv\_intermediate\_half\_plane}\ x\ y \\
+\implies \code{half\_plane\_intermediate\_contains}\ x =\\ \code{on\_half\_plane\_intermediate\_contains}\ y
+\end{multline*}
 
 Consequently, the type $\code{point}$ must appear last in the type of our half-plane incidence relation.
-
+\begin{figure}
+\begin{equation}\tag{\ref{eq:HalfPlaneCover}}
+  \begin{split}
+    \vdash&(\forall P. \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha)\\
+    &\implies \exists hp\ hq.\; hp \neq hq\\
+    &\qquad \wedge a = \code{line\_of\_half\_plane}\ hp \wedge a = \code{line\_of\_half\_plane}\ hq\\
+    &\qquad \wedge (\forall P. \code{on\_plane}\ P\ \alpha\\
+    &\qquad\qquad \iff \code{on\_line}\ P\ a \vee \code{half\_plane\_contains}\ hp\ P \vee \code{on\_half\_plane}\ hq\ P)
+  \end{split}
+\end{equation}
+  \begin{equation}\label{eq:halfPlaneOnPlane}
+    \begin{split}
+      \vdash&\code{half\_plane\_contains}\ hp\ P \wedge \code{on\_plane}\ P\ \alpha \\
+      &\wedge (\forall R.\;\code{on\_line}\ R\ (\code{line\_of\_half\_plane}\ hp) \implies \code{on\_plane}\ R\ \alpha) \\
+      &\implies \code{half\_plane\_contains}\ hp\ Q \implies \code{on\_plane}\ Q\ \alpha
+    \end{split}
+  \end{equation}
+  
+  \begin{equation}\label{eq:halfPlaneNotOnLine}
+    \code{half\_plane\_contains}\ hp\ P \implies \neg\code{on\_line}\ P\ (\code{line\_of\_half\_plane}\ hp)
+  \end{equation}
+  
+  \begin{equation}\label{eq:onHalfPlaneNotBet}
+    \begin{split}
+      \vdash&(\forall R.\; \code{half\_plane\_contains}\ hp\ R \implies \code{on\_plane}\ R\ \alpha) \wedge \code{on\_half\_plane}\ hp\ P\\
+      &\implies (\code{half\_plane\_contains}\ hp\ Q\\
+      &\qquad \iff \neg(\exists R. \code{on\_line}\ R\ (\code{line\_of\_half\_plane}\ hp) \wedge \between{P}{R}{Q})\\
+      &\qquad\qquad\quad \wedge \code{on\_plane}\ Q\ \alpha \wedge \neg\code{on\_line}\ Q\ (\code{line\_of\_half\_plane hp}))
+    \end{split}
+  \end{equation}
+  
+  \begin{equation}\label{eq:betOnHalfPlane1}
+    % !hp P Q R. on_line P (line_of_half_plane hp)
+    % /\ on_half_plane hp Q
+    % /\ (between P Q R \/ between P R Q) ==> on_half_plane hp R
+    \begin{split}
+      \vdash&\code{on\_line}\ P\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{half\_plane\_contains}\ hp\ Q\\
+      &\implies \between{P}{Q}{R} \vee \between{P}{R}{Q} \implies \code{half\_plane\_contains}\ hp
+    \end{split}
+  \end{equation}
+  
+  \begin{equation}\label{eq:betOnHalfPlane2}
+    \begin{split}
+      % "!P Q R hp. on_half_plane hp P /\ on_half_plane hp R /\ between P Q R 
+      % ==> on_half_plane hp Q"
+      \vdash&\code{half\_plane\_contains}\ hp\ P \wedge \code{on\_half\_plane}\ hp\ R\\
+      &\implies \between{P}{Q}{R} \implies \code{half\_plane\_contains}\ hp\ Q
+    \end{split}
+  \end{equation}
+\caption{Theorems for Half-Planes}
+\label{fig:HalfPlanesAdditional}
+\end{figure}
 \section{Conclusion}
-In this chapter, we have given an overview of some of the challenges involved in developing a theory of rays and half-planes using HOL~Light's quotienting facilities. We would like to explore in more detail how we could automate the quotienting of partial relations as we have done in this chapter, and what technical difficulties would be involved in doing this. For now, our solution has been to create an abstract intermediate type so that the equivalence relations become total.
+All preliminaries needed for the Polygonal Jordan Curve Theorem have now been dealt with. This chapter completes the necessary theory, showing how to use the quotienting facilities of HOL~Light to formalise the all important notion of half-planes. As we have seen, the fact that these objects exist and cover their planes can be understood as a strengthening of Pasch's Axiom.
 
-For half-planes, we noted that the principal justification for Hilbert's THEOREM~8 can be understood purely in terms of strengthening Pasch's Axiom~\eqref{eq:g24}. We just drop one of its hypotheses and render its disjunctive conclusion as an exclusive-or. In earlier editions, this exclusive-or was originally part of the axiom, but when it was dropped, Bernays felt that a proof of how it would be recovered needed spelling out. We would argue the same for Theorem~\ref{eq:PlaneThree}. This is also needed to prove THEOREM~8, and it was originally part of the axioms in the first edition. Now that it has been factored out, it would be useful to have its proof as another supplement to the text.
+We just note that one direction in which the axiom is weakened  was singled out by Bernays as needing an explicit proof. We feel the same way about Theorem~\ref{eq:PlaneThree}. This is also needed to prove THEOREM~8. Both supplementary proofs were unnecessary in the first edition, when they were incorporated directly as axioms. But now that they have been factored out, one should be careful to derive them.
 
-Many of the issues discussed so far in Group~II go some way to reinforcing the idea that Hilbert was not particularly concerned with ordered geometry. His axioms were highly redundant, and theorems such as THEOREM~8 are left without proof even as they require a fair amount of supplementary details. 
-
-Hilbert is far more preoccupied with developing a theory of segment and angle congruence in Group~III, which makes up the bulk of his axiomatics. To help bring the point home, consider that Hilbert is happy to spell out the entirely trivial when it comes to working with congruence. He devotes three paragraphs to explaining that segment congruence is an equivalence relation, stressing that ``it is by no means obvious that {\bfseries every segment is congruent to itself.}'' This is quite a biased presentation. Hilbert omits all the the \emph{far} trickier detail needed to prove that his ``same-side'' relation for half-planes is an equivalence relation, and that it correctly partitions the plane.
-
-Hilbert's presentation gets substantially weaker for Hilbert's next theorem, which he gives without any proof and yet which requires the most difficult we have considered so far. The Polygonal Jordan Curve Theorem is the subject of the next four chapters.
-
+This omission is barely a glimmer compared to the next. Hilbert gives no indictation how to prove THEOREM~9. A discussion of this theorem and its verification take up the next four chapters.
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "../thesis"

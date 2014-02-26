@@ -1,5 +1,5 @@
 \chapter{Infinity and Linear Ordering}\label{chapter:LinearOrder}
-The next theorem on the agenda is THEOREM~6, and in this chapter, we will look at two different ways to deal with it formally. The theorem itself tells us that any finite set of points on a line is linearly ordered in terms of betweenness. One approach to formalising this is at the metalevel, where it can be treated as an algorithm for enumerating cases of betweenness. In another approach, we can formalise the theorem at the object level and verify it. In so doing, we shall derive the Axiom of Infinity. As mentioned in \S\ref{sec:InfinityDescription}, this axiom is redundant given Hilbert's geometric axioms.
+The next theorem on the agenda is THEOREM~6, and in this chapter, we will look at two different ways to deal with it formally. The theorem itself tells us that any finite set of points on a line is linearly ordered in terms of betweenness. One approach to formalising this is at the metalevel, where it can be treated as an algorithm for enumerating cases of betweenness. In another approach, we can formalise the theorem at the object level and verify it. In so doing, we shall derive the axiom of infinity. As mentioned in \S\ref{sec:InfinityDescription}, this axiom is redundant given Hilbert's geometric axioms.
 
 \section{Theorem 6 at the Metalevel}\label{sec:Theorem6}
 We ended the last chapter by discussing two of the three parts of Hilbert's proof of THEOREM~5. The third and final part of the proof can be generalised to verify THEOREM~6.
@@ -41,14 +41,13 @@ Consider applying THEOREM~6 to the special case of THEOREM~5 where there are onl
   \begin{split}
     &\exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a\wedge\code{on\_line}\ D\ a\\
     &\implies\exists A\ B\ C\ D.\ A = A' \wedge B = B' \wedge C = C' \wedge D = D'\\
-    &\qquad\quad\wedge\between{A}{B}{C} \wedge \between{A}{B}{D}\\
-    &\qquad\quad\wedge\between{B}{C}{D}
+    &\qquad\quad\wedge\between{A}{B}{C} \wedge \between{A}{B}{D}\wedge\between{B}{C}{D}
   \end{split}
 \end{equation*} 
 
-Now we can ``unwind'' this existential into the disjunction given in Figure~\ref{fig:Theorem5CasesFormalised}, and thus this sufficies as a formalisation of THEOREM~5. It is rather verbose though, and as we increase the number of points, the number of disjuncts will explode. 
+Now we can ``unwind'' this existential into the disjunction given in Figure~\ref{fig:Theorem5CasesFormalised}, and thus obtain a concrete formalisation of THEOREM~5. It is rather verbose though, and as we increase the number of points, the number of disjuncts will explode. 
 
-Hilbert does not state THEOREM~6 with any efficiency in mind, as he lists all possible betweenness relations among the points considered. We shall not be so wasteful, and will control this blow-up by finding a concise, canonical representation of the linear order of points on a line. The constraint is that we should be able to quickly derive any member of the full set of betweenness relations from the canonical representation.
+Hilbert does not state THEOREM~6 with any efficiency in mind, as he lists all possible betweenness relations among the points considered. We shall not be so wasteful, and will control the blow-up by finding a concise, canonical representation of the linear order of points on a line. The constraint is that we should be able to quickly derive any member of the full set of betweenness relations from the canonical representation.
 
 \begin{figure}
   \begin{align*}
@@ -126,7 +125,7 @@ Any logic which can formalise THEOREM~6 as a theorem rather than a metatheorem w
 \label{sec:OrderingDef}
 \begin{equation}\label{eq:OrderingDef}
   \begin{split}
-    \vdash\code{ordering}\ f\ X &\iff X = f\left(\left\{n\ \vert\ \code{finite}\ X \implies n < \left|X\right|\right\}\right)\\
+    \vdash_{def}\code{ordering}\ f\ X &\iff X = f\left(\left\{n\ \vert\ \code{finite}\ X \implies n < \left|X\right|\right\}\right)\\
     &\wedge \forall n\ n'\ n''. (\code{finite}\ X \implies n < \left|X\right| \wedge n' < \left|X\right| \wedge n'' < \left|X\right|)\\
     &\qquad\wedge n < n' \wedge n' < n'' \wedge \between{(f\ n)}{(f\ n')}{(f\ n'')}.
     \end{split}
@@ -230,7 +229,7 @@ The existence of the infinite domain $ind$ is not generally assumed as part of c
 
 This should not be the case for the primitive domains of Hilbert's geometry. Hilbert insists as much for his Theorem~7, which states quite plainly that ``between any two points on a line there exists an infinite number of points.'' It would therefore be rather elegant if we could derive \eqref{eq:InfinityAxiom} from Hilbert's geometric axioms. We can then obtain the natural numbers from the theorem, replacing the abstract type $ind$ with a concrete type of geometric objects. Our natural numbers will then be quite literally founded in geometry.
 
-We can easily capture this in HOL~Light, since the axioms of infinity, choice and extensionality are not part of the HOL~Light kernel. Instead, they are asserted with \code{new\_axiom}, exactly as we have asserted the axioms of geometry. Thus, to replace the axiom of infinity, we just do not load its theory file. Instead of asserting the axiom, we load the theory files containing our geometric axioms, and \emph{derive it}. 
+Now the axioms of infinity, choice and extensionality are not part of the HOL~Light kernel. Instead, they are asserted with \code{new\_axiom}, exactly as we have asserted the axioms of geometry. Thus, to replace the axiom of infinity, we just do not load its theory file. Instead of asserting the axiom, we load the theory files containing our geometric axioms, and \emph{derive it}. 
 
 After this, we can reload the usual HOL~Light theories which depend on the axiom of infinity, thus reproducing the whole of the HOL~Light standard library from a geometric foundation.
 
@@ -274,20 +273,20 @@ Next, by instantiating the universally quantified variables in the second (recur
 
 To verify our model, we inductively define the incidence predicates \code{on\_line} and \code{on\_plane} over the types \code{ps} and \code{lines}, as shown in Figure~\ref{fig:SmallestModel}. We then verify the following theorem in HOL~Light 
 \begin{displaymath}
-\code{Group1}\ \code{on\_line}\ \code{on\_plane}.
+\vdash\code{Group1}\ \code{on\_line}\ \code{on\_plane}.
 \end{displaymath}
 
 \begin{figure}
 \begin{minipage}[c]{4cm}
 \begin{align*}
-& \online{\code{p1}}\code{l1}\wedge \online{\code{p2}}\code{l1}\\
+\vdash_{def}&\online{\code{p1}}\code{l1}\wedge \online{\code{p2}}\code{l1}\\
 \wedge & \online{\code{p1}}\code{l2}\wedge \online{\code{p3}}\code{l2}\\
 \wedge & \online{\code{p2}}\code{l3}\wedge \online{\code{p3}}\code{l3}\\
 \wedge & \online{\code{p1}}\code{l4}\wedge \online{\code{p4}}\code{l4}\\
 \wedge & \online{\code{p2}}\code{l5}\wedge \online{\code{p4}}\code{l5}\\
 \wedge & \online{\code{p3}}\code{l6}\wedge \online{\code{p4}}\code{l6}\\
 \\
-& \onplane{\code{p1}}{\code{p1}}\wedge \onplane{\code{p2}}{\code{p1}}\wedge \onplane{\code{p3}}{\code{p1}}\\
+\vdash_{def}& \onplane{\code{p1}}{\code{p1}}\wedge \onplane{\code{p2}}{\code{p1}}\wedge \onplane{\code{p3}}{\code{p1}}\\
 \wedge & \onplane{\code{p1}}{\code{p2}}\wedge \onplane{\code{p2}}{\code{p2}}\wedge \onplane{\code{p4}}{\code{p2}}\\
 \wedge & \onplane{\code{p1}}{\code{p3}}\wedge \onplane{\code{p3}}{\code{p3}}\wedge \onplane{\code{p4}}{\code{p3}}\\
 \wedge & \onplane{\code{p2}}{\code{p4}}\wedge \onplane{\code{p3}}{\code{p4}}\wedge \onplane{\code{p4}}{\code{p1}}
@@ -299,7 +298,7 @@ After unfolding the definitions of $\code{on\_line}$ and $\code{on\_plane}$, it 
 
 The same method allows us to formally deal with the case of a weakened Axiom~\ref{eq:g13a} that we mentioned briefly in \S\ref{sec:DanglingPoints}. We just define a seven element finite set for the lines, and use the same inductive definitions for \code{on\_line} and \code{on\_plane}, leaving the seventh line ``dangling'' without any incident points. Again, by rewriting the axioms propositionally and simplifying, we can show that this is a (presumably inappropriate) model for the weakened axioms, and thus justify our formalisation of Axiom~\ref{eq:g13a}.
 
-To show that the tetrahedral model is minimal, we verified that there exist four points, six lines and four planes satisfying the conditions we gave to inductively define \code{on\_line} and \code{on\_plane} in the model. To do this, we use Theorem~\ref{eq:PlaneThree} which gives us three distinct points on a plane. We then use axiom \code{g18}, showing that there is a fourth point not on this plane. The remaining axioms are then sufficient to connect each pair of points by a unique line.
+To show that the tetrahedral model is minimal, we verified that there exist four points, six lines and four planes satisfying the conditions we gave to inductively define \code{on\_line} and \code{on\_plane} in the model. To do this, we use Theorem~\ref{eq:PlaneThree} which gives us three distinct points on a plane. We then use Axiom \ref{eq:g18}, showing that there is a fourth point not on this plane. The remaining axioms are then sufficient to connect each pair of points by a unique line.
 
 \section{Infinity}\label{sec:Infinity}
 By Group~II, there are only infinite models. Indeed, we can just apply Axiom~\ref{eq:g22} repeatedly to obtain an arbitrary number of points. That is, starting with distinct points $A$ and $B$, we can obtain points $A$, $B$, $C$, $D$, $E$, $\ldots$, $Y$, $Z$, satisfying 
@@ -335,11 +334,11 @@ Formally, the diagrams are the sets of points satisfying the following formalise
 &\qquad\wedge (\between{A}{N}{0} \vee N = 0)\notag
 \end{align}
 
-Our natural numbers are carved out from the set of all diagrams satisying this constraint. We abstract this set into a type ($\code{ind}$), giving us two functions: a constructor $\code{mk\_ind}$ which promotes any diagram into the abstract type, and a destructor $\code{dest\_ind}$ which converts an inhabitant of the abstract type into its diagram representation. In order for this to be sound, we only need to prove that the type will have at least one inhabitant. This is easily settled, since the diagram for $0$ is constructed in the proof of THEOREM~3 (\S\ref{sec:Theorem3}). 
+Our natural numbers are carved out from the set of all diagrams satisying this constraint. We abstract this set into a type ($\code{ind}$), giving us two functions: an abstraction $\code{mk\_ind}$ which promotes any diagram into the abstract type, and a representation $\code{dest\_ind}$ which converts an inhabitant of the abstract type into its diagram representation. In order for this to be sound, we only need to prove that the type will have at least one inhabitant. This is easily settled, since the diagram for $0$ is constructed in the proof of THEOREM~3 (\S\ref{sec:Theorem3}). 
 
 Each diagram is represented by six points, five of which are fixed by the successor function, while the sixth point $N$ starts at $0$ and moves step-by-step towards $A$. The points $C_1$, $C_2$ and $C_3$, shown in Figure~\ref{fig:successor}, are not explicitly represented in our type but can be determined as the intersection of $BN$ and $CD$.
 
-Informally, and for the purposes of explaining our formalisation, we identify a diagram up to a relabelling of the first five points, and thus identify a diagram with its sxith point. In this way, when we talk of the object $0$, we may be referring to the \emph{diagram} 0, which is the six-tuple representing inhabitants of $\code{ind}$, or to the \emph{point} 0, which is the sixth component of this six-tuple. Similarly, we shall talk about the \emph{diagram} that is the successor of 0, as well as the \emph{point} that is the successor of 0. This is just for convenience here. The formalisation itself is always unambiguous.
+Informally, and for the purposes of explaining our formalisation, we identify a diagram up to a relabelling of the first five points, and thus identify it with its sixth point. In this way, when we talk of the object $0$, we may be referring to the \emph{diagram} 0, which is the six-tuple representing inhabitants of $\code{ind}$, or to the \emph{point} 0, which is the sixth component of this six-tuple. Similarly, we shall talk about the \emph{diagram} that is the successor of 0, as well as the \emph{point} that is the successor of 0. This is just for convenience here. The formalisation itself is always unambiguous.
 
 Thus, the successor of $0$ is the diagram obtained by replacing $0$ with $1$, the intersection of $CD$ and $A0$. To obtain the next successor, we first find the intersection of $1B$ and $AC$, namely the point $C_1$. We then replace $1$ with the intersection of $C_1D$ and $A0$. 
 
@@ -377,7 +376,7 @@ We now need some lemmas concerning $\code{dest\_ind}$. Importantly, we need to s
 &\quad\quad \exists C'. (\exists a. \online{B}{a} \wedge \online{C'}{a} \wedge \online{N}{a})\\
 &\qquad\quad \wedge (\exists a. \online{C'}{a} \wedge \online{D}{a} \wedge \online{S}{a})\\
 &\qquad\quad \wedge (\exists a. \online{A}{a} \wedge \online{C'}{a} \wedge \online{D}{a})\\
-&\qquad\quad \wedge \between{A}{S}{0} \wedge \between{A}{S}{N})
+&\qquad\quad \wedge \between{A}{S}{0} \wedge \between{A}{S}{N}).
 \end{align*} 
 
 The key step needed to verify this theorem comes from realising that the diagrams involving the points $A,B,C,0,D$ and $A,B,C',N,D$ satisfy the same constraints. So in each case, we can apply Pasch's axiom \eqref{eq:g24} to $\triangle AB0$ and the line $C'D$ to obtain a point $S$ between $A$ and $0$. For our initial diagram, where $C' = C$, we can apply this argument directly. For the other diagrams, we just need to find the point $C'$.
@@ -389,7 +388,7 @@ Finally, we must verify that our function is one-one but not onto. Verifying tha
 
 We verified the fact that \code{ind\_suc} is not onto declaratively. The basic verification works by noting that $0$ defines the first diagram, while all images of $\code{ind\_suc}$ use a point $S$ which is defined to be strictly between $A$ and $0$. Thus, $0$ is not in the image of the function.
 \begin{equation*}
-\code{one\_one}\ \code{ind\_suc} \wedge \neg\code{onto}\ \code{ind\_suc}.
+\vdash\code{one\_one}\ \code{ind\_suc} \wedge \neg\code{onto}\ \code{ind\_suc}.
 \end{equation*}
 
 This now shows that the abstract type $\code{ind}$ has an infinite domain. However, the domain is not the natural numbers. Since we are allowed to take the successor in any diagram where the point $N$ is any point lying between $A$ and $0$, or is the point $0$ itself, it is clear that most of the images of $\code{ind\_suc}$ are \emph{not} in the sequence
@@ -428,7 +427,7 @@ Now that we can carve out the natural numbers from geometric objects, we can ret
 \begin{equation}
   \tag{\ref{eq:OrderingDef}}
   \begin{split}
-    \vdash\code{ordering}\ f\ X &\iff X = f\left(\left\{n\ \vert\ \code{finite}\ X \implies n < \left|X\right|\right\}\right)\\
+    \vdash_{def}\code{ordering}\ f\ X &\iff X = f\left(\left\{n\ \vert\ \code{finite}\ X \implies n < \left|X\right|\right\}\right)\\
     &\wedge \forall n\ n'\ n''. \code{finite}\ X \implies n < \left|X\right| \wedge n' < \left|X\right| \wedge n'' < \left|X\right|\\
     &\qquad\wedge n < n' \wedge n' < n'' \wedge \between{(f\ n)}{(f\ n')}{(f\ n'')}.
     \end{split}
@@ -443,7 +442,7 @@ since we can always permute the first and last arguments of the \code{between} p
 In some cases, we can take care of this latter symmetry by following a simple technique~\cite{HarrisonWLOG} which gives a suitable without-loss-of-generality theorem. Informally, our theorem says that if a formula is true regardless of how one arranges the free-variables, then we can assume a specific ordering on those variables. Formally, for the case of three variables:
 \begin{displaymath}
   \begin{split}
-    &\vdash(\forall m\ n. P\ m\ m\ n)\\
+    \vdash&(\forall m\ n. P\ m\ m\ n)\\
     &\wedge \left(\forall m\ n\ p. P\ m\ n\ p \iff P\ n\ m\ p\right)\\
     &\wedge \left(\forall m\ n\ p. P\ m\ n\ p \iff P\ n\ p\ m\right)\\
     &\wedge (\forall m\ n\ p. m < n \wedge n < p \implies P\ m\ n\ p)\\
@@ -453,7 +452,7 @@ In some cases, we can take care of this latter symmetry by following a simple te
 
 The second and third conditions require that the predicate $P$ holds up to any symmetry in its arguments. With these, the first condition requires that the predicate is true assuming that any two of its arguments are equal. Thus, in the fourth condition, we can assume that the the first argument is strictly less than the second which is strictly less than the third, and from this conclude that the predicate holds for any three natural numbers (which, we recall, are concretely represented by a sequence of geometric figures). 
 
-In practice, the idea to using this theorem is to match its conclusion to the goal, discharge the first three conditions using simplification, and then verify the remaining ``without loss of generality'' condition.
+In practice, we use this theorem by matching its conclusion to the goal, discharging the first three conditions using simplification, and then verifying the remaining ``without loss of generality'' condition.
 
 %Another useful definition we shall give is for the \emph{bounds} or extremities of a set of points:
 
@@ -529,11 +528,9 @@ Now let $n+1$ points on a line be given. Take $n$ of the points and label $P$, $
 \noindent or $S$ lies between $P$ and $R$.
 \vspace{0.5cm}
 
-In the last case, we apply our inductive hypothesis to the points $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $S$. 
-
-In any of cases, we can apply Theorem~\ref{eq:OrderExtend} to label all the points in order.
+In the last case, we apply our inductive hypothesis to the points $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $S$. For any of the positions of $S$, we can apply Theorem~\ref{eq:OrderExtend} to label all the points in order.
 \begin{align}
-  &\vdash_{def}\code{bounds}\ P\ Q\ X \iff P,Q \in X \wedge \forall R. R \in X - \{P,Q\} \implies \between{P}{R}{Q}\notag\\
+  &\vdash_{def} \code{bounds}\ P\ Q\ X \iff P,Q \in X \wedge \forall R. R \in X - \{P,Q\} \implies \between{P}{R}{Q}\notag\\
   \label{eq:OrderExtend}
   &\vdash\code{finite}\ X \wedge \code{ordering}\ f\ X \wedge \between{(f 0)}{(f (|X| - 1))}{x}\notag\\
   &\qquad \implies \exists g. \code{ordering}\ g\ (\{x\} \cup X)\\
@@ -545,7 +542,7 @@ In any of cases, we can apply Theorem~\ref{eq:OrderExtend} to label all the poin
 \end{proof}
 We have replaced Hilbert's reference to his earlier parts of \ref{eq:five} with a reference to its generalisation in Theorem~\ref{eq:OrderExtend}. We actually need a few other theorems. Consider that after our final application of the inductive hypothesis, we will have two orderings $f$ and $g$. The ordering $f$ applies to the points $P,$ $Q_1$, $Q_2$, $\ldots$, $Q_{n-2},$ $R$, and the ordering $g$ applies to the points $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $S$. But  there is some notational abuse here, as we gloss over the implicit assumption that we have chosen the orders such that $f(0) = g(0) = P$. In our verification, we can make this reasoning explicit with Theorem~\ref{eq:ChooseOrder}, which uses the auxiliary concept of \code{bounds}. 
 
-Our generalised proof handles its case-analyses by one application of THEOREM~4, and two applications of an induction hypothesis. This means we must apply well-founded induction rather than normal structural induction, since we must instantiate our inductive hypothesis in two different ways. 
+Our generalised proof handles its case-analyses by one application of THEOREM~4, and two applications of the inductive hypothesis. This means we must apply well-founded induction rather than normal structural induction, since we must instantiate our inductive hypothesis in two different ways. 
 
 The base case of the induction is captured in two lemmas:
 \begin{displaymath}
@@ -571,14 +568,11 @@ Hilbert closes his statement of THEOREM~6 with an obvious point which we found t
 
 To verify this, we began with a lemma: if we have two orders $f$ and $g$ where\linebreak $f(0)~=~g(0)$, then the orders are identical. 
 \begin{multline*}
-  \vdash\code{ordering}\ f\ X \wedge \code{ordering}\ g\ X \wedge f\ 0 = g\ 0
-  \wedge (\code{finite}\ x \implies n < |X|) \implies f\ n = g\ n.
+  \vdash\code{ordering}\ f\ X \wedge \code{ordering}\ g\ X \\\wedge f\ 0 = g\ 0
+  \wedge (\code{finite}\ X \implies n < |X|) \implies f\ n = g\ n.
 \end{multline*}
 
-The verification of this theorem uses induction. Aiming for a contradiction, we assume that $f\ (n+1) \neq g\ (n+1)$ and then consider the relative positions of $f\ 0$, $f\ (n+1)$ and $g\ (n+1)$ that arise from \ref{eq:four}. For each possibility, we can apply \ref{eq:five} to show that there will end up being a point between $f\ n$ and $f\ (n+1)$, or a point between $g\ n$ and $g\ (n+1)$. But the existence of such a point contradicts the verified fact that orderings are injections:
-\begin{multline*}
-  \vdash\code{ordering}\ f\ X \wedge (\code{finite}\ X \implies m < |X| \wedge n < |X|) \wedge f\ m = f\ n \implies m=n.
-\end{multline*}
+The verification of this theorem uses induction. Aiming for a contradiction, we assume that $f\ (n+1) \neq g\ (n+1)$ and then consider the relative positions of $f\ 0$, \mbox{$f\ (n+1)$} and $g\ (n+1)$ that arise from \ref{eq:four}. For each possibility, we can apply \ref{eq:five} to show that there will end up being a point in the ordering between $f\ n$ and $f\ (n+1)$, or a point between $g\ n$ and $g\ (n+1)$. Both are impossibilities.
 
 Putting these facts together, we can verify Hilbert's assertion.
 \begin{multline*}
@@ -594,7 +588,7 @@ We mention this only briefly, because we never apply this theorem in the later v
 \section{An Ordering Tactic}
 \ref{eq:six} says everything one wants to know about the order of a finite number of points on a line, but it is not immediately obvious how to apply it.
 
-One thing we can do with \ref{eq:six} is use it to convert problems involving betweenness into problems of linear arithmetic. To handle this, we will need to consider what is basically the inverse of the \code{ordering} function, given as $f$ in the following theorem:
+One thing we can do with \ref{eq:six} is use it to convert problems involving betweenness into problems of natural numbers. To handle this, we will need to consider what is basically the inverse of the \code{ordering} function, given as $f$ in the following theorem:
 \begin{equation}
 \label{eq:OrderInverse}
 \begin{split}
@@ -602,7 +596,7 @@ One thing we can do with \ref{eq:six} is use it to convert problems involving be
   &\implies \exists f. \forall A\ B\ C.\ A \in X \wedge B \in X \wedge C \in X \\
   &\qquad\qquad\implies (\between{A}{B}{C} \\
   &\qquad\qquad\qquad\qquad\iff (f\ A < f\ B \wedge f\ B < f\ C) \vee (f\ C < f\ B \wedge f\ B < f\ A))\\
-  &\quad\wedge \forall A\ B.\ A \in X \wedge B \in X \implies (A = B \iff f\ A = f\ B)
+  &\quad\wedge \forall A\ B.\ A \in X \wedge B \in X \implies (A = B \iff f\ A = f\ B).
 \end{split}
 \end{equation}
 
@@ -613,7 +607,7 @@ When discharging the assumption in Theorem~\ref{eq:OrderInverse}, we expect the 
 We package this up as the procedural tactic \code{ORDER\_TAC}, which is parameterised on a concrete set enumeration. It solves its goal by instantiating $X$ in Theorem~\ref{eq:OrderInverse}, running an incidence discoverer as a tactic via \code{discover\_tac} (see \S\ref{sec:DiscoverTac}), and finally discharging the assumption in Theorem~\ref{eq:OrderInverse} by rewriting. It then hands over to HOL~Light's decision procedure for linear arithmetic, \code{ARITH\_TAC}.
 
 \subsection{Example}
-To round up this chapter, we will demonstrate the use of our linear reasoning tactic \code{ORDER\_TAC} by applying it to another theorem which says that there is an infinite number of points between any two others points. We have already effectively proven this theorem using the Dedekind-infinite definition of infinite, but here, we use the HOL~Light predicate $\code{INFINITE}$ which is just the complement of the recursively defined predicate $\code{FINITE}$.
+To round up this chapter, we will demonstrate the use of our linear reasoning tactic \code{ORDER\_TAC} by applying it to another theorem which says that there is an infinite number of points between any two others points. We have already effectively proven this theorem using the Dedekind definition of infinite, but here, we use the HOL~Light predicate $\code{infinite}$ which is just the complement of the recursively defined predicate $\code{finite}$.
 
 %In a sense, this has been covered indirectly by Theorem~\ref{eq:Infinity}, but our purpose with that theorem was to settle foundational questions about our logical assumptions, and provide us with enough expressive power to formally verify THEOREM~6. Here, we can be more direct in our formalisation.
 \begin{quotation}THEOREM~7. Between any two points on a line there exists an infinite number of points.
@@ -626,7 +620,7 @@ We start our proof by assuming that the set of points between $P$ and $Q$ is fin
 
 We describe the proof briefly. In the first case, we just use THEOREM~3 twice to find two points between $P$ and $Q$, from which we can obtain a contradiction. In the second case, we get to apply \ref{eq:six}. The basic idea is as follows: we obtain an ordering $f$ of all points between $P$ and $Q$, and then take the first two elements of this ordering, namely $f\ 0$ and $f\ 1$. Via THEOREM~3, we can find a point $R$ that lies strictly between them. According to our assumption, this point must be in the image of $f$. But this contradicts the definition of an ordering.
 
-The part of our verification where we apply our linear ordering tactic might come as a surprise. It is actually used to verify a point glossed over in the proof, namely, that $R$ must be in the image of $f$. To show this, we must verify that $R$ lies between $P$ and $Q$.
+The part of our verification where we apply our linear ordering tactic might come as a surprise. It is actually used to verify a point glossed over in the last paragraph, namely, that $R$ must be in the image of $f$. To show this, we must verify that $R$ lies between $P$ and $Q$.
 
 Before we had implemented our tactic, we tried to verify this matter directly using \ref{eq:four} and \ref{eq:five}, but we gave up. The necessary case-analyses were just not intuitive to us. But \code{ORDER\_TAC} takes care of the matter elegantly.
 
@@ -642,17 +636,11 @@ Before we had implemented our tactic, we tried to verify this matter directly us
 \end{align*}\end{minipage}}\linebreak
 
 \section{Conclusion}
-In this chapter, we tackled the verification of Hilbert's THEOREM~6. This theorem is something of a puzzle as far as a verification goes, since it is given in terms of syntax and therefore has the appearance of a metatheorem. Its verification therefore, requires that we have a logic powerful enough to represent the syntactic manipulation behind the metatheorem. Since syntax can grow arbitrarily large, this requires at least a logic where the domain of interpretation is provably infinite.
+This chapter has been concerned with the theory of linear-ordering based on Hilbert's three-place $\code{between}$ relation, culminating in a tactic for solving problems arranging points along a line by reducing them to a decision procedure for linear problems in natural numbers. The use of natural numbers was explicitly permitted in Veblen's ordered geometry~\cite{Veblenphd}, but not in Hilbert's. We have closed the gap by showing how they can be recovered in higher-order logic from geometry without the axiom of infinity.
 
-We aim to be conservative, so while we assume the power of higher-order logic, we do not assume the axiom of infinity. Instead, we have shown that Hilbert's first two groups of axioms imply infinity as a theorem. On the way, we verified that the first group alone cannot do this, since it admits a finite model.
+We provided another way to deal with ordering problems, by interpreting Hilbert's THEOREM~6 as a metatheorem, and finding a way to express linear problems as efficient stacks of betweenness formulas. The approach is more limited, since it assumes that all points considered in the problem are distinct, and we found that this assumption is too strong in practice, but we might expect it to have better performance in some cases, since it is more carefully tailored to Hilbert's geometry. We leave analysis of this matter to future work, and use the reduction to linear arithmetic for the rest of our verification.
 
-We described two ways that we can implement THEOREM~6 as a tactic. We suggest this is more faithful to Hilbert's intentions, since the theorem is metatheoretical and computational, manipulating labellings according to a scheme.
-
-Our first tactic requires settling on a way to represent stacked betweenness claims and then writing procedures to enumerate all possible stackings for a given finite list of points. Our second strategy was to use our formally verified THEOREM~6 to convert betweenness problems into arithmetical problems. That way, we can reuse decision procedures for linear arithmetic.
-
-The second tactic has the advantage that it automatically copes with problems with equations and inequalities. In our first tactic, we assume that all points are distinct when we enumerate the possible orderings,  and we found that this assumption is too strong in practice. That said, we expect that our first tactic has potentially better performance, since it is more carefully tailored to Hilbert's geometry. We leave analysis of this matter to future work.
-
-This concludes the description of the automation we have implemented for our verification: in summary, we use a search algebra to handle the implicit incidence reasoning from Group~I, and a tactic to handle linear reasoning from Group~II. These two automated tools were used extensively in the rest of our verification, which will be discussed in the remaining chapters. 
+We have now covered all the automation we will use for our verification of the Polygonal Jordan Curve Theorem: in summary, we use a search algebra to handle the implicit incidence reasoning from Group~I, and a tactic to handle linear reasoning from Group~II. These two automated tools will be used extensively in the remaining verifications, which will be discussed in the remaining chapters. 
 
 %The step case in our recursive metalevel procedure used two recursive calls on two different sets of points. So if we intend to do the same for the inductive hypothesis, then our induction cannot be the default one for finite sets, which has the form
 

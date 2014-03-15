@@ -32,7 +32,7 @@ picture pic3;
 unitsize(pic3,20);
 pic3.add(basePicture);
 currentpicture=pic3;
-seg((4,3),(0,-1),NE,SW);
+seg((0,-1),extension((0,-1),(4,3),(0,2),(1.5,1.5)),SW,NNW);
 dot(extension((0,-1),(4,3),tri[0],tri[1]),p=red);
 
 picture pic4;

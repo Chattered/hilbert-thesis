@@ -1,14 +1,13 @@
-\chapter{Group~II Axioms and Elementary Consequences}\label{app:Group2}
+\chapter{Elementary Consequences of Group~II}\label{app:Group2}
 
-\section{Axioms}
-
-\section{Elementary Consequences}
-\begin{align}
-  \tag{\ref{eq:PaschPointSet}}
-  &\neg\code{collinear}\ \{A,B,C\}\wedge\neg\code{collinear}\ \{A,D,E\}\wedge\neg\code{collinear}\ \{C,D,E\}\\
-  &\wedge\code{planar}\ \{A,B,C,D,E\}\wedge\between{A}{D}{B}\\
-  &\implies\exists F. \code{collinear}\ \{D,E,F\} \wedge (\between{A}{F}{C}\vee\between{B}{F}{C}).
-\end{align} 
+\begin{equation}
+    \tag{\ref{eq:PaschPointSet}}
+  \begin{aligned}
+    &\neg\code{collinear}\ \{A,B,C\}\wedge\neg\code{collinear}\ \{A,D,E\}\wedge\neg\code{collinear}\ \{C,D,E\}\\
+    &\wedge\code{planar}\ \{A,B,C,D,E\}\wedge\between{A}{D}{B}\\
+    &\implies\exists F.\; \code{collinear}\ \{D,E,F\} \wedge (\between{A}{F}{C}\vee\between{B}{F}{C})
+  \end{aligned} 
+\end{equation}
 
 \begin{equation}\label{eq:PaschPointSetUnfold}
   \begin{split}
@@ -27,10 +26,10 @@
     &\Triangle{a}{A}{B}{C}\\
     &\wedge\Triangle{a}{A}{D}{E}\\
     &\wedge\Triangle{a}{C}{D}{E}\\
-    &\wedge(\exists\alpha. \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\\
+    &\wedge(\exists\alpha.\; \code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\\
     &\qquad\wedge \code{on\_plane}\ D\ \alpha\wedge \code{on\_plane}\ E\ \alpha)\\
     &\wedge\between{A}{D}{B}\\
-    &\implies\exists F. (\exists a. \code{on\_line}\ D\ a\wedge \code{on\_line}\ E\ a\wedge \code{on\_line}\ F\ a)\\
+    &\implies\exists F.\; (\exists a.\; \code{on\_line}\ D\ a\wedge \code{on\_line}\ E\ a\wedge \code{on\_line}\ F\ a)\\
     &\qquad\qquad (\between{A}{F}{C}\vee\between{B}{F}{C})
   \end{split}
 \end{equation}
@@ -42,8 +41,8 @@
   %  /\ between A B D /\ between A X C
   %  ==> ?Y. between D Y X /\ between B Y C"
   \begin{split}
-    &\Triangle{a}{A}{B}{C} \wedge \between{B}{C}{D} \wedge \between{A}{E}{C}\\ 
-    &\qquad\implies \exists F. \between{D}{E}{F} \wedge \between{A}{F}{B}
+    &\Triangle{a}{A}{B}{C}\\ & \wedge \between{B}{C}{D} \wedge \between{A}{E}{C}\\ 
+    &\qquad\implies \exists F.\; \between{D}{E}{F} \wedge \between{A}{F}{B}
   \end{split}
 \end{equation}
 
@@ -54,14 +53,14 @@
   %    /\ between A B D /\ between B X C
   %    ==> ?Y. between D X Y /\ between A Y C"
   \begin{split}
-    &\Triangle{a}{A}{B}{C} \wedge \between{B}{C}{D} \wedge \between{A}{E}{B}\\ 
-    &\qquad\implies \exists F. \between{D}{F}{E} \wedge \between{A}{F}{C}.
+    &\Triangle{a}{A}{B}{C}\\ & \wedge \between{B}{C}{D} \wedge \between{A}{E}{B}\\ 
+    &\qquad\implies \exists F.\; \between{D}{F}{E} \wedge \between{A}{F}{C}
   \end{split}
 \end{equation}
 
 \begin{equation}\label{eq:three}\tag{THEOREM~3}
 % "!A C. ~(A = C) ==> ?D. between A D C"
-A \neq C \rightarrow \exists D. \between{A}{D}{C}
+A \neq C \implies \exists D.\; \between{A}{D}{C}
 \end{equation}
 
 \begin{equation}\label{eq:four}\tag{THEOREM~4}
@@ -86,9 +85,9 @@ A \neq C \rightarrow \exists D. \between{A}{D}{C}
   \end{split}
 \end{equation}
 
-\begin{equation}
-  A \neq B \implies INFINITE\ \{ P \vert \between{A}{P}{B} \}
-\end{equation}
+\begin{equation*}
+  A \neq B \implies \code{infinite}\ \{ P \vert \between{A}{P}{B} \}
+\end{equation*}
 
 \begin{equation}\tag{\ref{eq:SupplementI}}
   % |- !A B C D E Fa.
@@ -108,7 +107,7 @@ A \neq C \rightarrow \exists D. \between{A}{D}{C}
 
 \section{Half-Planes}
 \begin{equation*}
-  \exists P. \code{on\_half\_plane}\ hp\ P
+  \exists P.\; \code{on\_half\_plane}\ hp\ P
 \end{equation*}
 
 \begin{equation*}
@@ -127,18 +126,18 @@ A \neq C \rightarrow \exists D. \between{A}{D}{C}
 \begin{equation*}
   \begin{split}
     &\Triangle{a}{A}{B}{C}\\
-    &\implies \exists! hp. \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp)\\
+    &\implies \exists! hp.\; \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp)\\
     &\qquad\qquad\wedge\code{on\_line}\ B\ (\code{line\_of\_half\_plane}\ hp)\\
-    &\qquad\qquad\wedge\code{on\_half\_plane}\ hp\ C.
+    &\qquad\qquad\wedge\code{on\_half\_plane}\ hp\ C
 \end{split}
 \end{equation*}
 
 \begin{equation}\tag{\ref{eq:HalfPlaneCover}}
   \begin{split}
-    &(\forall P. \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha)\\
+    &(\forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha)\\
     &\implies \exists hp\; hq.\; hp \neq hq\\
     &\qquad \wedge a = \code{line\_of\_half\_plane}\ hp \wedge a = \code{line\_of\_half\_plane}\ hq\\
-    &\qquad \wedge (\forall P. \code{on\_plane}\ P\ \alpha\\
+    &\qquad \wedge (\forall P.\; \code{on\_plane}\ P\ \alpha\\
     &\qquad\qquad \iff \code{on\_line}\ P\ a \vee \code{on\_half\_plane}\ hp\ P \vee \code{on\_half\_plane}\ hq\ P)
   \end{split}
 \end{equation}
@@ -147,7 +146,7 @@ A \neq C \rightarrow \exists D. \between{A}{D}{C}
   \begin{split}
     &(\forall R.\; \code{on\_half\_plane}\ hp\ R \implies \code{on\_plane}\ R\ \alpha) \wedge \code{on\_half\_plane}\ hp\ P\\
     &\implies (\code{on\_half\_plane}\ hp\ Q\\
-    &\qquad \iff \neg(\exists R. \code{on\_line}\ R\ (\code{line\_of\_half\_plane}\ hp) \wedge \between{P}{R}{Q})\\
+    &\qquad \iff \neg(\exists R.\; \code{on\_line}\ R\ (\code{line\_of\_half\_plane}\ hp) \wedge \between{P}{R}{Q})\\
     &\qquad\qquad\quad \wedge \code{on\_plane}\ Q\ \alpha \wedge \neg\code{on\_line}\ Q\ (\code{line\_of\_half\_plane hp}))
   \end{split}
 \end{equation}
@@ -173,7 +172,7 @@ A \neq C \rightarrow \exists D. \between{A}{D}{C}
 
 \section{Rays}
 \begin{equation*}
-  \exists P. \code{on\_ray}\ r\ P
+  \exists P.\; \code{on\_ray}\ r\ P
 \end{equation*}
 
 \begin{equation*}
@@ -208,8 +207,8 @@ A \neq C \rightarrow \exists D. \between{A}{D}{C}
          %               X = ray_origin r \/ on_ray r X \/ on_ray s X))
   \begin{split}
     &\code{on\_line}\ P\ a\\
-    &\qquad\implies \exists r\;s. r \neq s\wedge P = \code{ray\_origin}\ r \wedge Q = \code{ray\_origin}\ s\\
-    &\qquad\qquad \wedge (\forall X. \code{on\_line}\ X\ a \iff X = \code{ray\_origin}\ r \vee \code{on\_ray}\ r\ X \vee \code{on\_ray}\ s\ X)
+    &\qquad\implies \exists r\ s.\; r \neq s\wedge P = \code{ray\_origin}\ r \wedge Q = \code{ray\_origin}\ s\\
+    &\qquad\qquad \wedge (\forall X.\; \code{on\_line}\ X\ a \iff X = \code{ray\_origin}\ r \vee \code{on\_ray}\ r\ X \vee \code{on\_ray}\ s\ X)
     \end{split}
 \end{equation*}
 
@@ -221,7 +220,7 @@ A \neq C \rightarrow \exists D. \between{A}{D}{C}
 %               ~(Q = ray_origin r) /\
 %               ~between P (ray_origin r) Q /\
 %               on_line Q a)
-    &(\forall R. \code{on\_ray}\ r\ R \implies \code{on\_line}\ R\ a) \wedge \code{on\_ray}\ r\ P\\
+    &(\forall R.\; \code{on\_ray}\ r\ R \implies \code{on\_line}\ R\ a) \wedge \code{on\_ray}\ r\ P\\
     &\qquad\implies (\code{on\_ray}\ r\ Q\\
     &\qquad\qquad\iff Q \neq \code{ray\_origin}\ r \wedge \neg\between{P}{(\code{ray\_origin}\ r)}{Q} \wedge \code{on\_line}\ Q\ a
   \end{split}

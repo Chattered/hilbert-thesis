@@ -53,7 +53,7 @@ label("$\bot$",ps[5]--ps[6],SE);
 label("$\bot$",ps[6]--ps[7],S);
 label("$\bot$",ps[7]--ps[8],W);
 
-draw(pathOfPolyseg(ps),p=currentpen+1);
+draw(pathOfPolyseg(ps),p=red);
 label("(a)",ps[7]--ps[4],(0,-30));
 
 picture p1;
@@ -86,9 +86,9 @@ label("$\bot$",ps[5]--ps[6],SE);
 label("$\bot$",ps[6]--ps[7],S);
 label("$\bot$",ps[7]--ps[8],W);
 
-draw(pathOfPolyseg(ps),p=currentpen+1);
+draw(pathOfPolyseg(ps),p=red);
 
-add(p.fit(),(-10,0));
+add(p.fit(),(0,8));
 label("(b)",ps[7]--ps[4],(0,-30));
 
 shipout(format="pdf");

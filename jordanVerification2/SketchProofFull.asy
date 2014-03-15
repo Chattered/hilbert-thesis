@@ -129,6 +129,6 @@ label("$P_2$",ps[20],E);
 //dot("$P3$",e.target+(1,-1),SW);
 //dot(e.target);
 
-shipout(prefix="SketchProofFull",format="eps");
+shipout(prefix="SketchProofFull",format="pdf");
 
 

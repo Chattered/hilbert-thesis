@@ -18,11 +18,11 @@ pair E2 = extension(A,D,C,G);
 draw(B--G);
 draw(A--E2);
 
-dot("$B$",B,S);
+dot("$B$",B,S,p=red);
 dot("$D$",D,NW);
-dot("$E$",E2,NE);
+dot("$E$",E2,NE,p=red);
 
-draw(B--E2,p=dashed);
+draw(B--E2,p=dashed+red);
 draw(C--D,p=dashed);
 dot("$F$",extension(B,E2,C,D),E+E);
 
@@ -33,8 +33,9 @@ currentpicture = pic2;
 unitsize(35);
 
 draw(A--C--G--cycle);
-dot("$A$",A,W);
-dot("$C$",C,E);
+draw(A--C,p=red+dashed);
+dot("$A$",A,W,p=red);
+dot("$C$",C,E,p=red);
 dot("$G$",G,N);
 
 pair B = A + 0.4*(C-A);
@@ -58,7 +59,7 @@ unitsize(35);
 
 draw(A--C--G--cycle);
 dot("$A$",A,W);
-dot("$C$",C,E);
+dot("$C$",C,E,p=red);
 dot("$G$",G,N);
 
 pair B = A + 0.4*(C-A);
@@ -69,10 +70,10 @@ draw(B--G);
 draw(A--E2);
 
 dot("$B$",B,S);
-dot("$D$",D,NW);
+dot("$D$",D,NW,p=red);
 dot("$E$",E2,NE);
 
-draw(C--D,p=dashed);
+draw(C--D,p=dashed+red);
 draw(B--E2,p=dashed);
 dot("$F$",extension(C,D,B,E2),2*E);
 

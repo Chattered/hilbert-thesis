@@ -16,7 +16,7 @@ e.target=midpoint(p2--p3);
 drawEye(e,pen=blue+opacity(0.5));
 
 e.target=midpoint(p3--p4);
-drawEye(e,pen=green+opacity(0.5));
+drawEye(e,pen=orange+opacity(0.5));
 
 e.target=midpoint(p4--p1);
 drawEye(e,pen=red+opacity(0.5));

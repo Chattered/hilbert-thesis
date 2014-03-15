@@ -10,8 +10,8 @@ pair P = (1.5,0.8);
 pair Q = extension(A,P,A2,C);
 
 draw(A--B--C--cycle);
-axialshade(A--B--C--cycle,lightred+opacity(0.5,blend="Luminosity"),A,darkred+opacity(0.5,blend="Luminosity"),midpoint(B--C));
-axialshade(A--A2--C--cycle,lightblue+opacity(0.5,blend="Luminosity"),A,darkblue+opacity(0.5,blend="Luminosity"),midpoint(A2--C));
+//axialshade(A--B--C--cycle,lightred+opacity(0.5,blend="Luminosity"),A,darkred+opacity(0.5,blend="Luminosity"),midpoint(B--C));
+//axialshade(A--A2--C--cycle,lightblue+opacity(0.5,blend="Luminosity"),A,darkblue+opacity(0.5,blend="Luminosity"),midpoint(A2--C));
 
 dot("$A$",A,SW);
 dot("$B$",B,S);

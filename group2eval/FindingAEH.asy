@@ -12,11 +12,11 @@ pair G = B+0.4*(F-B);
 pair E2 = extension(A,G,C,F);
 pair H = extension(D,G,C,F);
 
-draw(A--D,p=lightgreen);
-draw(B--F,p=lightgreen);
-draw(C--F,p=lightgreen);
-draw(A--E2,p=lightgreen);
-draw(D--G,p=lightgreen);
+draw(A--D,p=green);
+draw(B--F,p=green);
+draw(C--F,p=green);
+draw(A--E2,p=green);
+draw(D--G,p=green);
 
 draw(A--B--E2--cycle,p=red);
 draw(A--B--G--cycle,p=dashed+1);
@@ -32,11 +32,11 @@ picture pic2;
 currentpicture = pic2;
 unitsize(40);
 
-draw(A--D,p=lightgreen);
-draw(B--F,p=lightgreen);
-draw(C--F,p=lightgreen);
-draw(A--E2,p=lightgreen);
-draw(D--G,p=lightgreen);
+draw(A--D,p=green);
+draw(B--F,p=green);
+draw(C--F,p=green);
+draw(A--E2,p=green);
+draw(D--G,p=green);
 
 draw(A--B--G--cycle,p=red);
 draw(A--D--G--cycle,p=dashed+1);
@@ -52,11 +52,11 @@ picture pic3;
 currentpicture = pic3;
 unitsize(40);
 
-draw(A--D,p=lightgreen);
-draw(B--F,p=lightgreen);
-draw(C--F,p=lightgreen);
-draw(A--E2,p=lightgreen);
-draw(D--G,p=lightgreen);
+draw(A--D,p=green);
+draw(B--F,p=green);
+draw(C--F,p=green);
+draw(A--E2,p=green);
+draw(D--G,p=green);
 
 draw(A--D--G--cycle,p=red);
 draw(A--H--G--cycle,p=dashed+1);
@@ -72,11 +72,11 @@ picture pic4;
 currentpicture = pic4;
 unitsize(40);
 
-draw(A--D,p=lightgreen);
-draw(B--F,p=lightgreen);
-draw(C--F,p=lightgreen);
-draw(A--E2,p=lightgreen);
-draw(D--G,p=lightgreen);
+draw(A--D,p=green);
+draw(B--F,p=green);
+draw(C--F,p=green);
+draw(A--E2,p=green);
+draw(D--G,p=green);
 
 draw(A--H--G--cycle,p=red);
 draw(A--E2--H--cycle,p=dashed+1);

@@ -180,7 +180,7 @@ dot("$P_3$",ps[2],NE);
 dot("$P_4$",ps[3],NE);
 dot("$P_5$",ps[4],NE);
 dot("$O$",i,NE);
-dot("$O_k$",bl[0],SE,p=black+4);
+dot("$O_k$",bl[0],SSE,p=black+4);
 dot("$O_j$",bl[bl.length-1],2*ESE,p=black+4);
 dot("$Q_2'$",qs2[1],N,p=black+4);
 dot("$Q_3'$",qs2[2],SW,p=black+4);

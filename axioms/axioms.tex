@@ -22,18 +22,20 @@ In a foreword to the text, Professor Goheen says that there must, in fact, be \e
 
 There is often an implicit assumption on sorts, namely that they are inhabited. This assumption is removed in \emph{free-logics}, usually for philosophical concerns, and often at the expense of breaking standard inference rules (see Mendelson's classic text~\cite{Mendelson}).
 
-Whether or not Hilbert was making the assumption that his sets were inhabited is unclear. Fortunately, we do not need to be too concerned, since the assumption is not needed. To formally settle this, we consider a formalisation that Goheen perhaps neglected: we will represent each of Hilbert's three sets by a predicate, and consider relativising Hilbert's axioms to this predicate. This is, in effect, the embedding of a free-logic in classical logic. It has the additional benefit of allowing us to consider just one primitive sort, and one primitive incidence relation. We leave the sort abstract.
+Whether or not Hilbert was making the assumption that his sets were inhabited is unclear. Fortunately, we do not need to be too concerned, since the assumption is not needed. To formally settle this, we briefly consider a formalisation that Goheen perhaps neglected: we will represent each of Hilbert's three sets by a predicate, and consider relativising Hilbert's axioms to this predicate. This is, in effect, the embedding of a free-logic in classical logic. It has the additional benefit of allowing us to consider just one primitive incidence relation on one primitive sort.
 
-The formalisation is given in Figure~\ref{fig:InhabitedTypes}. Here, we have formalised four of Hilbert's incidence axioms (\ref{eq:g11}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g18}) as conditions on the predicate sets \code{point}, \code{line} and \code{plane} and the single relation \code{lie}. We verify that any four objects satisfying these conditions are such that the three predicate sets are inhabited.
+Before we give our formalisation, we mention that we shall be adopting Hilbert's convention throughout this work, that points are denoted by uppercase Roman, $A$, $B$, $C$, $P$, $Q$, $R$, $X$, $Y$, $Z$, and so on. Lines are denoted by lowercase Roman $a$, $b$, $c$. And planes are denoted by Greek $\alpha$, $\beta$, $\gamma$.
+
+The formalisation of this single-sorted geometry is given in Figure~\ref{fig:InhabitedTypes}. We have formalised four of Hilbert's incidence axioms (\ref{eq:g11}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g18}) as conditions on the polymorphic predicate sets \code{point}, \code{line} and \code{plane} and the single relation \code{lie}. The use of polymorphic predicates of a single type variable corresponds to picking an arbitrary sort for all our geometric entities. We then verify that any four objects satisfying these conditions are such that the three predicate sets are inhabited.
 
 \begin{figure}
   \begin{align*}
     &\vdash\code{Group1}\ (\code{point}\;:\;\alpha\rightarrow\code{bool}, \code{line}\;:\;\alpha\rightarrow\code{bool},\code{plane}\;:\;\alpha\rightarrow\code{bool},\\
     &\qquad\qquad\code{lie}\;:\;\alpha\rightarrow\alpha\rightarrow\code{bool})\\
-    &\iff (\forall A\ B.\; \code{point}\ A \wedge \code{point}\ B \wedge A \neq B \implies \exists a.\; \code{line}\ a \wedge \code{lie}\ A\ a \wedge \code{lie}\ B\ a)\\
+    &\iff (\forall A\;\forallB.\; \code{point}\ A \wedge \code{point}\ B \wedge A \neq B \implies \exists a.\; \code{line}\ a \wedge \code{lie}\ A\ a \wedge \code{lie}\ B\ a)\\
     &\qquad\wedge (\exists A\ B\ C.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C\\
     &\qquad\qquad\wedge \forall a.\; \code{line}\ a \implies \neg(\code{lie}\ A\ a \wedge \code{lie}\ B\ a \wedge \code{lie}\ C\ a))\\
-    &\qquad\wedge(\forall A\ B\ C.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C\\
+    &\qquad\wedge(\forall A\;\forall B\;\forall C.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C\\
     &\qquad\qquad\wedge (\forall a.\; \code{line}\ a \implies \neg(\code{lie}\ A\ a \wedge \code{lie}\ B\ a \wedge \code{lie}\ C\ a))\\
     &\qquad\qquad\implies\exists\alpha.\; \code{plane}\ \alpha \wedge \code{lie}\ A\ \alpha \wedge \code{lie}\ B\ \alpha \wedge \code{lie}\ C\ \alpha)\\
     &\qquad (\exists A\ B\ C\ D.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C \wedge \code{point}\ D\\
@@ -47,9 +49,9 @@ The formalisation is given in Figure~\ref{fig:InhabitedTypes}. Here, we have for
 \end{figure}
 
 \subsection{Axioms and Formalisation}
-Knowing that our types are inhabited, we return to what we regard as a more natural formalisation of Hilbert's axioms, one which appeared in our earlier work~\cite{ScottMScThesis}, in Meikle and Fleuriot's work~\cite{MeikleFleuriotFormalizingHilbert} and the work of Dehlinger at el~\cite{DehlingerFOG}. We declare three primitive types for points, lines and planes, and two incidence relations: one tells us whether points lie on a line and the other whether points lie on a plane. This gives a more readable formalisation than that of Figure~\ref{fig:InhabitedTypes}, since we can drop the relativising predicates. It also improves type-safety: HOL~Light can reject axioms which do not use the primitive relations in sensible ways, and it removes the possibility of nonsense expressions such as ``a plane lies on a point.''
+Our single-sorted formalisation shows us that Hilbert's primitive sets must be inhabited, and thus that we are free to use what we regard as a more natural formalisation of Hilbert's axioms, one which appeared in our earlier work~\cite{ScottMScThesis}, in Meikle and Fleuriot's work~\cite{MeikleFleuriotFormalizingHilbert} and the work of Dehlinger at el~\cite{DehlingerFOG}. We declare three primitive types for points, lines and planes, satisfied that the implicit constraint that the three types are inhabited is faithful to Hilbert's intended interpretation. We then consider two incidence relations: one tells us whether points lie on a line and the other whether points lie on a plane. This gives a more readable formalisation than that of Figure~\ref{fig:InhabitedTypes}, since we can drop the relativising predicates. It also improves type-safety: HOL~Light can reject axioms which do not use the primitive relations in sensible ways, and it removes the possibility of nonsense expressions such as ``a plane lies on a point.''
 
-We now give Hilbert's incidence axioms as they appear in the tenth edition of the \emph{Grundlagen der Geometrie}. The convention throughout, and one which we adopt for the rest of the present work, is that points are denoted by uppercase Roman, $A$, $B$, $C$, $P$, $Q$, $R$, $X$, $Y$, $Z$, and so on. Lines are denoted by lowercase Roman $a$, $b$, $c$. And planes are denoted by Greek $\alpha$, $\beta$, $\gamma$.
+We now give Hilbert's incidence axioms as they appear in the tenth edition of the \emph{Grundlagen der Geometrie}.
 \begin{enumerate}
 \item[I, 1] \emph{For every two points $A$, $B$ there exists a line $a$ that contains each of the points $A$, $B$.}
 \item[I, 2] \emph{For every two points $A$, $B$ there exits [sic] no more than one line that contains each of the points $A$, $B$.}
@@ -63,7 +65,7 @@ We now give Hilbert's incidence axioms as they appear in the tenth edition of th
 
 These axioms have undergone substantial revision since the first edition, being reordered, with some combined, some split and redundancies deleted. The fact that there are redundancies in the first place goes to show that Hilbert's later claim that his axioms are independent was never \emph{fully} investigated in the \emph{Grundlagen der Geometrie}. In fact, only a few interdependencies were ever considered.
 
-The axioms are formalised in Figure~\ref{fig:Group1Axioms} and are asserted in HOL~Light. We just give some supplementary discussion of the axioms as of the tenth edition.
+The axioms are formalised in Figure~\ref{fig:Group1Axioms} and are asserted in HOL~Light. We just give some supplementary discussion of the axioms as of the tenth edition of the \emph{Grundlagen der Geometrie}.
 
 \begin{figure}
 \begin{equation}\label{eq:g11}
@@ -147,7 +149,7 @@ Veblen differs significantly from Hilbert by following a trend he identifies wit
 
 A similar approach was taken up by Tarksi, who developed the first formal system for elementary geometry with the benefit of modern formal logic \cite{TarskiGeometrySystem}. Like Veblen, Tarski used only one primitive sort for points, but unlike Veblen, he admitted a congruence relation on pairs of points. Nevertheless, Tarski's axioms are particularly elegant. They do not appeal to complex derived notions as Hilbert's later axioms do, and his dimension axiom has the pleasing property that it can be mechanically modified to axiomatise an arbitrary dimension.
 
-There are mechanisations of Tarski's geometry in the Otter automated prover~\cite{QuaifeTarski} and Coq proof assistant~\cite{NarbouxTarski}. Tarski's axioms are known to be far more primitive than Hilbert's, and thus it takes much more work to carry out even simple verifications in this system. In fact, it takes significant effort just to recover Hilbert's axioms from Tarski's~\cite{NarbouxTarskiHilbert}. That said, Tarski's theory embeds in the theory of real-closed fields where it admits quantifier elimination, and thus the theory is \emph{decidable}. The axioms are still very \emph{hard} to work with. In fact, the decision procedure is doubly-exponential!
+There are mechanisations of Tarski's geometry in the Otter automated prover~\cite{QuaifeTarski} and Coq proof assistant~\cite{NarbouxTarski}. Tarski's axioms are known to be far more primitive than Hilbert's, and thus it takes much more work to carry out even simple verifications in this system. In fact, it takes significant effort just to recover Hilbert's axioms from Tarski's~\cite{NarbouxTarskiHilbert}. That said, Tarski's theory embeds in the theory of real-closed fields where it admits quantifier elimination, and thus the theory is \emph{decidable}. The axioms are still very \emph{hard} to work with. In fact, the decision procedure is doubly-exponential!~\cite{QuantifierEliminationComplexity}
 
 \subsection{Elementary Consequences}
 Hilbert highlights two results for his first group.
@@ -196,6 +198,12 @@ THEOREM~2, split into two separate propositions, is easily verified. The verific
   \vdash a\neq b\wedge\code{on\_line}\ P\ a\wedge\code{on\_line}\ P\ b\\
   \implies\exists!\alpha.\; \forall P.\; \code{on\_line}\ P\ a \vee \code{on\_line}\ P\ b \implies\code{on\_plane}\ Q\ \alpha.
 \end{multline*}
+
+Note that the symbol $\exists!$ is another defined quantifier in HOL~Light. It asserts of its variable that it exists \emph{uniquely}, and it can be defined thus:
+
+\begin{displaymath}
+  \vdash_{def}(\exists! P) \iff (\exists P) \wedge (\forall x\;\forall y.\; P\ x \wedge P\ y \implies x = y)
+\end{displaymath}
 
 We will not reproduce the verifications here, since our later verifications have no need of these theorems, and nor does Hilbert refer to THEOREM~2 again. Instead, all our verifications which appeal to incidence will be based on an alternative formulation and some formal theory which we explain in \S\ref{sec:PointSets}.
 
@@ -269,7 +277,7 @@ This is the only three-dimensional theorem we will consider in the present work,
 % \end{figure}
 
 \subsection{Absent Arguments}
-After splitting conjunctions, we find that there are ten axioms in Hilbert's first group. This is twice as many axioms as the next largest group, Group~III. One would expect, then, that these axioms would feature the most in proofs. This is indeed the case with formal verifications, but in Hilbert's prose, the axioms are almost never cited.
+After splitting conjunctions, we found that there were ten axioms in Hilbert's first group. This is twice as many axioms as the next largest group, Group~III. One would expect, then, that these axioms would feature the most in proofs. This is indeed the case with formal verifications, but in Hilbert's prose, the axioms are almost never cited.
 
 This appears to directly contradict Weyl, who claimed that the deductions in Hilbert's geometry contain no gaps~\cite{TableChairMug}. Indeed, taking his claim at face-value, we would have to conclude with Meikle and Fleuriot that Hilbert's arguments are full of missing assumptions and lemmas. 
 
@@ -347,16 +355,16 @@ Finally, Theorem~\ref{rule:collcollplane} tells us that distinct intersecting li
 
 The other theorem, THEOREM~1, notes firstly that distinct lines have either no points in common or just one point in common. This follows directly from Theorem~\ref{rule:collunion}. Indeed, distinct lines as maximal collinear sets must have a non-collinear union, so they cannot have more than one point in common.
 
-THEOREM~1 further notes that distinct planes have either no points in common or one line in common. We know that distinct planes as maximal planar sets must have non-planar unions and so must have collinear intersections by Theorem~\ref{rule:planeunion}. Moreover, we know that if the intersection contains two points, then, according to Theorems~\ref{rule:collunion} and~\ref{rule:collplaneplane}, the two points yield a maximal collinear set contained in the maximal planar set. We cannot say anything about the case of a one-point intersection, since this requires the existential Axiom~\ref{eq:g17}: if two planes have one point in common, they have at least one other point in common.
+THEOREM~1 further notes that distinct planes have either no points in common or one line in common. We know that distinct planes as maximal planar sets must have non-planar unions and so must have collinear intersections by Theorem~\ref{rule:planeunion}. Moreover, we know that if the intersection contains two points, then, according to Theorems~\ref{rule:collunion} and~\ref{rule:collplaneplane}, the two points yield a maximal collinear set contained in the maximal planar set. We will not say anything about the case of a one-point intersection, since this requires the existential Axiom~\ref{eq:g17}: if two planes have one point in common, they have at least one other point in common. As mentioned earlier above, we do not consider such point introduction axioms here.
 
 In conclusion, we have shown how all incidence axioms which do not introduce points can be expressed and strengthened as composition theorems on collinear and planar sets. Primitive lines and planes are no longer used directly, since all the axioms governing them can be subsumed by these composition theorems.
 
 \subsubsection{Evaluation}
 Meikle's verifications of Hilbert's geometry involved a lot of tedious but necessary reasoning about incidence relations, and the derivation of many additional lemmas to support the main verifications. With Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane}, the verifications are a good deal less complex. For instance, the verification of THEOREM~3, which relies heavily on incidence reasoning, needed twenty-seven special case lemmas and forty steps in Meikle's verification, while our own verification using the above theorems had twenty-two steps and no additional lemmas. 
 
-This was an improvement, but it still left our verifications bogged down in trivial combinatorial details that made them difficult to compare to the prose. Besides, the verifications were still very difficult to obtain, since we almost always needed to manually specialise Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} for particular finite sets so that the proof assistant's generic automation could make progress. This is not just tedious, but error-prone. When our verifications were correct, they were often suboptimal. And in one case, our difficulty in proving certain properties of a geometric configuration led us to believe, mistakenly, that Hilbert had made an error in one of his arguments (see \S\ref{sec:CombinatoryError}).
+This was an improvement, but it still left our verifications bogged down in trivial combinatorial details that made them difficult to compare to the prose. Besides, the verifications were still very difficult to obtain, since we almost always needed to manually pick out the point sets to use with Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane}: the proof assistant could not figure them out for itself with generic automation. Finding these sets is not just tedious, but error-prone. When our verifications were correct, they were often suboptimal. And in one case, our difficulty in proving certain properties of a geometric configuration led us to believe, mistakenly, that Hilbert had made an error in one of his arguments (see \S\ref{sec:CombinatoryError}).
 
-Luckily, when we reflected on our manually crafted verifications, we realised that Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} were always applied systematically. In the next chapter, we shall describe how to make these theorems the basis for an automated tool which can completely hide the messy incidence reasoning. We can then justify Hilbert's omission of incidence arguments by claiming that they are mostly computational and do not require any real insight. In a geometric proof, the important steps are those which introduce points and thereby build up the geometric configuration. Hilbert's prose proofs, and our own verifications backed up by our incidence automation, leave just those steps explicit.
+Luckily, when we reflected on our manually crafted verifications, we realised that Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} were always applied systematically. In the next chapter, we shall describe how to make these theorems the basis for an automated tool which can completely hide the messy incidence reasoning. We can then justify Hilbert's omitting of the incidence arguments by claiming that they consist merely of exhaustive combinatorial reasoning which, though tedious, does not require any real insight. In a geometric proof, the important steps are those which introduce points and thereby build up the geometric configuration. Hilbert's prose proofs, and our own verifications backed up by our incidence automation, leave just those steps explicit.
 
 We can then continue to view Hilbert's proofs as \emph{model proofs} and argue that, with our automation handling the computational details, our later verifications will be good substitutes for their missing prose counterparts. They will be more trustworthy whilst being close to what a working mathematician would produce.
 

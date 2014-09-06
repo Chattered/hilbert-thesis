@@ -1,5 +1,3 @@
-usepackage("asycolors");
-
 picture basePicture;
 currentpicture = basePicture;
 unitsize(30);
@@ -68,4 +66,3 @@ pic2.add(basePicture);
 add(pic2,pic1.fit(),(-6,0));
 
 shipout(format="pdf");
-

@@ -120,7 +120,7 @@ label("$h$",pos--target,W);
 
 draw(inter1--target,p=dashed);
 pair raycasted = raycast(pos,target,pathOfPolyseg(ps));
-dot("$X$",inter1,W);
+dot("$O$",inter1,W);
 dot("$A$",midpoint(inter1--raycasted),NE);
 dot("$H$",raycasted,W);
 

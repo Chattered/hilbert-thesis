@@ -1,13 +1,16 @@
 \chapter{Infinity and Linear Ordering}\label{chapter:LinearOrder}
-The next theorem on the agenda is THEOREM~6, and in this chapter, we will look at two different ways to deal with it formally. The theorem itself tells us that any finite set of points on a line is linearly ordered in terms of betweenness. One approach to formalising this is at the metalevel, where it can be treated as an algorithm for enumerating cases of betweenness. In another approach, we can formalise the theorem at the object level and verify it. In so doing, we shall derive the axiom of infinity. The axiom is redundant given Hilbert's geometric axioms.
+The next theorem on the agenda is THEOREM~6, and in this chapter, we will look at two different ways to deal with it formally. The theorem itself tells us that any finite set of points on a line is linearly ordered in terms of betweenness. One approach to formalising this is at the meta-level, where it can be treated as an algorithm for enumerating cases of betweenness. In another approach, we can formalise the theorem at the object level and verify it. In so doing, we shall derive the axiom of infinity, thereby showing the axiom redundant given Hilbert's geometric axioms.
 
-\section{THEOREM 6 at the Metalevel}\label{sec:Theorem6}
-We ended the last chapter by discussing two of the three parts of Hilbert's proof of THEOREM~5. The third and final part of the proof can be generalised to verify THEOREM~6.
+\section{THEOREM 6 at the Meta-level}\label{sec:Theorem6}
+We ended the last chapter by discussing two of the three parts of Hilbert's proof of THEOREM~5. The third and final part of the proof can be generalised to verify THEOREM~6..
 
-\begin{quote}THEOREM 6 (generalisation of THEOREM~5). Given any finite number of points on a line it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc. Besides this order of labelling there is only the reverse one that has the same property.
+\begin{quote}
+  ``THEOREM 6 (generalisation of THEOREM~5). Given any finite number of points on a line it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc. Besides this order of labelling there is only the reverse one that has the same property.
+
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, pages 7-8}''
 \end{quote}
 
-It strikes us that a \emph{labelling} of points is a syntactic device, a way of referring to symbols used to mention points rather than the points themselves. Thinking more formally, we could identify a labelling with an assignment of values to variables. The existence of a labelling is then the existence of these assignments. With this in mind, we could semi-formalise THEOREM~6 to say that, given some points on a line $A'$, $B'$, $C'$, $D'$, $\ldots$, $K'$, there exists an appropriate assignment to $A$, $B$, $C$, $D$, $\ldots$, $K$:
+It strikes us that a \emph{labelling} of points is a syntactic device, a way of referring to symbols used to mention points rather than the points themselves. Thinking more formally, we could identify a labelling with an assignment of values to variables. The existence of a labelling is then the existence of these assignments. With this in mind, a first pass at trying to faithfully formalise THEOREM~6 could view it as a \emph{schema}, asserting that the given some points on a line $A'$, $B'$, $C'$, $D'$, $\ldots$, $K'$, there exists an appropriate assignment to the points $A$, $B$, $C$, $D$, $\ldots$, $K$:
 \begin{equation*}
   \begin{split}
     &\exists a.\;\code{on\_line}\ A'\ a\wedge\code{on\_line}\ B'\ a\wedge\code{on\_line}\ C'\ a\wedge\code{on\_line}\ D'\ a\\
@@ -29,11 +32,11 @@ It strikes us that a \emph{labelling} of points is a syntactic device, a way of 
   \end{split}
 \end{equation*}
 
-Obviously, we cannot capture this directly in first-order logic. The fact that we quantify over an unspecified number of variables already renders that goal hopeless. Instead, the use of ellipses here tells us that this is a \emph{schema}. As we fix our choice of variables in $A, B, C, D, E, \ldots, K$, we are expected to fill in the holes by continuing a syntactic pattern.
+This is not a formula of higher-order logic. Instead, as a schema, it tells us that as we fix our choice of variables in $A, B, C, D, E, \ldots, K$, we are expected to fill in the holes by continuing a syntactic pattern.
 
-In short, this is a metatheorem, something surprisingly typical of mathematics. As noted by Harrison~\cite{FormalizedMathematics}, the existence of such theorems must be borne in mind when formalising, and he mentions the simple example of an object theorem about certain operations being associative and commutative (say, addition), which entails the \emph{metatheorem} that brackets (bits of syntax) can be dropped without ambiguity.
+Alternatively, we could say this is a meta-theorem, something surprisingly typical of mathematics. As noted by Harrison~\cite{FormalizedMathematics}, the existence of such theorems must be borne in mind when formalising, and he mentions the simple example of an object theorem about certain operations being associative and commutative (say, addition), which entails the \emph{metatheorem} that brackets (bits of syntax) can be dropped without ambiguity.
 
-Hilbert was working before any distinction had been made between metalevel and object level, let alone the sort of hard distinction we now have between HOL and the computational metalanguage ML which encodes its syntax and inference rules. With such a distinction, we immediately realise that our schema above can be formalised as an ML function which inputs a list of points, instantiates the schema to create a HOL formula, and then derives it as a theorem.
+Hilbert was working before any distinction had been made between meta-level and object level, let alone the sort of hard distinction we now have between HOL and the computational metalanguage ML which encodes its syntax and inference rules. With such a distinction, we immediately realise that our schema above can be formalised as an ML function which inputs a list of points, instantiates the schema to create a HOL formula, and then derives it as a theorem.
 
 \subsection{Representation}
 Consider applying THEOREM~6 to the special case of THEOREM~5 where there are only four points $A'$, $B'$, $C'$, $D'$ and four labels $A$, $B$, $C$ and $D$. The formula we must verify is:
@@ -68,7 +71,7 @@ Hilbert does not state THEOREM~6 with any efficiency in mind, as he lists all po
 \label{fig:Theorem5CasesFormalised}
 \end{figure}
 
-Firstly, we must deal with the fact that Hilbert's geometry is not oriented. Typically, a geometry will have a specified origin and a specified axis on which to define the preferred orientation. Even coordinate free methods such as the signed-area method~\cite{SignedAreaMethod} specify a preferred orientation. Not so in Hilbert's geometry. But we \emph{can} treat the first argument to the between predicate as a parameter giving the preferred origin. Then, we can regard the partially applied relation as an ordering on every possible ray emanating from the origin. More precisely, we can read $\between{A}{B}{C}$ as saying that $B<C$ from the perspective of origin $A$ and direction $\overrightarrow{AB}$.
+Firstly, we must note the fact that Hilbert's geometry has no preferred oriented, a preferred $x$, $y$ and $z$ direction, or preferred clockwise or anticlockwise direction for specifying the three points of a triangle, as in oordinate free methods such as the signed-area method~\cite{SignedAreaMethod}. Not so in Hilbert's geometry. But we \emph{can} treat the first argument to the between predicate as a parameter giving the preferred origin. Then, we can regard the partially applied relation as an ordering on every possible ray emanating from the origin. More precisely, we can read $\between{A}{B}{C}$ as saying that $B<C$ from the perspective of origin $A$ and direction $\overrightarrow{AB}$.
 
 We can then represent total orders as conjunctions ordering adjacent points. So, if $A,B,C,D,E,F,G,H$ occur along a line in that order, we just need the six conjuncts
 \begin{multline}\label{theorem:OrderRepExample}
@@ -76,7 +79,7 @@ We can then represent total orders as conjunctions ordering adjacent points. So,
 \wedge\between{A}{E}{F}\wedge\between{A}{F}{G}\wedge\between{A}{G}{H}.
 \end{multline}
 
-We want to retrieve all other betweenness relations implied by this sequent quickly. Before we describe how we do this, we will separate THEOREM~5, whose verification we considered in the last chapter, into two separate theorems. The first theorem \eqref{eq:five2a} will ``move the origin'' from $A$ to $B$ in our representation. The second theorem \eqref{eq:five2b}, when we think of the $\code{between}$ relation as a parameterised binary relation, gives us transitivity.
+We want to retrieve all other betweenness relations implied by this sequent quickly. Before we describe how we do this, we will separate THEOREM~5, whose verification we considered in the last chapter, into two separate theorems. The first theorem \eqref{eq:five2a} will ``move the origin'' from $A$ to $B$ in our representation. From the second theorem \eqref{eq:five2b}, with the $\code{between}$ relation taken as a binary relation whose first argument is the origin parameter, we get transitivity.
 \begin{gather}
 \label{eq:five2a}\vdash \between{A}{B}{C} \wedge \between{A}{C}{D} \implies \between{B}{C}{D}.\\
 \label{eq:five2b}\vdash \between{A}{B}{C} \wedge \between{A}{C}{D} \implies \between{A}{B}{D}.
@@ -118,14 +121,14 @@ Even with the more concise representation, there are $\frac{1}{2}n!$ possible or
 
 Factoring in these constraints not only cuts down the size of the final conclusion, but significantly speeds up the calculation of the possibilities. We have thus implemented a procedure to enumerate all possible orderings, taking both a list of the points we want it to order, and a list of betweenness sequents constraining the possibilities.
 
-The algorithm nicely captures the purpose of a metatheorem such as Hilbert's if we see it as a computation on labellings. It also keeps us well within the scope of first-order logic. However, our ML algorithm is only a verification of the particular instances it generates. The algorithm, the metatheorem itself, is unverified. To verify it, we must bring the metalevel down to the object level.
+The algorithm nicely captures the purpose of a meta-theorem such as Hilbert's if we see it as a computation on labellings. It also keeps us well within the scope of first-order logic. However, our ML algorithm is only a verification of the particular instances it generates. The algorithm, the metatheorem itself, is unverified. To verify it, we must bring the meta-level down to the object level.
 
 \section{THEOREM~6 at the Object Level}
-Any logic which can formalise THEOREM~6 as a theorem rather than a metatheorem will need to include a domain of labellings. Since there is no upper bound on the number of distinct points we can label, this domain will need to be infinite. One such domain appears in Dehlinger et al's verification~\cite{DehlingerFOG} in the form of lists. Our formalisation is equivalent. We treat a labelling as an assignment from an initial prefix of natural numbers to the points being labelled. Formally:
+Any logic which can formalise THEOREM~6 as a theorem rather than a meta-theorem will need to include a domain of labellings. Since there is no upper bound on the number of distinct points we can label, this domain will need to be infinite. One such domain appears in Dehlinger et al's verification~\cite{DehlingerFOG} in the form of lists. Our formalisation is equivalent. We treat a labelling as an assignment from an initial prefix of natural numbers to the points being labelled. Formally:
 \label{sec:OrderingDef}
 \begin{equation}\label{eq:OrderingDef}
   \begin{split}
-    \vdash_{def}\;\code{ordering}\ f\ X &\iff X = f\left(\left\{n\ \vert\ \code{finite}\ X \implies n < \left|X\right|\right\}\right)\\
+    \vdash_{def}\;\code{ordering}\ f\ X &\iff X = \left(\left\{f\ n\ \vert\ \code{finite}\ X \implies n < \left|X\right|\right\}\right)\\
     &\wedge \forall n\ n'\ n''.\; (\code{finite}\ X \implies n < \left|X\right| \wedge n' < \left|X\right| \wedge n'' < \left|X\right|)\\
     &\qquad\wedge n < n' \wedge n' < n'' \implies \between{(f\ n)}{(f\ n')}{(f\ n'')}.
     \end{split}
@@ -194,7 +197,7 @@ With the definition in hand, THEOREM~6 can be formalised in terms of orderings o
 
 % respectively. The result is now a disjunction of total orders of the original $n+1$ points.
 
-% Now if we think of THEOREM~6 as a metatheorem, then we can implement it in our theorem prover's metalanguage, as a procedure which takes a given list of points and then produces all possible orderings of those points. A list of possible orderings can be expressed using an existential theorem. Thus, if we take the finite set of points to be labelled as $S$, we can write
+% Now if we think of THEOREM~6 as a meta-theorem, then we can implement it in our theorem prover's metalanguage, as a procedure which takes a given list of points and then produces all possible orderings of those points. A list of possible orderings can be expressed using an existential theorem. Thus, if we take the finite set of points to be labelled as $S$, we can write
 % \begin{align*}\label{theorem:Theorem6Example}
 % \exists A\,B\,C&\,D\,\ldots\,I\,J\,K \in S.\tag{$\ddagger$}\\
 %                 &\between{A}{B}{C} \wedge \between{A}{C}{D} \wedge \cdots \wedge \between{I}{J}{K}.                 
@@ -205,12 +208,14 @@ With the definition in hand, THEOREM~6 can be formalised in terms of orderings o
 \section{Natural Numbers}
 Our definition assumes the existence of natural numbers, but Hilbert was not clear whether he took these to be logically primitive. Veblen, writing some years later, is explicit: ``[The axioms] presuppose only the validity of the operations of logic and of counting (ordinal number)''. Hilbert \emph{seems} to be making the assumption implicitly when he states the Archimedean Axiom in his Group~V, though it could be argued that the following is only meant schematically:
 \begin{quote}
-  If $AB$ and $CD$ are any segments then there exists a \emph{number} $n$ such that $n$ segments $CD$ constructed contiguously from $A$, along the ray from $A$ through $B$, will pass beyond the point $B$.
-[emphasis added]\end{quote}
+  ``If $AB$ and $CD$ are any segments then there exists a \emph{number} $n$ such that $n$ segments $CD$ constructed contiguously from $A$, along the ray from $A$ through $B$, will pass beyond the point $B$.''[emphasis added]
+  \flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 26.}
+\end{quote}
 
 Euclid does much the same when he expresses the same property using the word ``multiplied'' (though Euclid mistakes this property for a \emph{definition}):
 \begin{quote}
-  Magnitudes are said to have a ratio to one another which can, when multiplied, exceed one another~\cite{HeathElements}.
+  ``Magnitudes are said to have a ratio to one another which can, when multiplied, exceed one another''
+\flushright{\cite{HeathElements}}
 \end{quote}
 
 Yet elsewhere, Euclid will discuss natural numbers in geometrical terms: his books on number theory literally identify numbers with line segments. Hilbert is faithful to this idea. He shows how to recover arithmetic operations from geometrical figures by exploiting Pascal's and Desargues' Theorems. So why would either want to assume the existence of natural numbers?
@@ -225,7 +230,7 @@ The theorem stating that natural numbers exist is derivable in HOL~Light assumin
 
 This asserts that there is a one-one but not onto function $f$ on the set of individuals. From it, we can nominate an arbitrary member of the set \mbox{$\{ i : ind\ \vert\ \neg(\exists i'.\; f\ i' = i) \}$} to serve as the number $0$, nominate $f$ as the successor function, and carve out the natural numbers as the smallest set containing $0$ and its own image under $f$.
 
-The existence of the infinite domain $ind$ is not generally assumed as part of classical logic proper, and Russell, in his classic \emph{Principia Mathematica}, took it as a mere hypothesis on the results which required it~\cite{LogicismRevisited}. Without the axiom, there are models of the logic for which all domains --- the sets of set theory and the types of simple type theory --- each has only finitely many inhabitants.
+The existence of the infinite domain $ind$ is not generally assumed as part of classical logic proper, and Russell, in his classic \emph{Principia Mathematica}, took it as a mere antecedent hypothesis on the results which required it~\cite{LogicismRevisited}. Without the axiom, there are models of the logic for which all domains --- the sets of set theory and the types of simple type theory --- each has only finitely many inhabitants.
 
 This should not be the case for the primitive domains of Hilbert's geometry. Hilbert insists as much for his Theorem~7, which states quite plainly that ``between any two points on a line there exists an infinite number of points.'' 
 
@@ -290,7 +295,7 @@ To verify our model, we inductively define the incidence predicates \code{on\_li
 \wedge & \onplane{\code{p1}}{\code{p3}}\wedge \onplane{\code{p3}}{\code{p3}}\wedge \onplane{\code{p4}}{\code{p3}}\\
 \wedge & \onplane{\code{p2}}{\code{p4}}\wedge \onplane{\code{p3}}{\code{p4}}\wedge \onplane{\code{p4}}{\code{p1}}
 \end{align*}\end{minipage}\centering\hspace{-2cm}\includegraphics[scale=0.8]{linearOrder/Tetra}
-\caption{Smallest model}\label{fig:SmallestModel}
+\caption{Minimal model}\label{fig:SmallestModel}
 \end{figure}
 
 After unfolding the definitions of $\code{on\_line}$ and $\code{on\_plane}$, it turns out that the theorem can be proven by equational reasoning alone. We replace the universals and existentials with conjunctions and disjunctions respectively. After simplifying, the remaining goals require us to show that points, lines or planes are distinct, which is dealt with by the recursion theorem.
@@ -353,7 +358,7 @@ In general, the successor of a diagram is obtained by finding $C'$, the intersec
 &\qquad\qquad \wedge \between{A}{S}{0} \wedge \between{A}{S}{N}).
 \end{align*}
 
-We have used the $\iota$ operator in this definition. This is the ``definite description'' operator, which is a weaker version of the $\epsilon$ ``indefinite description operator''. The $\epsilon$ operator is specified by one of the three classical axioms of higher-order logic, and equivalent to the full axiom of choice.
+We have used the $\iota$ operator in this definition. This is the ``definite description'' operator, which is a weaker version of the $\epsilon$ ``indefinite description operator''. The $\epsilon$ operator is specified by one of the three classical axioms of higher-order logic, and is equivalent to the full axiom of choice.
 \begin{displaymath}
 \vdash \forall P\ x.\; P\ x \implies P (\epsilon x.\; P x).
 \end{displaymath}
@@ -363,7 +368,7 @@ From $\epsilon$, we can define the $\iota$ operator, which requires that the pre
   \vdash (\iota x.\; P\ x) = \epsilon x.\; P\ x \wedge \forall y.\; P\ y \implies x = y.
 \end{displaymath}
 
-By using this operator and avoiding the somewhat controversial axiom of choice, we feel we are in a better position to argue that we have recovered the axiom of infinity in a logically ``secure'' way. The images of our successor function are uniquely defined from their predecessors, and the natural numbers themselves can be uniquely carved out of the type $\code{ind}$. There is exactly one object $0$ up to relabellings of the points in our figures, not an arbitrary set of possibilities in an abstract type from which we choose one example.
+By using this operator and avoiding the somewhat controversial stronger axiom of choice, we feel we are in a better position to argue that we have recovered the axiom of infinity in a logically ``secure'' way. The images of our successor function are uniquely defined from their predecessors, and the natural numbers themselves can be uniquely carved out of the type $\code{ind}$. There is exactly one object $0$ up to relabellings of the points in our figures, not an arbitrary set of possibilities in an abstract type from which we choose one example.
 
 The price comes in the complexity of the $\code{ind}$ representatives. We cannot simply define an infinite domain of points using Axiom~\ref{eq:g22} as we did at the beginning of this section. We need enough information in each of our figures to constrain the possible placement of successors relative to their predecessors.
 
@@ -523,7 +528,12 @@ $S$ \text{ lies between } $P$ \text{ and } $R$,
 
 Hilbert says the case-analysis arises from applications of \ref{eq:four}, which tells us that of three points, one lies between the other two. When we generalise from four points to $n+1$ points, we apply induction, and two of the applications of \ref{eq:four} become applications of our inductive hypothesis to $n$ points. We give the generalised proof now together with some verified lemmas. We follow the original proof closely to show how the inferences become generalised.
 
+\begin{proposition}\label{eq:PlaneThree}
+THEOREM~6 (generalization of Theorem~5). Given any finite number of points on a line it is always possible to label them it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc.
+\end{proposition}
 \begin{proof}
+The case for $1$ and $2$ points is trivial. The case for three points is covered by Theorem~4. Assume that the theorem holds for $n$ points. From this, we can conclude that it holds for $n+1$ points, and thus that the theorem holds generally.
+
 Now let $n+1$ points on a line be given. Take $n$ of the points and label $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $R$ the ones which by our inductive hypothesis are ordered along the line. Finally, label $S$ the last of the $n+1$ points. By Axiom~\ref{eq:g23} and \ref{eq:four} it follows then that the following three distinct possibilities for the position of $S$ exist:
 
 \vspace{0.5cm}
@@ -614,7 +624,9 @@ which is parameterised on a concrete set enumeration (a term of the form $\{P_1,
 To round up this chapter, we will demonstrate the use of our linear reasoning tactic \code{ORDER\_TAC} by applying it to another theorem which says that there is an infinite number of points between any two others points. We have already effectively proven this theorem using the Dedekind definition of infinite, but here, we use the HOL~Light predicate $\code{infinite}$ which is just the complement of the recursively defined predicate $\code{finite}$.
 
 %In a sense, this has been covered indirectly by Theorem~\ref{eq:Infinity}, but our purpose with that theorem was to settle foundational questions about our logical assumptions, and provide us with enough expressive power to formally verify THEOREM~6. Here, we can be more direct in our formalisation.
-\begin{quotation}THEOREM~7. Between any two points on a line there exists an infinite number of points.
+\begin{quotation}
+  ``THEOREM~7. Between any two points on a line there exists an infinite number of points.''
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 8.}  
 \end{quotation}
 \begin{equation*}
 \vdash P\neq Q \implies \code{infinite}\ \{R\; \vert\; \between{P}{R}{Q}\}.
@@ -640,11 +652,11 @@ Before we had implemented our tactic, we tried to verify this matter directly us
 \section{Conclusion}
 This chapter has been concerned with the theory of linear-ordering based on Hilbert's three-place $\code{between}$ relation, culminating in a tactic for solving problems arranging points along a line by reducing them to a decision procedure for linear problems in natural numbers. The use of natural numbers was explicitly permitted in Veblen's ordered geometry~\cite{Veblenphd}, but not in Hilbert's. We have closed the gap by showing how they can be recovered in higher-order logic from geometry without the axiom of infinity.
 
-We provided another way to deal with ordering problems, by interpreting Hilbert's THEOREM~6 as a metatheorem, and finding a way to express linear problems as efficient stacks of betweenness formulas. The approach is more limited, since it assumes that all points considered in the problem are distinct, and we found that this assumption is too strong in practice, but we might expect it to have better performance in some cases, since it is more carefully tailored to Hilbert's geometry. We leave analysis of this matter to future work, and use the reduction to linear arithmetic for the rest of our verification.
+We provided another way to deal with ordering problems, by interpreting Hilbert's THEOREM~6 as a meta-theorem, and finding a way to express linear problems as efficient stacks of betweenness formulas. The approach is more limited, since it assumes that all points considered in the problem are distinct, and we found that this assumption is too strong in practice, but we might expect it to have better performance in some cases, since it is more carefully tailored to Hilbert's geometry. We leave analysis of this matter to future work, and use the reduction to linear arithmetic for the rest of our verification.
 
 We have now covered all the automation we will need for our verification of the Polygonal Jordan Curve Theorem: in summary, we use a search algebra to handle the implicit incidence reasoning from Group~I, and a tactic to handle linear reasoning from Group~II. These two automated tools will be used extensively for the verifications we discuss in the remaining chapters. 
 
-%The step case in our recursive metalevel procedure used two recursive calls on two different sets of points. So if we intend to do the same for the inductive hypothesis, then our induction cannot be the default one for finite sets, which has the form
+%The step case in our recursive meta-level procedure used two recursive calls on two different sets of points. So if we intend to do the same for the inductive hypothesis, then our induction cannot be the default one for finite sets, which has the form
 
 % \begin{displaymath}
 % \vdash \forall P. P\,\emptyset \wedge (\forall x\, X. P\,X \implies P\,(\{x\} \cup X)) \implies \forall x. P\,X.

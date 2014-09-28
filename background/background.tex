@@ -32,7 +32,7 @@ Next, we have \emph{terms} based on an alphabet of term constants and term varia
 \begin{enumerate}
 \item every term constant and every term variable is a term;
 \item for terms $f\ :\ \tau_1\rightarrow\tau_2$ and $x\ :\ \tau_1$, we have that $f\ x$ is a term such that \mbox{$f\ x : \tau_2$}. These \emph{combinations} are left-associative: $f\ g\ h = (f\ g)\ h$;
-\item given a term variable $x : \tau_1$ and a term $y : \tau_2$, there is a term $\lambda x. y\;:\;\tau_1 \rightarrow \tau_2$. These \emph{lambda abstractions} consume everything to the right, so $\lambda x.\; f\ x\ y$ parses as $\lambda x.\; ((f\ x)\ y)$.
+\item given a term variable $x : \tau_1$ and a term $y : \tau_2$, there is a term $\lambda x.\;\lambda y\;:\;\tau_1 \rightarrow \tau_2$. These \emph{lambda abstractions} consume everything to the right, so $\lambda x.\; f\ x\ y$ parses as $\lambda x.\; ((f\ x)\ y)$.
 \end{enumerate}
 
 The idea is that the type $\tau_1 \rightarrow \tau_2$ is inhabited by functions with domain $\tau_1$ and codomain $\tau_2$. A lambda abstraction in this type is then a function literal, and the notation $\lambda x.\; f\ x$ can be understood as the familiar mathematical notation $x \mapsto f\ x$.
@@ -91,8 +91,8 @@ All encodings are intuitionistic. In particular, notice that \mbox{$P \implies Q
 \begin{tabular}{|c|c|c|}
 \hline
 $(p,q)$          & $\lambda f.\; f\ p\ q$                  & Pairing\\
-$fst\ P$         & $P\ (\lambda x\ y.\; x)$                & First projection\\
-$snd\ P$         & $P\ (\lambda x\ y.\; y)$                & Second projection\\
+$fst\ P$         & $P\ (\lambda x\;\lambda y.\; x)$                & First projection\\
+$snd\ P$         & $P\ (\lambda x\;\lambda y.\; y)$                & Second projection\\
 $\top$           & $(\lambda x.\; x) = \lambda x.\; x$       & Truth\\
 $\bot$           & $\forall P.\; P$                        & Absurdity\\
 $\neg P$         & $P = \bot$                            & Negation\\
@@ -121,18 +121,18 @@ The use of a programming language can clarify a lot. Consider the definition of 
 
 Sequents and inference rules in HOL~Light, as in all LCF systems, are implemented in ML as a \emph{trusted kernel}. To gain the trust, a user can carefully peruse the kernel's modest 672 lines of ML, especially the 160 or so lines of code needed to deal with free variable substitutions, instantiations, and testing whether two terms are equivalent up to a consistent renaming of bound variables (formally, testing for ``$\alpha$-equivalence'').
 
-This last bit of the code is tricky to reason about, just as it is tricky to define and reason about free-substitutability in basic proof theory. In fact, two bugs were identified and fixed in this part of the HOL~Light code circa 2003~\cite{HOLLightBugs}. No other bugs have been found since, and in 2006, Harrison presented a formal verification that this part of the kernel (in fact, the kernel and axioms minus definitional facilities described below) is sound and consistent \emph{from within HOL~Light itself}!\footnote{To be consistent with Tarski's Theorem, the soundness proof requires an additional axiom asserting the existence of a cardinal available in classic set theory but not available from HOL~Light's axioms}\cite{SelfVerifyHOLLight} The possibility of any further bugs is now vanishingly small, and so we can put extremely high confidence in our verified proofs.
+This last bit of the code is tricky to reason about, just as it is tricky to define and reason about free-substitutability in basic proof theory. In fact, two bugs were identified and fixed in this part of the HOL~Light code circa 2003~\cite{HOLLightBugs}. No other bugs have been found since, and in 2006, Harrison presented a formal verification that this part of the kernel (in fact, the whole kernel and axioms minus only the definitional facilities described below) is sound and consistent \emph{from within HOL~Light itself}!\footnote{To be consistent with Tarski's Theorem, the soundness proof requires an additional axiom that there exists a ``large'' cardinal (large from the perspective of HOL but not from ZF set theory)}\cite{SelfVerifyHOLLight} The possibility of any further bugs is now vanishingly small, and so we can put extremely high confidence in our verified proofs.
 
 User code, again written in ML, calls the inference rules of the kernel in order to construct sequents and thereby mechanically verify theorems. All the mechanical verifications mentioned in this thesis consist of such code. However, it is rare that we use the kernel directly. Having a full programming language available to user code means that LCF systems typically offer powerful derived rules, embedded proof languages, and fully automated tools to assist in constructing sequents. HOL~Light is no exception, and we discuss some of its offerings in \S\ref{sec:UserTools}, and in Chapter~\ref{chapter:Automation}, we describe our own forward search tool.
 
 We are not expected to exploit the implementation of sequents and inference rules, and indeed \emph{cannot}. Unlike the term data-type (\code{term} in HOL~Light), the sequent data type (\code{thm}) is made \emph{abstract} to user code. ML's strong type system guarantees that user code cannot break this abstraction. Any sequent constructed in user code is a sequent that was ultimately constructed legitimately via the kernel's inference rules.
 
 \subsection{Additional Functionality}
-HOL~Light extends the simple theory of types by allowing us to add new axioms~(see \S\ref{sec:ClassicalAxioms}) and add new basic term and type definitions. \emph{Basic definitions} cannot contain free variables on their right hand sides, nor can they be recursive. Thus, they are a conservative extension. We could potentially substitute the right hand sides of any definitions through all terms without affecting the validity of the derivations.
+HOL~Light extends the simple theory of types by allowing us to add new axioms~(see \S\ref{sec:ClassicalAxioms}) and add new basic term and type definitions. \emph{Basic definitions} cannot contain free variables on their right hand sides, nor can they be recursive. Thus, they always yield a conservative extension of the logic: we could potentially substitute the right hand sides of any definitions through all terms without affecting the validity of the derivations.
 
-HOL~Light also extends the simple theory of types by allowing one to define a new type of values, the \emph{abstract} type, in bijection with a non-empty subset of an existing type, the \emph{concrete representation} type. This feature is particularly useful when forcing derived definitions to be used in a way which respects an abstraction.
+HOL~Light also extends the simple theory of types by allowing one to define a new type of values, the \emph{abstract} type, in bijection with a non-empty subset of an existing type, the \emph{representation} type. This feature is particularly useful when forcing derived definitions to be used in a way which respects an abstraction.
 
-For instance, in Chapter~\ref{chapter:HalfPlanes}, we define both \emph{rays} and \emph{half-planes} as abstract types in bijection with concrete point-sets satisfying appropriate constraints. For rays, we define an \emph{endpoint} in terms of the concrete representation, and can thus use expressions such as ``endpoint of a ray''. However, since the types are abstract, the expression ``endpoint of a half-plane'' is not well-typed, even though both rays and half-planes have the same concrete representation. The type \code{ray} enforces the intended abstraction. As an added benefit, because HOL Light types can always be mechanically reconstructed from expressions, abstract types can eliminate the need for some side-conditions by pushing the constraints on their concrete representations into an automatically inferred type.
+For instance, in Chapter~\ref{chapter:HalfPlanes}, we define both \emph{rays} and \emph{half-planes} as abstract types in bijection with representative point-sets satisfying appropriate constraints. For rays, we define an \emph{endpoint} in terms of the representative point-sets, and can thus use expressions such as ``endpoint of a ray''. However, since the types are abstract, the expression ``endpoint of a half-plane'' is not well-typed, even though both rays and half-planes have the same representation. The type \code{ray} enforces the intended abstraction. As an added benefit, because HOL Light types can always be mechanically reconstructed from expressions, abstract types can eliminate the need for some side-conditions by pushing the constraints on their representatives into an automatically inferred type.
 
 The combination of type definitions and polymorphism leads to another desirable but simple extension. Types can be defined from polymorphic definitions, such as lists which are polymorphic in their element type. In this case, the type variables in the definition become the arguments of a \emph{type constructor}. The extension replaces the two rules of the type syntax with the single rule
 
@@ -165,7 +165,7 @@ The axiom of choice is sufficient to derive the law of excluded-middle, by explo
  (u \wedge \neg v) \vee P.\label{eq:AxiomChoiceDerive}
 \end{equation}
 
-Now on the hypothesis of $P$, the epsilon terms $u$ and $v$ simplify to $\epsilon x.\; \top$ and are thus equal. We then have
+Now on the hypothesis of $P$, the terms $u$ and $v$ simplify to $(\epsilon x.\; x \vee \top) = \epsilon x.\; \top$ and $(\epsilon x\.\; \neg x \vee \top) = \epsilon x.\; \top$ respectively. Thus, they become equal. We then have
 \begin{displaymath}
 P \implies u = v \implies \neg (u \wedge \neg v),
 \end{displaymath}
@@ -177,7 +177,7 @@ We end this subsection by introducing a final piece of core syntax. The axiom of
 \end{equation*}
 
 \subsection{Axiom of Infinity}\label{sec:InfinityDescription}
-The final axiom in HOL~Light is the axiom of infinity. We will discuss this axiom in some detail in Chapter~\ref{chapter:LinearOrder}. For now, we will only say in advance that it is provably redundant when we have Hilbert's first two groups of axioms. We have therefore removed it. We are tempted to think of this \emph{post hoc} deletion of the axiom of infinity from higher-order logic as consistent with Hilbert's own later expressed scepticism and ultimate rejection of infinite sets~\cite{OnInfinite}: ``[the infinite] neither exists in nature nor provides a legitimate basis for rational thought.''
+The final axiom in HOL~Light is the axiom of infinity. We will discuss this axiom in some detail in Chapter~\ref{chapter:LinearOrder}. For now, we will only say in advance that it is provably redundant when we have Hilbert's first two groups of axioms. We have therefore deleted it, an act we are tempted to believe would appease a later sceptical Hilbert, who would come to reject infinite sets as a foundational element of mathematics~\cite{OnInfinite}: ``[the infinite] neither exists in nature nor provides a legitimate basis for rational thought.''
 
 \section{Verification Tools}\label{sec:UserTools}
 Outside of the relatively tiny HOL~Light kernel is a huge collection of verification tools written in user code. In many cases, we do not care how these tools work, or whether they even contain bugs, since bugs cannot penetrate the boundary of the kernel. We only care that the tools generate the sequent we want.
@@ -190,7 +190,7 @@ As far as tactics go, a \emph{goal} is a pair consisting of a goal formula toget
 \subsection{Fully Automated Procedures}
 Some tactics in HOL~Light are decision procedures or otherwise fully automated verification tools. Generally, these are used to solve a goal outright; that is, without generating any new subgoals. Among HOL~Light's decision procedures are those for checking tautologies, for deciding problems in linear arithmetic, and for computing ideal elements via Gr\"{o}bner bases~\cite{BuchbergerGrobner}.
 
-More recently, HOL~Light has been able to make use of tools external to the system. Eekelen et al~\cite{HOLLightBoolean} have implemented HOL~Light code to take proof certificates from external ``off-the-shelf'' checkers for universally quantified propositional logic. These certificates are then verified by the HOL~Light kernel to produce HOL~Light sequents. Similar progress has been made in HOL4~\cite{HOLBoolean} and Isabelle~\cite{IsabelleSledgehammer}.
+More recently, HOL~Light has been able to make use of external theorem proving programs. Eekelen et al~\cite{HOLLightBoolean} have implemented HOL~Light code to take proof certificates output by automated theorem provers for universally quantified propositional logic. These certificates are then interpreted in ML and translated into the appropriate HOL~Light inference rules needed to produce corresponding HOL~Light sequents. Similar progress has been made in HOL4~\cite{HOLBoolean} and Isabelle~\cite{IsabelleSledgehammer}.
 
 \section{Declarative Proof}\label{sec:DeclarativeProof}
 Proof assistants input verifications in broadly two forms: declarative and procedural. In a procedural language, the user employs tactics to compose automated tools in order to produce the desired sequents. Different tactic languages have their own styles and idioms, but they usually support both forward reasoning from the premises of an argument to its conclusion, and backward reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural transformations rather than logical formulas, which are sometimes entirely absent from the procedural proof texts. 
@@ -281,7 +281,7 @@ The problem lies with case-splitting. Here are the original combinators at work 
   \footnotesize
   \code{...}
 
-  \code{have "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+  \code{have "$\forall$p1\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
 
   \code{proof}
 
@@ -306,7 +306,7 @@ Above, we have a case-split on formulas \code{p1 = p2} and \code{$\neg$(p1 = p2)
 \vspace{0.5cm}
 \begin{minipage}{\linewidth}
   \footnotesize
-  \code{> have "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+  \code{> have "$\forall$p1\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
 
   \code{> proof}
 
@@ -394,7 +394,7 @@ Returning to the example verification, our functions \code{case} and \code{end} 
 \vspace{0.5cm}
 \begin{minipage}{\linewidth}
   \footnotesize
-  \code{> lemma "$\forall$p1 p2. $\exists$l. p1 ON l $\wedge$ p2 ON l" at 9}
+  \code{> lemma "$\forall$p1\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
 
   \code{>\quad fix ["p1:Point"; "p2:Point"]}
 

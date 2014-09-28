@@ -55,14 +55,14 @@ Function specifications marked with $\dag$ have been contributed.
 \begin{align*}
   &\code{on\_polypath}\,:\,[\code{point}] \rightarrow \code{point} \rightarrow \code{bool}\\
   &\code{on\_polypath}\vdash_{def}\ Ps\ P \iff\\
-  &\quad\code{mem}\ P\ Ps\vee\,\exists x\ y.\; \code{mem}\ (x,y)\ (\code{adjacent}\ Ps) \wedge \between{x}{P}{y}.
+  &\quad\code{mem}\ P\ Ps\vee\,\exists x\;\exists y.\; \code{mem}\ (x,y)\ (\code{adjacent}\ Ps) \wedge \between{x}{P}{y}.
 \end{align*}
 
 \begin{align*}
   &\code{polypath\_connected}\,:\,\code{plane}\rightarrow(\code{point} \rightarrow \code{bool}) \rightarrow \code{point} \rightarrow \code{point} \rightarrow \code{bool}\\
   &\code{polypath\_connected}\vdash_{def}\ \alpha\ figure\ P\ Q \iff\\
   &\quad\exists path.\; path \neq []\\
-  &\qquad\wedge\,(\forall R.\ \code{mem}\ R\ path \implies \onplane{R}{\alpha})\\
+  &\qquad\wedge\,(\forall R.\;\code{mem}\ R\ path \implies \onplane{R}{\alpha})\\
   &\qquad\wedge\,\code{head}\ path = P \wedge \code{last}\ path = Q\\
   &\qquad\wedge\,\code{disjoint}\ (\code{on\_polypath}\ path)\ figure.
 \end{align*}
@@ -74,7 +74,7 @@ Function specifications marked with $\dag$ have been contributed.
   &\qquad\wedge \code{head}\ ps = \code{last}\ Ps\\
   &\qquad\wedge (\forall P.\;\code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha)\\
   &\qquad\wedge \code{pairwise}\ (\neq)\ (\code{butlast}\ Ps)\\
-  &\qquad\wedge \neg(\exists P\;Q\;X.\; \code{mem}\;X\;Ps\wedge\code{mem}\;(P,Q)\;(\code{adjacent}\;Ps)\wedge\between{P}{X}{Q})\\
+  &\qquad\wedge \neg(\exists P\;\exists Q\;exists X.\; \code{mem}\;X\;Ps\wedge\code{mem}\;(P,Q)\;(\code{adjacent}\;Ps)\wedge\between{P}{X}{Q})\\
   &\qquad\wedge \code{pairwise}\ (\lambda(P,Q)\;(P',Q').\\
   &\qquad\qquad\neg(\exists X. \between{P}{X}{P'} \wedge \between{Q}{X}{Q'})\ (\code{adjacent}\;Ps)).
 \end{align*}
@@ -82,7 +82,7 @@ Function specifications marked with $\dag$ have been contributed.
 \section{Theorems}
 \begin{align*}
 \vdash &\code{on\_plane}\ P1\ \alpha \wedge \code{on\_plane}\ P2\ \alpha \wedge \code{on\_plane}\ Q1\ \alpha \wedge \code{on\_plane}\ Q2\ \alpha\\
-       &\wedge(\forall X. \code{mem}\ X\ Ps \implies \code{on\_plane}\ X\ \alpha) \wedge (\forall X. \code{mem}\ X\ Qs \implies \code{on\_plane}\ X\ \alpha)\\
+       &\wedge(\forall X.\;\code{mem}\ X\ Ps \implies \code{on\_plane}\ X\ \alpha) \wedge (\forall X. \code{mem}\ X\ Qs \implies \code{on\_plane}\ X\ \alpha)\\
        &\wedge\Triangle{a}{P1}{P2}{Q1}\\
        &\wedge\Triangle{a}{Q1}{Q2}{P1}\\
        &\wedge\code{between}\ P1\ X\ P2 \wedge \code{between}\ Q1\ X\ Q2\\
@@ -93,7 +93,7 @@ Function specifications marked with $\dag$ have been contributed.
 
 \begin{align*}
 \vdash &\code{simple\_polygon}\ \alpha\ Ps\\
-       &\implies \exists P\ Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
+       &\implies \exists P\;\exists Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
        &\qquad\wedge \neg\code{on\_polyseg}\ Ps\ P \wedge \neg\code{on\_polyseg}\ Ps\ Q\\
        &\qquad\wedge \neg\code{seg\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ Q
 \end{align*}
@@ -106,67 +106,6 @@ Function specifications marked with $\dag$ have been contributed.
        &\qquad\quad\vee \code{seg\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ R\\
        &\qquad\quad\vee \code{seg\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ Q\ R
 \end{align*}
-
-
-%    & &\quad
-%    & &\quad
-%    & &\quad
-%    &\quad\code{else}\ \cons{x}{(\code{butlast}\ xs)}
-  % \begin{alignedat}{2}
-  %   &\code{butlast}\ [] = [] &\qquad & \code{}\ 
-  %   &\code{init}
-
-%  &\code{head}\ [] = [] & & & 
-%  &\code{head}\ (\cons{x}{xs})
-  
-%   &\code{tail}\,:\,[\alpha] \rightarrow \alpha\\
-%   &\code{tail}\ []             = []\dag\\
-%   &\code{tail}\ (\cons{x}{xs}) = xs\\
-%   &\code{butlast}\ []             = []\\
-%   &\code{butlast}\ (\cons{x}{xs}) = \code{if}\ xs=[]\ \code{then}\ []\\
-%                                  &\qquad\code{else}\ \cons{x}{(\code{butlast}\ xs)}\\
-%   &\code{length}\ [] = 0\\
-%   &\code{length}\ (\cons{x}{xs}) = 1 + \code{length}\ xs\\
-%   &\code{last}\ xs = \code{el}\ (\code{length} - 1)\ xs\\
-%   &\append{[]}{ys} = ys\\
-%   &\append{(\cons{x}{xs})}{ys} = \cons{x}{(\append{xs}{ys})}\\
-%   &\code{zip}\ []\  []                = []\\
-%   &\code{zip}\ (x:xs)\ (y:ys) = \cons{(x,y)}{\code{zip}\ xs\ ys}\\
-%   &\code{all}\ P\ [] \iff \top\\
-%   &\code{all}\ P\ (\cons{x}{xs}) \iff P\ h \wedge \code{all}\ xs\\
-%   &\code{pairwise}\ P\ [] \iff \top\\
-%   &\code{pairwise}\ P\ (\cons{x}{xs}) \iff \code{all}\ (P\ x)\ xs \wedge \code{pairwise}\ xs\\
-%   &\code{mem}\ P\ xs \iff \code{set\_of\_list} xs \subseteq P\\
-%   &\code{adjacent}\ xs = \code{zip} (\code{butlast}\ xs) (\code{tail}\ xs)\\
-%   \\
-%   &\code{disjoint}\ s\ t \iff s \cap t = \emptyset
-% \end{align*}
-
-% \section{Definition of Polygons}
-% \begin{align*}
-%   \code{on\_polyseg}\ p\ P \iff \code{mem}\ P\ p \vee \exists x\ y. \code{mem}\ (x,y)\ (\code{adjacent}\ p) \wedge \between{x}{P}{y}
-%   \code{head}\ (\cons{x}{xs}) &= x\\
-%   \code{tail}\ []             &= []\dag\\
-%   \code{tail}\ (\cons{x}{xs}) &= xs\\
-%   \code{butlast}\ []             &= []\\
-%   \code{butlast}\ (\cons{x}{xs}) &= \code{if}\ xs=[]\ \code{then}\ []\\
-%                                  &\qquad\code{else}\ \cons{x}{(\code{butlast}\ xs)}\\
-%   \code{length}\ [] &= 0\\
-%   \code{length}\ (\cons{x}{xs}) &= 1 + \code{length}\ xs\\
-%   \code{last}\ xs &= \code{el}\ (\code{length} - 1)\ xs\\
-%   \append{[]}{ys} &= ys\\
-%   \append{(\cons{x}{xs})}{ys} &= \cons{x}{(\append{xs}{ys})}\\
-%   \code{zip}\ []\  []                &= []\\
-%   \code{zip}\ (x:xs)\ (y:ys) &= \cons{(x,y)}{\code{zip}\ xs\ ys}\\
-%   \code{all}\ P\ [] &\iff \top\\
-%   \code{all}\ P\ (\cons{x}{xs}) &\iff P\ h \wedge \code{all}\ xs\\
-%   \code{pairwise}\ P\ [] &\iff \top\\
-%   \code{pairwise}\ P\ (\cons{x}{xs}) &\iff \code{all}\ (P\ x)\ xs \wedge \code{pairwise}\ xs\\
-%   \code{mem}\ P\ xs &\iff \code{set\_of\_list} xs \subseteq P\\
-%   \code{adjacent}\ xs = \code{zip} (\code{butlast}\ xs) (\code{tail}\ xs)\\
-%   \\
-%   \code{disjoint}\ s\ t \iff& s \cap t = \emptyset
-% \end{align*}
 
 %%% Local Variables: 
 %%% TeX-master: "../thesis"

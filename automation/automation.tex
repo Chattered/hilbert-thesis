@@ -1,5 +1,5 @@
 \chapter{Automation}\label{chapter:Automation}
-In the last chapter, we formulated incidence claims in terms of point-sets, characterised by Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} from Figure~\ref{fig:PointSets}. These theorems allowed us to write shorter verifications~\cite{ScottMScThesis} using just the theorem prover's stock automation, when compared with other verifications in the same theorem prover~\cite{MeikleFleuriotFormalizingHilbert}. The patterns that appeared in these verifications, which we shall refer to as our \emph{manual} verifications, were ripe for automation.
+In the last chapter, we formulated incidence claims in terms of point-sets, characterised by Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} from Figure~\ref{fig:PointSets}. These allowed us to write much shorter verifications~\cite{ScottMScThesis} than had been obtained by Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}, just using the theorem prover's stock automation. But we knew we could do better. The patterns that appeared in these verifications, which we shall refer to as our \emph{manual} verifications, were ripe for additional automation.
 
 The HOL~Light proof assistant expects its users to work ``close to the metal'', writing ML directly. In this environment, users become comfortable prototyping and  integrating new tools. In this chapter, we shall describe the integration of an automated tool for incidence reasoning, which can be made available as a tactic and in Mizar~Light proof steps.
 
@@ -17,9 +17,9 @@ But it is not always clear how the conditions in our statements can be relaxed. 
 
 Wu's highly celebrated method automatically inserts non-degeneracy conditions as it carries out proofs, and if possible, it automatically deletes redundant conditions to keep results generic. The method has been used to automatically prove an enormous number of non-trivial results in unordered geometry \cite{MechanicalGeometryTheoremProving}.
 
-For ordered geometry, Wu extended his method by appealing to the embedding of Euclidean geometry in real-closed fields, and then applied Tarksi's well-known decision procedure. Unfortunately, the procedure is grossly intractable ~\cite{TarksiMcNaugtonReview}. In the domain of ordered geometry, which is our principle concern, Wu's Method is not effective.
+For ordered geometry, Wu extended his method by appealing to the embedding of Euclidean geometry in real-closed fields, and then applied Tarksi's well-known decision procedure. Unfortunately, the procedure is grossly intractable ~\cite{TarksiMcNaugtonReview}. Thus, in the domain of ordered geometry, which is our principle concern, Wu's Method will not be effective.
 
-Moreover, to exploit Wu's method, we would need to show how each of his mechanical steps can be reduced to the axioms of Hilbert's system. But this reduction will presuppose some of the very elementary results which we are trying to mechanise. Indeed, Wu's method rests at least on Desargues' Theorem, which appears late on as THEOREM~53 in the \emph{Grundlagen der Geometrie}.
+Moreover, to exploit Wu's method, we would need to show how each of his mechanical steps can be reduced to the axioms of Hilbert's system. But this reduction will presuppose some of the very elementary results which we are trying to mechanise. Indeed, Wu's method rests at least on Desargues' Theorem, which appears late on as THEOREM~53 (page 72 of the \emph{Foundations of Geometry}).
 
 \subsection{Other Methods}
 Wu's technique is algebraic, and reduces geometrical problems to polynomial equations. A similar successful method was developed as \emph{Gr\"{o}bner bases}~\cite{BuchbergerGrobner}. Like Wu's, this method automatically infers non-degeneracy conditions (though will not automatically delete redundant ones). The two techniques are comparable in the results they obtain, but in some cases, a problem soluble by one method may only be soluble by the other after some additional factorisation of the polynomial equations.
@@ -29,7 +29,7 @@ Another collection of successful methods which combine algebraic and synthetic r
 The area method has been formalised as a Coq tactic by Narboux \cite{NarbouxAreaMethod}, while the full-angle method was used for Wilson and Fleuriot's diagrammatic geometry proof assistant \cite{GeometryExplorer}.
 
 \section{Basis for an Algorithm}
-Our own approach is based on Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane}, which tell us how to reason with finite collinear and planar sets, and so can form the basis of a combinatorial algorithm. The domain of our algorithm is data representing assertions, hereafter just \emph{data}.\footnote{In our implementation, the data were precisely the sequents whose right hand side formalised the assertion, making our implementation \emph{fully expansive}~\cite{FullyExpansive}, but we could have used other data to assist the verification, such as a selection of proof hints from which the sequents could be later derived.} There are five kinds of data: assertions that two points are equal, that two points are distinct, that a set of points is collinear, that a triple is non-collinear, and that a set of points is planar. The algorithm consists chiefly of rules and methods to generate data from other data.
+Our own approach is based on Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane}, which tell us how to reason with finite collinear and planar sets, and so can form the basis of a combinatorial algorithm. The domain of our algorithm is data representing assertions, hereafter just \emph{data}.\footnote{In our implementation, the data were precisely the sequents whose right hand side formalised the assertion, making our implementation \emph{fully expansive}~\cite{FullyExpansive}, but we could have used other data, such as a collection of proof hints, which could later be automatically processed into sequents.} There are five kinds of data: assertions that two points are equal, that two points are distinct, that a set of points is collinear, that a triple is non-collinear, and that a set of points is planar. The algorithm consists chiefly of rules and methods to generate data from other data.
 
 These rules are similar in spirit to those given by Magaud et al~\cite{RankDesargues}. Their rules are also based on point-sets, but the authors have beautifully abstracted the core idea. In their paper, an $n$-dimensional set is assigned a \emph{rank} of $n+1$. There are then key rules which assert that, given point sets $X$ and $Y$, the sum of the ranks of $X \cup Y$ and $X \cap Y$ is no greater than the sum of the ranks of $X$ and $Y$. This abstractly characterises Theorems~\ref{rule:collunion} and~\ref{rule:planeunion} which introduce the union of collinear and planar sets respectively, while the hierarchy of ranks give us Theorems~\ref{rule:collsubset} and~\ref{rule:planesubset} for free. The use of ranks therefore identifies an analogy between how collinearity and planarity are used in our theorems.
 
@@ -51,7 +51,7 @@ We now summarise the rules for introducing our five kinds of data. The first fou
 \item[$\code{colncolneq}$] Infer inequalities from a collinear set containing two points of a non-collinear triple:
 \begin{align*}
   &\vdash\code{collinear}\ S \wedge \neg\code{collinear}\ \{A,B,C\}\\
-  &\qquad\wedge A,B \in S \implies \forall X. X \in S \implies C \neq X
+  &\qquad\wedge A,B \in S \implies \forall X.\;X \in S \implies C \neq X
 \end{align*}(by Theorem~\ref{rule:collsubset}). For example, 
 \begin{align*}
 \code{collinear} \{A, B, C, D, E\} \wedge & \neg\code{collinear} \{A, B, P\}\\
@@ -83,16 +83,6 @@ A \neq C \wedge D \neq E &\wedge \code{collinear} \{A, B, C, D, E\} \wedge \neg\
 \item[$\code{colcolplane}$] Use Theorem~\ref{rule:collcollplane} to show that the union of intersecting collinear sets is planar.
 \end{description}
 
-%We have stated these rules at the object level, and they can be applied exhaustively by just using matching and term-rewriting. However, we have also implemented them directly as ML inference rules. This is preferred for efficiency, since we can be smarter about when a match should fail, and we can alleviate the burden on the rewriter.
-
-%With hard-coded ML inference rules, we can dispense with sets and represent our theorems as ordinary first-order terms. So $\code{collinear}\ \{A,B,C,D,E\}$ gets expressed directly as the existential produced by unfolding the definition of $\code{collinear}$ and the finite set constructors:
-%\begin{displaymath}
-%  \exists a. \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a\wedge\code{on\_line}\ D\ a\wedge\code{on\_line}\ E\ a.
-%\end{displaymath}
-%The collinear union rule is now ML code which strips the existential and conjuncts from these formulas, and then directly applies existential rules and Axiom~\ref{eq:g12} to produce a new claim of collinearity of the same form. Our object level rules can serve as a weak sort of verification: after unfolding the predicates $\code{collinear}$ and $\code{planar}$ and unfolding the finite sets, direct matching should behave identically to our hard-coded ML.
-
-%Besides efficiency, the fact that we stick to first-order means that our declarative proofs are not loaded down having to unfold statements involving $\code{collinear}$ and $\code{planar}$ predicates, nor do they have to perform any set-theoretic reasoning.
-
 \section{Forward Chaining}\label{sec:Forward-chaining}
 Forward-chaining algorithms have had recent success in automatically producing readable elementary proofs from Hilbert's axioms~\cite{ForwardChainHilbert}, and seemed particularly suitable for our use case. For instance, we found that when writing our manual verifications, we ended up with suboptimal proofs and found that the complexities of incidence reasoning left us with the suspicion that there might be errors in the prose where he had incorrectly assumed non-degeneracy conditions. We wanted a tool which could investigate these matters by exploring the proof space of incidence reasoning surrounding each of Hilbert's proofs. 
 
@@ -109,7 +99,7 @@ We argue that we have done one better. It was almost trivial to turn our algorit
 
 The basic idea is very simple: we spawn a thread that is initialised with an empty generation of data. New generations are produced cumulatively through forward-chaining. At the same time, the thread monitors the proof context, so that each time the user adds a hypothesis by performing a declarative proof step, the hypothesis can be automatically inserted into the current generation and used for further chaining.
 
-We should be clear that much of the data in the generations will only be valid in the branch of a proof that the user is currently working in. As they complete they leave that branch by completing a subproof, much of the data will become unusable because it was derived under assumptions which are no longer in force. We do not currently have a clear way to mitigate this issue, however, we \emph{do} have a way to systematically deal with case-splitting proofs which can be explored internally by the automated tool. See~\S\ref{sec:CaseAnalysis}.
+We should be clear that much of the data in the generations will only be valid in the branch of the subproof that the user is currently working in. When they complete the subproof, they leave that branch, and that data will become unusable because it was derived under assumptions which are no longer in force. We do not currently have a clear way to mitigate this issue, however, we \emph{do} have a way to systematically deal with case-splitting proofs which can be explored internally by the automated tool. See~\S\ref{sec:CaseAnalysis}.
 
 For the user's inspection, the thread echoes each generation of data concurrently to a separate terminal while they craft the verification. To enable the user to access the data, we introduce a variable $\code{the\_facts}$ which is updated so that when dereferenced in a verification, the current step will be justified using the latest data from forward-chaining.
 
@@ -122,7 +112,7 @@ In our designs, our automation is very much intended in the spirit of \emph{assi
 
 We would typically develop our geometric proofs on paper, figuring out how to discharge non-degeneracy assumptions without any computer assistance. In our case, these assumptions required that certain points be non-equal and others non-collinear. Discharging these assumptions typically meant a pen-and-paper combinatorial search.
 
-In this narrow domain, it was easy to imagine simple programs which could do the combinatorial search for us, and which could display a breadth of derivations in case we had missed shorter paths, or overlaps with later inferences. This, then, is not quite automated search, but more assisted search. We have chosen to give it the shorter title of \emph{discovery}, which stresses the point that we are usually interested in obtaining many derivations from the search process, including derivations we had not expected. It also stresses the point that we often did not run the searches with a concrete goal in mind. However, we should mention that our use of the word \emph{discovery} is to be contrasted with fully automated discovery systems which search for arbitrary interesting results and concepts without the need for assistance~(see the work of Colton et al.~\cite{ColtonInterestingness,MathematicalDiscovery}, McCasland and Bundy~\cite{Mathsaid}, Johansson et al~\cite{ConjectureSynthesis} and Montano-Rivas et al~\cite{SchemeBasedSynthesis,SchemeBasedConceptInvention}.
+In this narrow domain, it was easy to imagine simple programs which could do the combinatorial search for us, and which could display a breadth of derivations in case we had missed shorter paths, or overlaps with later inferences. This, then, is not quite automated search, but more assisted search. We have chosen to give it the shorter title of \emph{discovery}, which stresses the point that we are usually interested in obtaining many derivations from the search process, including derivations we had not expected. It also stresses the point that we often did not run the searches with a concrete goal in mind. However, we should mention that our use of the word \emph{discovery} is to be contrasted with fully automated discovery systems which search for arbitrary interesting results and concepts without the need for assistance~(see the work of Colton et al.~\cite{ColtonInterestingness,MathematicalDiscovery}, McCasland and Bundy~\cite{Mathsaid}, Johansson et al~\cite{ConjectureSynthesis} and Montano-Rivas et al~\cite{SchemeBasedSynthesis,SchemeBasedConceptInvention}).
 
 \section{An Implementation in Combinators}\label{sec:DiscoveryAlgebra}
 Combinator languagers are a staple of typed functional programming and LCF theorem provers, which already boast powerful combinators for conversions and tactics~\cite{Tactics}. By following such examples, we hope to contribute a library that has a potentially wider application than the peculiar incidence automation we need for our verifications. The incidence automation will be just one possible hand-crafted \emph{discoverer} written in this language, just as hand-crafted tactics are written in tactic languages.
@@ -172,8 +162,8 @@ satisfying the algebraic laws given in Figure~\ref{fig:MonadLaws}.
 &(\code{join} \circ \code{fmap}\;\code{return})\;m = m\notag\\
 &\code{join} \circ \code{join} = \code{join} \circ \code{fmap}\;\code{join} \label{eq:JoinAssoc}
 \end{align}
-\caption{The monad laws}
 \label{fig:MonadLaws}
+\caption{The monad laws}
 \end{figure}
 
 The monad that is typically defined on lists can be used for search, but it takes concatenation $\code{concat} : [[\alpha]] \rightarrow [\alpha]$ for its join operation. This makes it unsuitable for \emph{fair} and \emph{unbounded search} with infinite streams. If the stream $xs$ represents one unbounded search, then we have $xs + ys = xs$ for any $ys$, and thus, all items found by $ys$ are lost.\footnote{Here, $+$ is just list and stream append.} This is to be expected, since the definition of this standard monad corresponds to \emph{depth-first search}. 
@@ -207,8 +197,8 @@ There is an alternative definition of the monad which is breadth-first and thus 
       &&&&&&&         &        & $\vdots$ &           &        &           
     \end{tabular}
   \end{tabular}
-  \caption{Shifting}
   \label{fig:ShiftGen}
+  \caption{Shifting}
 \end{figure}
 
 If we understand these streams as the outputs of a discoverer, then the outer stream can be understood as the output of a discoverer which \emph{discovers discoverers}. The join function can then be interpreted as \emph{forking} each discoverer at the point of its creation and combining the data into the output of a single discoverer. The highlighted column in Figure~\ref{fig:ShiftGen} is this combined result: a set of values generated simultaneously and thus having no specified order (this is required to satisfy Law~\ref{eq:JoinAssoc} in Figure~\ref{fig:MonadLaws}).
@@ -241,8 +231,8 @@ The transpose produces a stream of generations of generations (type $[G\;(G\;\al
                  \end{matrix}\right]\\
       \quad= &[D_{k,0}, D_{k,1}, D_{k,2}, \ldots]
   \end{align*}
-\caption{\code{transpose} and \code{join}}
 \label{fig:Transpose}
+\caption{\code{transpose} and \code{join}}
 \end{figure}
 
 The type of streams now constitutes a monad (see Spivey~\cite{SearchAlgebras} for details). The fact that we have a monad affords us a tight integration with the host language in the following sense: we can lift arbitrary functions in the host language to functions on streams, and combine one stream $xs : [G\;\alpha]$ with another stream $xs' : \alpha \rightarrow [G\;\beta]$ which depends, via arbitrary computations, on each individual element of $xs$. 
@@ -343,7 +333,7 @@ A generation can be ``put off'' to a later generation using the function $\code{
 The use of this function is actually essential when writing mutually recursive discoverers. If one discoverer outputs data based on data output by another discoverer, and \emph{vice versa}, then one of the two discoverers must be delayed to avoid deadlock.
 
 \subsection{Filtering}\label{sec:Filtering}
-In many cases, we will not be interested in all the outputs generated by a discoverer. Fortunately, filtering is a library function for monads with a zero element, and can be defined together with a usual bind operation ($\bind$) as follows:
+In many cases, we will not be interested in all the outputs generated by a discoverer. Fortunately, filtering is a library function for monads with a zero element, and can be defined in terms of the usual bind operation ($\bind$). We give definitions for both $(\bind)$ and $\code{filter}$ as follows:
 \begin{align*}
 xs \bind f &= \code{join}\;(\code{fmap}\;f\;xs) \\
 \code{filter}\;p\;xs &= xs \bind (\lambda x.\;\code{if } p\;x \code{ then } \code{return}\;x \code { else } 0).
@@ -389,7 +379,7 @@ We supply an accumulation function which is similar to the usual \code{fold} fun
 &= [\{3\}, \{10\}, \{15\}, \{36\}].
 \end{align*}
 
-One useful case of this allows us to gather up all data discovered so far in a single collection. If the collection is finite lists, we just use $\code{accum}\;(\lambda xs\;x.\;x :: xs)\;[\,]$.
+One useful case of this allows us to gather up all data discovered so far in a single collection. If the collection is finite lists, we just use $\code{accum}\;(\lambda xs\;\lambda x.\;x :: xs)\;[\,]$.
 
 % \subsection{Normalisation}
 % For efficiency, it will be useful to normalise with respect to any discovered equalities and simple rewrite rules. 
@@ -512,7 +502,7 @@ Another issue with threading concerns UNIX signals. The standard way to interact
 
 Finally, Ocaml's lazy list library has some unexpected implementation choices. For instance, the list concatenation function $concat\;:\;[[\alpha]]\rightarrow[\alpha]$ is \emph{strict} in its outer list, while the $\code{take}$ function which takes a certain sized prefix of a given lazy list will always force the values in the prefix. These behaviours are generally inappropriate for lazy data-structures, and their use often leads to infinite looping when we come to write recursive functions which generate lazy lists. We have had to rewrite many of them.
 
-Besides these issues, the syntax for lazy lists in Ocaml is cumbersome. Primitive list functions have to explicitly force lazy lists, while recursive lazy lists must be wrapped with a \code{lazy} keyword. One benefit, however, of Ocaml's lazy list implementation is that it detects when a recursive definition requires forcing a vicious circularity. That is, for example, when computing the first element of $xs$ requires computing the first element of $ys$, and \emph{vice versa}. Such situtations occur easily when writing discoverers in our algebra, and are fixed with choice uses of the $\code{delay}$ function.
+Besides these issues, the syntax for lazy lists in Ocaml is cumbersome. Primitive list functions have to explicitly force lazy lists, while recursive lazy lists must be wrapped with a \code{lazy} keyword. One benefit, however, of Ocaml's lazy list implementation is that it detects when a recursive definition requires forcing a vicious circularity. Such a scenario arises when the computation of the first element of $xs$ requires computing the first element of $ys$, and \emph{vice versa}. Such situtations occur easily when writing discoverers in our algebra, and are fixed with choice uses of the $\code{delay}$ function.
 
 \section{Applicative Functors}\label{sec:Applicative}
 An idiom or applicative functor $F$~\cite{Applicative} is a generalisation of the monad, which could be thought of as providing at least the ability to lift values with a function $pure\;:\;\alpha \rightarrow F\ \alpha$ and to lift a two argument function as we do with 
@@ -603,7 +593,7 @@ non\_collinear &= \code{maxima}\ (\code{filter}\ \code{is\_non\_collinear}\ thms
 \section{Conclusion and Further Work}
 We hope the reader agrees that, with our combinator language, we can write neatly and declaratively specified data-flows to search for theorems, where discovered theorems are fed back into the network. The basic combinators constitute a monad to give them a familiar and robust semantics, and our implementation in streams makes it easy for searches to be run concurrently following the steps of a declarative proof, with the results made available to verify subsequent steps. This feedback makes the automation potentially collaborative, with the user and proof assistant sharing data as they progress towards the goal.
 
-The theoretical underpinnings of our tree data-structure are left to further investigation. We would like to know more about the properties of our simplification algorithm, and establish, for instance, that the set of theorems produced by our algorithm \emph{without} any simplification derive the exact same theorems \emph{with} theorems. In other words, we would like to establish that no theorems are lost.
+The theoretical underpinnings of our tree data-structure are left to further investigation. In particular, we would like to know more about the properties of our simplification algorithm, and establish, for instance, that a tree's theorems are trivially entailed by the theorems of its simplified tree. In other words, we would like to establish that simplification does not lose interesting theorems.
 
 We regard this as beyond the scope of our verification efforts, though we point out that the incidence discoverer will be battle tested in later chapters, and that there have been no surprises which would indicate a mistake in our formulation.
 

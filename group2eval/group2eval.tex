@@ -3,7 +3,7 @@ We now come to verify some theorems of Group~II, the only theorems in the first 
 
 In the last chapter, we described how to implement tailored automation to handle incidence reasoning. An aim of the present chapter is to see how much this automation improves over the stock automation used in our manual verifications, and to what extent the focus on automated \emph{discovery} enables us to find alternative proofs. Our ideal for the final verifications is that their steps should match those of an ideal prose proof, here modelled by Hilbert's own arguments. These steps are used to define and exhibit the diagram needed to establish Hilbert's result, and are rarely used for discharging tedious incidence preconditions.
 
-When our verifications, we always tried our best to follow the specific steps in Hilbert's prose. In this chapter, we shall directly compare our verifications with the originals.
+When writing our verifications, we always tried our best to follow the specific steps in Hilbert's prose. In this chapter, we shall directly compare our verifications with the originals.
 
 \section{THEOREM~3}\label{sec:Theorem3}
 Hilbert's first result tells us that there is a point between any two others.
@@ -23,7 +23,7 @@ The only incidence axiom Hilbert appeals to in this proof is Axiom~I, 3, and the
 THEOREM~3 was not proven in the first edition of the \emph{Grundlagen der Geometrie}; it was an axiom. That it turns out to be redundant might still come as a surprise, when we realise that we are obtaining such a simple linear result from a one-dimensional order axiom \eqref{eq:g22} and a two-dimensional order axiom~\eqref{eq:g24}. This is the situation in all three proofs we consider in this chapter. We will be proving one-dimensional results by obtaining two-dimensional figures and applying Pasch's axiom.
 
 \subsection{Verification}
-Our HOL~Light verification shown in Figure~\ref{fig:ThreeVerification} improves hugely on our manual verifications~\cite{ScottMScThesis}, which ran to twenty-two steps. Here, we have just five steps, and are \emph{very} close to Hilbert's prose. We have just one extra step: our final \code{qed} eliminates the unwanted disjunct from Pasch's axiom. 
+Our HOL~Light verification shown in Figure~\ref{fig:ThreeVerification} improves hugely on our manual verifications~\cite{ScottMScThesis}, which ran to twenty-two steps. Here, we have just five steps, and are \emph{very} close to Hilbert's prose. We have just one extra step: our final \code{qed} eliminates the unwanted disjunct from Pasch's axiom.
 
 \begin{boxedfigure}
   \begin{align*}
@@ -42,7 +42,9 @@ Our HOL~Light verification shown in Figure~\ref{fig:ThreeVerification} improves 
 \label{fig:ThreeVerification}
 \end{boxedfigure}
 
-We cite two axioms that Hilbert did not. His Axiom~I, 3 can only be used \emph{indirectly} to find a point off an arbitrary line. Strictly speaking, one must also appeal to Axiom~\ref{eq:g12} as we have done. We have also cited Axiom~II, 1. This is only needed for the trivial matter of switching the order of the outer arguments to the \code{between} relation. 
+The verification presented here is in its final form, packaged from an interactive verification that was developed and assisted by concurrent discoverers. We will recount the general way we used the concurrent discoverers to produce these final packaged versions in \S\ref{sec:DiscoveryAtWork}, where we consider the verification of THEOREM~5.
+
+In the verification, we cite two axioms that Hilbert did not. His Axiom~I, 3 can only be used \emph{indirectly} to find a point off an arbitrary line. Strictly speaking, one must also appeal to Axiom~\ref{eq:g12} as we have done. We have also cited Axiom~II, 1. This is only needed for the trivial matter of switching the order of the outer arguments to the \code{between} relation. 
 
 We reference three separate discoverers in our proof: \code{by\_incidence}, \code{by\_neqs}, and \code{by\_eqs}. The first discoverer collects all five kinds of incidence sequent considered in the last chapter into a single discoverer, while the latter two just discover inequality and equality sequents respectively. The semantics of laziness makes this a genuine optimisation: if we only pull sequents from the \code{by\_neqs} discoverer, no sequents will be pulled from the \code{by\_eqs} or \code{by\_planes} discoverers, as we can see by looking again at the dependencies in our data-flow diagram (Figure~\ref{fig:DataFlow}).
 
@@ -61,7 +63,7 @@ A related axiom (which turns out to be weaker \cite{PaschForms}), is also due to
 \begin{multline}\label{eq:InnerPaschWeak}
   \vdash\Triangle{a}{A}{B}{C} \\
 \wedge \between{B}{C}{D} \wedge \between{A}{E}{B}\\ 
-\implies \exists F\ a.\;  \code{on\_line}\ D\ a \wedge \code{on\_line}\ E\ a \wedge \code{on\_line}\ F \wedge \between{A}{F}{C}.
+\implies \exists F\;\exists a.\;  \code{on\_line}\ D\ a \wedge \code{on\_line}\ E\ a \wedge \code{on\_line}\ F \wedge \between{A}{F}{C}.
 \end{multline}
 
 It can now be seen that the diagram obtained in Hilbert's proof of THEOREM~3 is just obtaining the assumptions of this Inner Pasch Axiom. So when we verify Inner Pasch and use it as an alternative to Axiom~\ref{eq:g24}, we get the verification shown in Figure~\ref{fig:Theorem3Verification}, which does not need the final step we had before. In fact, had we spotted the factoring in our manual verification, we predict that we would have only needed eight, not twenty-two steps.
@@ -178,11 +180,6 @@ But with our incidence automation, we have a HOL~Light verification in just thir
 & \code{consider}\ F\ \code{such that}\ (\exists a.\; \code{on\_line}\ C\ a\wedge \code{on\_line}\ D\ a\wedge \code{on\_line}\ F\ a) & 9\\
 & \qquad\qquad\qquad\qquad\qquad\qquad \wedge\between{A}{F}{G}\ & 8\\
 &\qquad[\ldots]\\
-%& \qquad\qquad\qquad\qquad\qquad\qquad \wedge\between{A}{F}{G}\ \code{proof} & 10\\
-%&\qquad \code{clearly by\_pasch consider}\ F\ \code{such that}\\
-%&\qquad\qquad (\exists a. \code{on\_line}\ C\ a\wedge \code{on\_line}\ D\ a\wedge \code{on\_line}\ F\ a)\\
-%&\qquad\qquad \wedge (\between{A}{F}{B} \vee \between{A}{F}{G})\ \code{by}\ \eqref{eq:g21}\ \code{from}\ 0,2,3,5,6\\
-%&\qquad\code{obviously}\ (\code{by\_eqs}\circ\code{split})\ \code{qed from}\ 0,4,5\ \code{by}\ \eqref{eq:g21},\eqref{eq:g23}\\
 &\code{have}\ \between{A}{D}{E}\\
 &\qquad \code{proof:}\ \code{obviously by\_ncols so consider}\ D'\ \code{such that}\\
 &\qquad\qquad\between{C}{D'}{F}\wedge\between{E}{D'}{A}\\
@@ -209,12 +206,12 @@ We then get to \code{assume}, just as Hilbert does, that $C$ is neither between 
 
 Next, we look at the first two applications of Axiom~II,~4. In our verification, we have not been able to apply this axiom in either the inner or outer forms, since we have only one order hypothesis. This means we are faced with having to eliminate a disjunct in the conclusion of Axiom~\ref{eq:g24}. To do this, we find point equalities via the composed discoverer $\code{by\_eqs}\circ\code{split}$, which tells us that, in the offending cases, the point $A$ lies between $B$ and $C$ or $C$ lies between $A$ and $B$. We have explicitly hypothesised against these two possibilities, and thus, the disjuncts can be eliminated.
 
-In these two applications of Axiom~\ref{eq:g24}, we have used our \code{clearly} keyword to search for a specific conclusion of the axiom. Exploiting our discoverer in this way makes things more robust than if we use \code{MATCH\_MP\_TAC} as we did in \S\ref{sec:Theorem3}. With matching, we have to be careful that all the variables in the axiom line up with our desired conclusion. But when we use the discoverer, we know that its outputs are always lexicographically normalised, so there is only one conclusion we could possibly be after. Besides, we usually just copied and pasted the conclusion directly from the results of a concurrent run of the discoverer, incorporating it into the proof as the goal of an intermediate and explicit proof step.
+In these two applications of Axiom~\ref{eq:g24}, we have used our \code{clearly} keyword to ask the \code{by\_pasch} discoverer to search for a specific conclusion of the axiom. Exploiting our discoverer in this way makes things more robust than using \code{MATCH\_MP\_TAC} as we did in \S\ref{sec:Theorem3}. With matching, we have to be careful that all the variables in the axiom line up with our desired conclusion. But when we use the discoverer, we know that its outputs are always lexicographically normalised, so there is only one conclusion we could possibly be after. This conclusion could usually be copied and pasted from the many results obtained by the \code{by\_pasch} discoverer when it was run concurrently during the interactive development. By incorporating it into an explicit intermediate step in this way, it gets added to the proof context, and, with the addition of the narrow set of justifying theorems for the step, becomes the sole target for efficient search in proof replay, placing less burden on \code{MESON}.
 
 The third and fourth applications of Pasch's axiom take the inner~\eqref{eq:InnerPasch} and outer~\eqref{eq:OuterPasch} forms respectively, and so we recommend the Outer Pasch Axiom as a useful lemma at this stage of Hilbert's exposition.
 
 \subsection{Alternative Proof}\label{sec:FourAlternative}
-In addition to using our proof tool in a supporting role, we also allowed it to tackle the problem unaided, applied Axiom~II,~4 non-deterministically and repeatedly to probe deeper into the search space. Our purpose here was to search for alternative proofs of THEOREM~4, and hopefully find one which required less than four applications of the axiom. This defined a search limit for the problem: once four applications were found, it stopped searching in the relevant branch. 
+Our proof tool was mostly used in a supporting role, but for Theorem~4 we allowed it to tackle the problem unaided, probing into the search space by applying Axiom~II,~4 non-deterministically. In this way, we hoped it would find alternative proofs of THEOREM~4, and, ideally, find one which required less than four applications of Axiom~II,~4. This defined a search limit for the problem: once four applications were found, it stopped searching in the relevant branch. 
 
 We found several ``alternatives'', but most of these were symmetries of the original proof. In some cases, two independent applications of Pasch's axiom were applied in reverse order. In other cases, the proof was identical to the original up to a symmetric relabelling of the points. Only one new proof was revealed up to symmetry, and it corresponds to case (a) and (c) of Figure~\ref{fig:FourPossibilities}. We give it now in a prose formulation with an accompanying diagram.
 
@@ -275,7 +272,7 @@ We have a verification of THEOREM~5 using Axiom~\ref{eq:g24} directly via \code{
 
 Our versions of Inner and Outer Pasch are strengthened from their axiomatic form. Consider Veblen's Outer Pasch Axiom, which we can formalise as
 \begin{multline*}
-  \Triangle{a}{A}{B}{C} \\\wedge \between{B}{C}{D} \wedge \between{A}{E}{C}\\ \implies \exists F\ a.\;  \code{on\_line}\ D\ a \wedge \code{on\_line}\ E\ a \wedge \code{on\_line}\ F\ a \wedge \between{A}{F}{B}.
+  \Triangle{a}{A}{B}{C} \\\wedge \between{B}{C}{D} \wedge \between{A}{E}{C}\\ \implies \exists F\;\exists a.\;  \code{on\_line}\ D\ a \wedge \code{on\_line}\ E\ a \wedge \code{on\_line}\ F\ a \wedge \between{A}{F}{B}.
 \end{multline*}
 We can say something stronger in the conclusion here. We know that $D$, $E$ and $F$ are not merely collinear. The point $E$ must lie between $D$ and $F$ (see the diagram accompanying Veblen's proof in \S\ref{sec:VeblenThree}). This is an important corollary, as evidenced by the fact that it is the very first theorem Veblen proves after stating the axiom. Thus, we have both Inner and Outer Pasch axioms as the following strengthened theorems:
 \begin{equation}\label{eq:OuterPasch}
@@ -356,11 +353,13 @@ Finally, we mention Hilbert's final step ``one shows analogously that $B$ also l
 \setlength\abovedisplayskip{-0.2cm}
 \begin{multline*}
 \code{MESON [lemma,\eqref{eq:g21}] }
-\forall A\ B\ C\ D.\; \between{A}{B}{C} \wedge \between{B}{C}{D}\\ \implies \between{A}{B}{D} \wedge \between{A}{C}{D}
+\forall A\;\forall B\;\forall C\;\forall D.\; \between{A}{B}{C} \wedge \between{B}{C}{D}\\ \implies \between{A}{B}{D} \wedge \between{A}{C}{D}
 \end{multline*}\end{minipage}}\linebreak
 
-\subsection{Discovery at work}
-In this subsection, we give an idea of how our discoverer interacts with HOL~Light by showing the sequents generated concurrently as we develop a declarative verification of THEOREM~5. We begin with the theorem's assumptions and the first non-collinear point obtained.
+\subsection{Discovery at work}\label{sec:DiscoveryAtWork}
+In this subsection, we give an idea of how our discoverers interact with HOL~Light by showing the sequents generated concurrently as we interactively develop a declarative verification of THEOREM~5. We consider two discoverers, \code{by\_incidence}, which generates the five kinds of basic incidence sequents described in the last chapter, and \code{by\_pasch}, which finds potential applications of Pasch's axiom. The \code{by\_pasch} discoverer feeds off the generations produced \code{by\_incidence}, so that their work is not duplicated. But there is no \emph{feedback}. That is, \code{by\_incidence} does not continue searching based on the results of \code{by\_pasch}. Instead, we shall take responsibility for how Pasch's axiom is used, since it is a point introduction axiom explicit in the prose that we want to keep explicit in the verification. Thus, we let search terminate at these applications.
+
+The discovery begins once we have stated the theorem's assumptions and obtained our first non-collinear point obtained.
 
 \fbox{\begin{minipage}{\linewidth}\small\setlength\abovedisplayskip{-0.2cm}
 \begin{align*}
@@ -436,7 +435,7 @@ Since this was the \emph{last} hypothesis to enter the proof context, we can add
     &\left\{\begin{aligned}
         &\exists a.\;\code{on\_line}\ C\ a\wedge\code{on\_line}\ E\ a\wedge\code{on\_line}\ F\ a, &(3)\\
         &C \neq E, C\neq F, E\neq F, &(3)\\
-        &\exists\alpha.\; \code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha&(3)\end{aligned}\right\},\\
+        &\exists \alpha.\; \code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha&(3)\end{aligned}\right\},\\
     &\left\{\begin{aligned}
       &\exists \alpha.\;\code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\wedge \code{on\_plane}\ D\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha, & (1,3)\\
       &\exists \alpha.\;\code{on\_plane}\ A\ \alpha\wedge \code{on\_plane}\ B\ \alpha\wedge \code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha & (0,3)
@@ -446,7 +445,7 @@ Since this was the \emph{last} hypothesis to enter the proof context, we can add
         &\exists\alpha.\; \code{on\_plane}\ A\ \alpha\wedge\code{on\_plane}\ B\ \alpha\wedge\code{on\_plane}\ C\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha&(0,3)\end{aligned}\right\},\\
     &\{\},\{\},\\
     &\left\{\begin{aligned}
-        &\exists\alpha.\; \code{on\_plane}\ A\ \alpha\wedge\code{on\_plane}\ B\ \alpha\wedge\code{on\_plane}\ C\ \alpha\\
+        &\exists \alpha.\; \code{on\_plane}\ A\ \alpha\wedge\code{on\_plane}\ B\ \alpha\wedge\code{on\_plane}\ C\ \alpha\\
         &\qquad\wedge\code{on\_plane}\ D\ \alpha\wedge\code{on\_plane}\ E\ \alpha\wedge\code{on\_plane}\ F\ \alpha&(0,1,3)\end{aligned}\right\},\\
     &\{\},\\
     &\left\{A\neq F, B\neq F \quad (0,2,3)\right\},\\
@@ -501,12 +500,6 @@ With this next declarative proof step, we add a new sequent into the proof-conte
        &\exists G.\; (\exists a.\;\code{on\_line}\ B\ a\wedge\code{on\_line}\ F\ a\wedge\code{on\_line}\ G\ a)\\
        &\qquad\qquad\wedge (\between{A}{G}{E} \vee \between{C}{G}{E}) & (0,2,3)
      \end{aligned}\right\}
-% \code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G C $\vee$ between A G F)}\\
-% \code{$\exists$G. \collinearthree{A}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}\\
-% \code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between A G F $\vee$ between C G F)}\\
-% \code{$\exists$G. \collinearthree{B}{E}{G} $\wedge$ (between C G D $\vee$ between D G F)}\\
-% \code{$\exists$G. \collinearthree{B}{F}{G} $\wedge$ (between A G E $\vee$ between C G E)}\\
-% \code{$\exists$G. \collinearthree{D}{E}{G} $\wedge$ (between B G C $\vee$ between B G F)}
      \end{split}
    \end{displaymath}
 \end{minipage}}
@@ -514,7 +507,7 @@ With this next declarative proof step, we add a new sequent into the proof-conte
 \label{fig:PaschGenerations}
 \end{figure}
 
-The last possibility corresponds to one of Hilbert's applications of Axiom~II,~4, which we shall therefore add as an explicit proof step in the declarative proof we are building. We do this by asserting the theorem as \code{clearly} derivable, adding the three hypotheses as explanatory justification, and so that the theorem is found efficiently in replay:
+The last possibility corresponds to one of Hilbert's applications of Axiom~II,~4, which we shall therefore add as an explicit proof step in the declarative proof we are building. We do this by asserting the theorem as \code{clearly} derivable, adding the three hypotheses as explanatory justification, so that the theorem is found efficiently in replay:
 
 \fbox{\begin{minipage}{\linewidth}\small\setlength\abovedisplayskip{-0.2cm}
 \begin{align*}
@@ -524,7 +517,7 @@ The last possibility corresponds to one of Hilbert's applications of Axiom~II,~4
 \end{align*}
 \end{minipage}}\linebreak
 
-We now have a disjunction in our hypotheses. When we run our discoverer with the \code{split} function, it will convert this disjunction into a tree, which will combine as described in \S\ref{sec:Trees}. Our generations become proper trees, and the search space is automatically partitioned into three. 
+We now have a disjunction in our hypotheses. When we run the \code{by\_incidence} discoverer with the \code{split} function, it will convert this disjunction into a tree, which will combine as described in \S\ref{sec:Trees}. Our generations become proper trees, and the search space is automatically partitioned into three. 
 
 The first partition covers inferences which are made in the root node of our trees, where no particular disjunct is assumed. These generations are shown in Figure~\ref{fig:RootGenerations}. Here, the discoverer infers that the new point $G$ must, \emph{in any case}, be distinct from $A$, $C$, $D$ and $E$, and that all seven points must be planar. 
 

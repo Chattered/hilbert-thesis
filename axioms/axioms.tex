@@ -26,36 +26,38 @@ Whether or not Hilbert was making the assumption that his sets were inhabited is
 
 Before we give our formalisation, we mention that we shall be adopting Hilbert's convention throughout this work, that points are denoted by uppercase Roman, $A$, $B$, $C$, $P$, $Q$, $R$, $X$, $Y$, $Z$, and so on. Lines are denoted by lowercase Roman $a$, $b$, $c$. And planes are denoted by Greek $\alpha$, $\beta$, $\gamma$.
 
-The formalisation of this single-sorted geometry is given in Figure~\ref{fig:InhabitedTypes}. We have formalised four of Hilbert's incidence axioms (\ref{eq:g11}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g18}) as conditions on the predicate sets \code{point}, \code{line} and \code{plane} and the single relation \code{lie}. The predicates are polymorphic of a single type variable $\tau$, which formalises the single sort for all our geometric entities. We then verify that any four objects satisfying these conditions are such that the three predicate sets are inhabited.
+The formalisation of this single-sorted geometry is given in Figure~\ref{fig:InhabitedTypes}. We have formalised four of Hilbert's incidence axioms (\ref{eq:g11}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g18}) as conditions on the predicate sets \code{point}, \code{line} and \code{plane} and the single relation \code{lie}. The predicates are polymorphic of a single type variable $\tau$, which formalises the single sort for all our geometric entities. We then verified that any four objects satisfying these conditions are such that the three predicate sets are inhabited.
 
 \begin{figure}
   \begin{align*}
     &\vdash\code{Group1}\ (\code{point}\;:\;\tau\rightarrow\code{bool}, \code{line}\;:\;\tau\rightarrow\code{bool},\code{plane}\;:\;\tau\rightarrow\code{bool},\\
     &\qquad\qquad\code{lie}\;:\;\tau\rightarrow\tau\rightarrow\code{bool})\\
-    &\iff (\forall A\;\forallB.\; \code{point}\ A \wedge \code{point}\ B \wedge A \neq B \implies \exists a.\; \code{line}\ a \wedge \code{lie}\ A\ a \wedge \code{lie}\ B\ a)\\
-    &\qquad\wedge (\exists A\ B\ C.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C\\
+    &\iff (\forall A\;\forall B.\; \code{point}\ A \wedge \code{point}\ B \wedge A \neq B \implies \exists a.\; \code{line}\ a \wedge \code{lie}\ A\ a \wedge \code{lie}\ B\ a)\\
+    &\qquad\wedge (\exists A\;\exists B\;\exists\ C.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C\\
     &\qquad\qquad\wedge \forall a.\; \code{line}\ a \implies \neg(\code{lie}\ A\ a \wedge \code{lie}\ B\ a \wedge \code{lie}\ C\ a))\\
     &\qquad\wedge(\forall A\;\forall B\;\forall C.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C\\
     &\qquad\qquad\wedge (\forall a.\; \code{line}\ a \implies \neg(\code{lie}\ A\ a \wedge \code{lie}\ B\ a \wedge \code{lie}\ C\ a))\\
     &\qquad\qquad\implies\exists\alpha.\; \code{plane}\ \alpha \wedge \code{lie}\ A\ \alpha \wedge \code{lie}\ B\ \alpha \wedge \code{lie}\ C\ \alpha)\\
-    &\qquad (\exists A\ B\ C\ D.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C \wedge \code{point}\ D\\
-    &\qquad\qquad \wedge \forall\alpha.\; \code{plane}\ \alpha \implies \neg(\code{lie}\ A\ \alpha \wedge \code{lie}\ B\ \alpha \wedge \code{lie}\ C\ \alpha \wedge \code{lie}\ D\ \alpha)\\
+    &\qquad (\exists A\;\exists B\;\exists C\;\exists D.\; \code{point}\ A \wedge \code{point}\ B \wedge \code{point}\ C \wedge \code{point}\ D\\
+    &\qquad\qquad \wedge \forall \alpha.\; \code{plane}\ \alpha \implies \neg(\code{lie}\ A\ \alpha \wedge \code{lie}\ B\ \alpha \wedge \code{lie}\ C\ \alpha \wedge \code{lie}\ D\ \alpha)\\
   \end{align*}
   \begin{displaymath}
-    \vdash \code{Group1}\ \code{point}\ \code{line}\ \code{plane}\ \code{lie} \implies (\exists A\ a\ \alpha.\; \code{point}\ A \wedge \code{line}\ a \wedge \code{plane}\ \alpha)
+    \vdash \code{Group1}\ \code{point}\ \code{line}\ \code{plane}\ \code{lie} \implies (\exists A\;\exists a\;\exists \alpha.\; \code{point}\ A \wedge \code{line}\ a \wedge \code{plane}\ \alpha)
   \end{displaymath}
 \caption{Points, lines and planes exist}
 \label{fig:InhabitedTypes}
 \end{figure}
 
 \subsection{Axioms and Formalisation}
-Our single-sorted formalisation shows us that Hilbert's primitive sets must be inhabited, and thus that we are free to use what we regard as a more natural formalisation of Hilbert's axioms, the one provided independently by Meikle and Fleuriot's~\cite{MeikleFleuriotFormalizingHilbert} and Dehlinger et al~\cite{DehlingerFOG}. We declare three primitive types for points, lines and planes, satisfied that the implicit constraint that the three types are inhabited is faithful to Hilbert's intended interpretation. We then consider two incidence relations: one tells us whether points lie on a line and the other whether points lie on a plane. This gives a more readable formalisation than that of Figure~\ref{fig:InhabitedTypes}, since we can drop the relativising predicates. It also improves type-safety: HOL~Light can reject axioms which do not use the primitive relations in sensible ways, and it removes the possibility of nonsense expressions such as ``a plane lies on a point.''
+Our single-sorted formalisation shows us that Hilbert's primitive sets must be inhabited, and thus that we are free to use what we regard as a more natural formalisation of Hilbert's axioms, the one provided independently by Meikle and Fleuriot's~\cite{MeikleFleuriotFormalizingHilbert} and Dehlinger et al~\cite{DehlingerFOG}. We declare three primitive types for points, lines and planes. The implicit constraint that these types are inhabited is permissible based on the verification of the previous subsection, and we can therefore take it as faithful to Hilbert's intended interpretation.
+
+We then consider two incidence relations: one tells us whether points lie on a line and the other whether points lie on a plane. This gives a more readable formalisation than that of Figure~\ref{fig:InhabitedTypes}, since we can drop the relativising predicates. It also improves type-safety: HOL~Light can reject axioms which do not use the primitive relations in sensible ways, and it removes the possibility of nonsense expressions such as ``a plane lies on a point.''
 
 We now give Hilbert's incidence axioms as they appear on page 4 of the second edition of the \emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}.
 \begin{quotation}
 \begin{enumerate}
 \item[I, 1] \emph{For every two points $A$, $B$ there exists a line $a$ that contains each of the points $A$, $B$.}
-\item[I, 2] \emph{For every two points $A$, $B$ there exits [sic] no more than one line that contains each of the points $A$, $B$.}
+\item[I, 2] \emph{For every two points $A$, $B$ there exits [sic --- translation error] no more than one line that contains each of the points $A$, $B$.}
 \item[I, 3] \emph{There exist at least two points on a line. There exist at least three points that do not lie on a line.}
 \item[I, 4] \emph{For any three points $A$, $B$, $C$ that do not lie on the same line there exits [sic] a plane $\alpha$ that contains each of the points $A$, $B$, $C$. For every plane there exists a point which it contains.}
 \item[I, 5] \emph{For any three points $A$, $B$, $C$ that do not lie on one and the same line there exists no more than one plane that contains each of the three points $A$, $B$, $C$.}
@@ -84,10 +86,10 @@ The axioms are formalised in Figure~\ref{fig:Group1Axioms} and are asserted in H
 \end{equation}
 \begin{equation}\label{eq:g13a}
   \tag{I,~3.1}
-  \vdash \exists A\ B.\; A \neq B \wedge \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a
+  \vdash \exists A\;\exists B.\; A \neq B \wedge \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a
 \end{equation}
 \begin{equation}\label{eq:g13b}  \tag{I,~3.2}
-  \vdash\exists A\ B\ C.\; \Triangle{a}{A}{B}{C}
+  \vdash\exists A\;\exists B\;\exists C.\; \Triangle{a}{A}{B}{C}
 \end{equation}
 \begin{multline}\label{eq:g14a}
   \tag{I,~4.1}
@@ -123,7 +125,7 @@ The axioms are formalised in Figure~\ref{fig:Group1Axioms} and are asserted in H
 \begin{equation}
 \label{eq:g18}
   \tag{I,~8}
-  \vdash\exists A\ B\ C\ D.\; \neg \exists \alpha.\; (\code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha \wedge \code{on\_plane}\ D\ \alpha)
+  \vdash\exists A\;\exists B\;\exists C\;\exists D.\; \neg \exists \alpha.\; (\code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha \wedge \code{on\_plane}\ D\ \alpha)
 \end{equation}
 \caption{Group~I axioms}
 \label{fig:Group1Axioms}
@@ -186,7 +188,7 @@ THEOREM~2, split into two separate propositions, is easily verified. The verific
 Note that the symbol $\exists!$ is another defined quantifier in HOL~Light. It asserts of its variable that it exists \emph{uniquely}, and it can be defined thus:
 
 \begin{displaymath}
-  \vdash_{def}(\exists! P) \iff (\exists P) \wedge (\forall x\;\forall y.\; P\ x \wedge P\ y \implies x = y)
+  \vdash_{def}(\exists! P) = (\exists P) \wedge (\forall x\;\forall y.\; P\ x \wedge P\ y \implies x = y)
 \end{displaymath}
 
 \begin{boxedfigure}
@@ -222,7 +224,7 @@ By Axiom~\ref{eq:g14b} and Axiom~\ref{eq:g18}, we can take a point $A$ on $\alph
 
 Since the planes $\alpha$ and $\beta$ intersect at the point $A$, we can choose another intersection point $D$ by Axiom~\ref{eq:g17}, and by Axiom~\ref{eq:g18}, we can find a fifth point $E$ off the plane $\beta$. Now $A$, $B$ and $E$ must be non-collinear, and so they determine a plane $\gamma$. If this plane is $\alpha$, then $A$, $B$ and $E$ are our three points and we are done. Otherwise, we have two distinct planes intersecting at $A$ and so we can take another intersection point $F$ by Axiom~\ref{eq:g17}. This gives us three non-collinear points in $\alpha$, namely $A$, $D$ and $F$. See Figure~\ref{fig:PlaneThree}.
 \begin{multline*}
-\vdash\exists A\ B\ C.\; \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha\\
+\vdash\exists A\;\exists B\;\exists C.\; \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha\\
 \wedge\Triangle{a}{A}{B}{C}.
 \end{multline*}
 \end{proof}
@@ -233,52 +235,6 @@ Since the planes $\alpha$ and $\beta$ intersect at the point $A$, we can choose 
 \end{figure}
 
 This is the only three-dimensional theorem we will consider in the present work, and as such, it is the only theorem which depends on Axiom~\ref{eq:g18}.
-
-% \begin{figure}
-% \small
-% \begin{align*}
-% &\texttt{theorem }\forall\alpha.\,\exists A\,B\,C.\,\onplane{A}{\alpha} \wedge \onplane{B}{\alpha} \wedge  \onplane{C}{\alpha}\\
-% &\qquad\wedge  \Triangle{a}{A}{B}{C}\\
-% &\texttt{fix } \alpha\\
-% &\texttt{consider } A \texttt{ at 0 such that } \onplane{A}{\alpha} \texttt{ by g14b}\\
-% &\texttt{consider } B \texttt{ at 1 such that } \neg \onplane{B}{\alpha} \texttt{ by g18}\\
-% &\texttt{have } A \neq B \texttt{ at 2 from 0,1}\\
-% &\texttt{so consider } a \texttt{ at 3 such that } \online{A}{a} \wedge  \online{B}{a} \texttt{ by g11}\\
-% &\texttt{consider } C \texttt{ at 4 such that } \neg \online{C}{a} \texttt{ by g13b}\\
-% &\texttt{have } \Triangle{b}{A}{B}{C}\\
-% &\quad\texttt{otherwise consider } b \texttt{ at 5 such that }\online{A}{b}\wedge \online{B}{b}\wedge \online{C}{b}\\
-% &\quad\texttt{hence } a = b \texttt{ from 2,3 by g12}\\
-% &\quad\texttt{qed from 4,5}\\
-% &\texttt{so consider } \beta \texttt{ at 5 such that }\\
-% &\quad\onplane{A}{\beta}\wedge \onplane{B}{\beta}\wedge \onplane{C}{\beta} \texttt{ by g14a}\\
-% &\texttt{consider } D \texttt{ at 6 such that } \onplane{D}{\alpha}\wedge \onplane{D}{\beta}\wedge A\neq D \\
-% &\qquad\texttt{ from 0,1,5 by g17}\\
-% &\texttt{consider } E \texttt{ at 7 such that } \neg \onplane{E}{\beta} \texttt{ by g18}\\
-% &\texttt{have } \Triangle{b}{A}{B}{E} \texttt{ at 8}\\
-% &\quad\texttt{otherwise consider } b \texttt{ at 9 such that }\online{A}{b}\wedge \online{B}{b}\wedge  \online{E}{b}\\
-% &\quad\texttt{hence }\onplane{E}{\beta} \texttt{ from 2,5 by g16}\\
-% &\quad\texttt{qed from 7}\\
-% &\texttt{so consider } \gamma \texttt{ at 9 such that}\\
-% &\quad\onplane{A}{\gamma}\wedge \onplane{B}{\gamma}\wedge \onplane{E}{\gamma}\texttt{ by g14a}\\
-% &\texttt{assume } \alpha\neq\gamma \texttt{ from 8,9}\\
-% &\texttt{so consider } F \texttt{ at 10 such that }\onplane{F}{\alpha}\wedge \onplane{F}{\gamma}\wedge A \neq F \\
-% &\quad\texttt{ from 0,9 by g17}\\
-% &\texttt{have }\Triangle{b}{A}{D}{F}\\
-% &\quad\texttt{otherwise consider } b \texttt{ at 11 such that }\\
-% &\quad\quad\online{A}{b}\wedge \online{D}{b}\wedge \online{F}{b}\\
-% &\quad\texttt{hence }\onplane{D}{\gamma}\texttt{ at 12 from 0,9,10 by g16}\\
-% &\quad\texttt{have }\Triangle{c}{A}{B}{D}\\
-% &\quad\quad\texttt{otherwise consider } c \texttt{ at 13 such that }\\
-% &\quad\quad\quad\online{A}{c}\wedge \online{B}{c}\wedge \online{D}{c}\\
-% &\quad\quad\texttt{hence }\onplane{B}{\alpha}\texttt{ from 0,6 by g16}\\
-% &\quad\quad\texttt{qed from 1}\\
-% &\quad\texttt{hence }\beta=\gamma \texttt{ from 5,6,9,12 by g15}\\
-% &\quad\texttt{qed from 7,9}\\
-% &\texttt{qed from 0,6,10}
-% \end{align*}
-% \caption{Formalised proof of Theorem \ref{theorem:PlaneHasThreePoints}}
-% \label{fig:PlaneHasThreePoints}
-% \end{figure}
 
 \subsection{Absent Arguments}
 After splitting conjunctions, we found that there were ten axioms in Hilbert's first group. This is twice as many axioms as the next largest group, Group~III. One would expect, then, that these axioms would feature the most in proofs. This is indeed the case with formal verifications, but in Hilbert's prose, the axioms are almost never cited.
@@ -340,7 +296,8 @@ In Figure~\ref{fig:PointSets}, we give a set of theorems for reasoning with coll
 &\vdash A \neq B \wedge A,B \in S,T \wedge \code{collinear}\ \, S \wedge \code{planar}\ \, T \implies \code{planar}\ \, (S \cup T) \label{rule:collplaneplane}\\
 &\vdash P \in S \wedge P \in T \wedge \code{collinear}\ \, S \wedge \code{collinear}\ \, T \implies \code{planar}\ \, (S \cup T) \label{rule:collcollplane}
 \end{align}
-\caption{Derived incidence theorems in point sets}\label{fig:PointSets}
+\caption{Derived incidence theorems in point sets}
+\label{fig:PointSets}
 \end{figure}
 
 So long as we are restricting our attention to a finite number of points, which is the typical context for applying these theorems, we can see how they reflect those incidence axioms which do not introduce points, and thus justify them as an alternative way to understand the logic of incidence. 
@@ -366,11 +323,11 @@ In conclusion, we have shown how all incidence axioms which do not introduce poi
 \subsubsection{Evaluation}
 Meikle's verifications of Hilbert's geometry involved a lot of tedious but necessary reasoning about incidence relations, and the derivation of many additional lemmas to support the main verifications. With Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane}, the verifications are a good deal less complex. For instance, the verification of THEOREM~3, which relies heavily on incidence reasoning, needed twenty-seven special case lemmas and forty steps in Meikle's verification, while our own verification using the above theorems had twenty-two steps and no additional lemmas. 
 
-This was an improvement, but it still left our verifications bogged down in trivial combinatorial details that made them difficult to compare to the prose. Besides, the verifications were still very difficult to obtain, since we almost always needed to manually pick out the point sets to use with Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane}: the proof assistant could not figure them out for itself with generic automation. Finding these sets is not just tedious, but error-prone. When our verifications were correct, they were often suboptimal. And in one case, our difficulty in proving certain properties of a geometric configuration led us to believe, mistakenly, that Hilbert had made an error in one of his arguments (see \S\ref{sec:CombinatoryError}).
+This was an improvement, but it still left our verifications bogged down in trivial combinatorial details that made them difficult to compare to the prose. Besides, the verifications were still very difficult to obtain, since we almost always needed to figure out the specific point sets with which to manually instantiate the quantifiers in Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane}: the proof assistant could not figure these out for itself with generic automation. Finding these sets is not just tedious, but error-prone. When our verifications were correct, they were often suboptimal. And in one case, our difficulty in proving certain properties of a geometric configuration led us to believe, mistakenly, that Hilbert had made an error in one of his arguments (see \S\ref{sec:CombinatoryError}).
 
-Luckily, when we reflected on our manually crafted verifications, we realised that Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} were always applied systematically. In the next chapter, we shall describe how to make these theorems the basis for an automated tool which can completely hide the messy incidence reasoning. We can then justify Hilbert's omitting of the incidence arguments by claiming that they consist merely of exhaustive combinatorial reasoning which, though tedious, does not require any real insight. In a geometric proof, the important steps are those which introduce points and thereby build up the geometric configuration. Hilbert's prose proofs, and our own verifications backed up by our incidence automation, leave just those steps explicit.
+Luckily, when we reflected on our manual verifications, we realised that Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} were always applied systematically. In the next chapter, we shall describe how to make these theorems the basis for an automated tool which can completely hide the messy incidence reasoning. We can then justify Hilbert's omission of the incidence arguments by claiming that they consist merely of exhaustive combinatorial reasoning which is tedious and requires no geometric insight. In a geometric proof, the important steps are those which introduce points and thereby build up the geometric configuration. Hilbert's prose proofs, and our own verifications backed up by our incidence automation, leave just those steps explicit.
 
-We can then continue to view Hilbert's proofs as \emph{model proofs} and argue that, with our automation handling the computational details, our later verifications will be good substitutes for their missing prose counterparts. They will be more trustworthy whilst being close to what a working mathematician would produce.
+We can then continue to view Hilbert's proofs as \emph{model proofs} and argue that, with our automation handling the tedium of combining point sets, our verifications will be good substitutes for their missing prose counterparts. They will be more trustworthy whilst being close to what a working mathematician would produce.
 
 We finish by remarking that Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} were verified in a procedural rather than declarative style in HOL~Light. These theorems will become the implementation details of an incidence reasoning algorithm, rather than theorems of general geometric interest. It therefore made sense to take full advantage of HOL~Light's tactics and its simplifier, which are particularly effective when working with finite sets.
 

@@ -1,4 +1,4 @@
-\chapter{Verification of the Polygonal JCT: Part II}\label{chapter:JordanVerification2}
+\chapter{Verifying the Polygonal JCT: Part II}\label{chapter:JordanVerification2}
 We are nearing the end of our verifications. All that remains is to verify the second half of the Jordan Curve Theorem for polygons based on the axioms of Hilbert's ordered geometry. In this half of the verification, we must prove that a simple polygon separates its plane into at most two regions. As discussed when we gave the formalisation of this theorem in Chapter~\ref{chapter:JordanFormalisation}, it amounts to proving that given three points in the plane and not on the polygon, at least two of them are connected by a polygonal path.
 
 This is effectively a maze navigation problem, lively and visual, with lots of geometrically interesting lemmas. Unlike the ``crossings'' of the last chapter, the basic concepts we appeal to are reflected cleanly in the low-level details of the verification, rather than being obscured by case-analyses and edge cases.
@@ -52,13 +52,13 @@ Our ray-casting theorem gives us a line-of-sight to a polygonal path, aimed in a
 
 Ray-casting appears in a weakened form in Veblen's proof, but there he only considers casting a ray which does not intersect any \emph{vertex} of the polygonal path. This can be generalised by considering a few additional cases, after which we have a much more useful theorem.
 
-This ray-casting theorem relies almost exclusively on linear reasoning and we found it particularly tricky to verify. As with our verification of Theorem~\ref{eq:IH3} in the last chapter, our linear reasoning tactic came through as a powerful tool for dealing with these problems, but first it has to be fed the right starting hypotheses. The trouble we had in the verification was deciding which hypotheses were needed.
+This ray-casting theorem relies almost exclusively on linear reasoning and we found it particularly tricky to verify. As with our verification of Theorem~\ref{eq:IH3} in the last chapter, our linear reasoning tactic came through as a powerful tool for dealing with these problems, but first it has to be fed the right starting hypotheses. The trouble we had in the verification was deciding which hypotheses were needed. 
 
-It often ended up being a matter of trial and error, but fortunately, the linear reasoning tactic is based on a decision procedure. When there were not enough facts available, it would promptly terminate and announce that the goal was not solvable. We could then go back through the problem and try to identify additional facts to feed the tactic and then retry.
+It often ended up being a matter of trial and error, but fortunately, the linear reasoning tactic is based on a decision procedure. When there were not enough facts available, it would promptly terminate and announce that the goal was not solvable. We could then go back through the problem and try to identify additional facts to feed the tactic and then retry. 
 
-The need for this sort of manual labour is not particularly worthy of an automated proof assistant, and in future, some feedback on why the tactic failed would be useful and reasonably straight-forward to implement: given that we are only working here with small sets of points (and the tactic struggles when larger sets are considered), it is feasible to enumerate all their permutations, including permutations when some combination of the points are equal. For instance, in the case of 5 points, there are only 431 possible arrangements. These serve as models, which can be filtered down by finding those which satisfy both the current hypotheses and the negation of the conclusion. These become our counterexamples, which will help if we can identify features in them which we can recognise as impossible given our diagrams and general intuition about the proof.
+The need for this sort of manual labour is not particularly worthy of an automated proof assistant, and in future, some feedback on why the tactic failed would be useful and reasonably straight-forward to implement: given that we are only working here with small sets of points (and the tactic struggles when larger sets are considered), it is feasible to enumerate all their permutations, including permutations when some combination of the points are equal. For instance, in the case of 5 points, there are only 431 possible arrangements. These serve as models, which can be filtered down by finding those which satisfy both the current hypotheses and the negation of the conclusion. After filtering, we will have our counterexamples, which would help if we could identify features in them which we can recognise as impossible given our diagrams and general intuition about the proof. We leave such a counterexample-checker for future work.
 
-In a few places, we found we were missing a case-split. Sometimes, this reflected two different linear reasoning problems, which meant providing two subproofs. But sometimes we got lucky. If the case-split led to a single linear reasoning problem, we could let our incidence-discoverer handle the case-analyses automatically using its internal representation of proof trees.
+Sometimes, when we found hypotheses missing, we realised that we needed to make a case-split. Sometimes, this reflected two different linear reasoning problems, which meant providing two subproofs. But sometimes we got lucky. If the case-split led to a single linear reasoning problem, we could let our incidence-discoverer handle the case-analyses automatically using its internal representation of proof trees.
 
 The verification applies structural induction on the vertex list, and reduces the problem to that of ray-casting to a single edge. The basic case-analyses are shown in Figure~\ref{fig:RayCast}. We cast rays from the points $A$, $B$ and $C$ to the polygonal path $P_1P_2\ldots P_5$. The salient differences between the three lines-of-sight are as follows: point $A$ has line-of-sight to an endpoint of an edge, but the edge itself is not on the line-of-sight. Point $B$ has line-of-sight to an endpoint of an edge, and the edge itself \emph{is} on the line-of-sight. Finally, point $C$ has line-of-sight to the interior of an edge $P_2P_3$. 
 
@@ -239,20 +239,6 @@ To explain the case for locally convex walls, we shall assume we have a polygon 
 
 In Figure~\ref{fig:Convex1}, we start at a point $X$ which has line-of-sight to $P_1P_2$. Our goal is to reach a point $Y$ with line-of-sight to $P_2P_3$. We start by moving towards $P_1P_2$ by applying Theorem~\ref{eq:Squeeze2} as described in \S\ref{sec:MoveToNew}, seeking a line-of-sight with the vertex~$P_2$. 
 
-%Applying squeeze in this way is usually a tricky business, because there are a number of hypotheses which must be fulfilled and it is not always immediately clear how. We typically started procedurally. First, we would assert our goal without any justification:
-
-%\fbox{\begin{minipage}{\linewidth}\setlength\abovedisplayskip{0cm}
-%\begin{multline*}
-    % &\neg\code{on\_polypath}\ path\ B\\
-    % &\wedge \neg(\exists X. \between{A}{X}{B} \wedge \code{on\_polypath}\ path\ X)\\
-    % &\wedge \neg(\exists X. \between{B}{X}{C} \wedge \code{on\_polypath}\ path\ X)\\
-    % &\implies \exists A'. \between{A}{A'}{B} \wedge \neg\exists X. \between{A'}{X}{C} \wedge \code{on\_polypath}\ path\ X.
-%\small
-%\code{consider}\ Y\ \code{such that}\ \between{X}{Y}{X'}\\ \wedge \neg\exists Z. \between{Y}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Z.
-%\end{multline*}\end{minipage}}
-
-%Mizar~Light's default prover rapidly fails to prove this as a logical truth, and as a lucky consequence of the implementation, we are dumped back at the interpreter as if we had split off the asserted claim as a new subgoal. 
-
 \label{sec:InjectingProcedural}Applying squeeze in this way is usually a tricky business, because there are a number of hypotheses which must be fulfilled and it is not always immediately clear how. Even when we had found all the necessary hypotheses, the default \code{MESON} prover would struggle to apply them all, and so we would have to inject some procedural code as justification. In doing this, we tried to respect the aims of declarative verification. For instance, at no point do we destructively modify the proof context, and we always insist that whenever our tactics apply an assumption, we include the assumption label so that a reader can at least track the dependencies. Here, we use \code{EXISTS\_TAC} followed by \code{MATCH\_MP\_TAC}, which leaves \code{MESON} just having to discharge the assumptions of \eqref{eq:Squeeze2}.
 
 %We then use $\code{MATCH\_MP}$ to retrieve our hypotheses as a big conjunction, and then split each off into its own subgoal. We then tackle these one at a time. Afterwards, we can gather up all the dependent assumptions and prove the original goal in one step. We just need a bit of tactic script to help \code{MESON}, but as usual, we make sure not to destructively modify the goal state, and we reference our justifying theorem \eqref{eq:Squeeze2}. The step is still largely declarative.
@@ -372,7 +358,7 @@ We would like to draw special attention to the hypotheses in the verified theore
     &\wedge \neg(\exists Z.\; \between{X}{Z}{X'} \wedge \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z)\\
     &\wedge \neg(\exists Z.\; \between{P_1}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Z)\\
     &\wedge \neg(\exists Z.\; \between{P_2}{Z}{P_3} \wedge \code{on\_polypath}\ (\cons{P_3}{Ps})\ Z)\\
-    &\implies \exists Y\ Y'.\; \code{polypath\_connected}\ (\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}}))\ X\ Y\\
+    &\implies \exists Y\;\exists Y'.\; \code{polypath\_connected}\ (\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}}))\ X\ Y\\
     &\qquad\wedge \between{P_2}{Y'}{P_3}\wedge \neg\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Y)\\
     &\qquad\wedge \neg\exists Z.\; \between{Y}{Z}{Y'} \wedge (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z).
   \end{split}
@@ -390,7 +376,7 @@ It is not uncommon, for instance, to need to rotate a list. This can be understo
 \begin{displaymath}
   \begin{split}
 &\code{rotation\_of}\; :\; [\alpha] \rightarrow [\alpha] \rightarrow \code{bool}\\
-&\code{rotation\_of}\ ps\ qs \iff \exists xs\ ys.\; ps = \append{xs}{ys} \wedge qs = \append{ys}{xs}.\\
+&\code{rotation\_of}\ ps\ qs \iff \exists xs\;\exists ys.\; ps = \append{xs}{ys} \wedge qs = \append{ys}{xs}.\\
   \end{split}
 \end{displaymath}
 This defines an equivalence relation, but our use-case for list rotations gives us a complication. We represent a polygon by a vertex list where we assume that the first and last elements are duplicated. We cannot simply rotate this vertex list, since this will generally give us duplicate vertices and endpoints which do not match. Instead, we should only rotate the largest non-trivial prefix of the list, and then duplicate the new head at the end. 
@@ -399,7 +385,7 @@ The definition of this sort of rotation is slightly more complex, but assuming t
 \begin{align*}
     \vdash_{def}\;&\code{rotation\_of}\ Ps\ Qs \iff\\
     &\qquad\begin{aligned}
-    \exists P\ Q\ Ps\ Qs.\; Ps &= (\append{[P]}{\append{Ps'}{\append{[Q]}{\append{Ps''}{[P]}}}})\\
+    \exists P\;\exists Q\;\exists Ps\;\exists Qs.\; Ps &= (\append{[P]}{\append{Ps'}{\append{[Q]}{\append{Ps''}{[P]}}}})\\
     \wedge\; Qs &= (\append{[Q]}{\append{Ps''}{\append{[P]}{\append{Ps'}{[Q]}}}})\\
     \vee\; Ps &= Qs.
   \end{aligned}
@@ -422,7 +408,7 @@ The proofs are not exactly straightforward, since the set of points of a polygon
 \subsection{Example}
 We end this section by explaining some of the reasoning that goes into using polygon rotations in the context of the main proof for this chapter. Suppose we have a polygon $Ps$ as a vertex list, and we know we have line-of-sight to a point $X'$ on a wall of the polygon. We can formally describe the position of $X'$ with:
 \begin{displaymath}
-  \exists P_i\ P_{i+1}.\; \code{mem}\ (P_i,P_{i+1})\ (\code{adjacent}\ Ps) \wedge \between{P_i}{X'}{P_{i+1}}.
+  \exists P_i\;\exists P_{i+1}.\; \code{mem}\ (P_i,P_{i+1})\ (\code{adjacent}\ Ps) \wedge \between{P_i}{X'}{P_{i+1}}.
 \end{displaymath}
 
 The presence of $\code{adjacent}$ is troublesome, but we have verified a theorem to help us out here:
@@ -430,7 +416,7 @@ The presence of $\code{adjacent}$ is troublesome, but we have verified a theorem
   % (`!x:a y xs. MEM (x,y) (ADJACENT xs)
   %      <=> ?ys zs. xs = APPEND ys (CONS x (CONS y zs))`,
 \vdash  \code{mem}\ (x,y)\ (\code{adjacent}\ xs) \iff 
-\exists ws\ zs.\; xs = \append{ws}{\append{[x,y]}{zs}}.
+\exists ws\;\exists zs.\; xs = \append{ws}{\append{[x,y]}{zs}}.
 \end{equation*}
 
 This gives us just about everything we need to perform a rotation. We know that if the witnessed $ys$ is empty, then our wall $[x,y]$ must already be at the front of the list. Otherwise, we know that the list $xs$ is of the form
@@ -463,7 +449,7 @@ In particular, we have shown that, given a point $X$ with line-of-sight to a poi
 \vdash    &\code{simple\_polygon}\ Ps \wedge \neg\code{on\_polypath}\ Ps\ X\\
     &\wedge \code{mem}\ (P,Q)\ (\code{adjacent}\ Ps) \wedge \between{P}{X'}{Q}\\
     &\wedge\neg(\exists Z.\; \between{X}{Z}{X'} \wedge \code{on\_polypath}\ Ps\ Z)\\
-    &\qquad\implies \exists Y\ Y'.\; \code{polypath\_connected}\ (\code{on\_polypath}\ Ps)\ X\ Y\\
+    &\qquad\implies \exists Y\;\exists Y'.\; \code{polypath\_connected}\ (\code{on\_polypath}\ Ps)\ X\ Y\\
     &\qquad\qquad\qquad\wedge\neg\code{on\_polypath}\ Ps\ Y\\
     &\qquad\qquad\qquad\wedge \between{(\code{head}\ Ps)}{Y'}{(\code{head}\ (\code{tail}\ Ps))}\\
     &\qquad\qquad\qquad\wedge \neg\exists Z.\; \between{Y}{Z}{Y'} \wedge \code{on\_polypath}\ Ps\ Z.
@@ -528,7 +514,7 @@ We have formalised the result in Figure~\ref{fig:RotateToWall}, retaining the wi
     &\wedge\neg(\exists Z.\; \between{P_2}{Z}{P_3} \wedge \code{on\_polypath}\ (\cons{P_3}{Ps})\ Z)\\
     &\wedge\neg\code{on\_polyseg}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ X\\
     &\wedge\neg(\exists Z.\; \between{P_2}{Z}{X} \wedge \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z)\\
-    &\implies\exists Y. (\between{P_1}{Y}{P_2} \vee \between{P_2}{Y}{P_3})\\
+    &\implies\exists Y.\; (\between{P_1}{Y}{P_2} \vee \between{P_2}{Y}{P_3})\\
     &\qquad \wedge \neg(\exists Z.\; \between{X}{Z}{Y} \wedge \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z).
   \end{split}
 \end{equation}

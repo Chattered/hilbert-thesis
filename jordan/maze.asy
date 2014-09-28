@@ -1,6 +1,6 @@
 unitsize(30);
 
-file fin = input("/home/s0785695/Maze/mazePoints");
+file fin = input("mazePoints");
 
 pair pt = fin;
 path p = pt;
@@ -11,6 +11,6 @@ while (!eof(fin)) {
 
 fill(p--cycle,p=lightgreen);
 //filloutside(p--cycle,p=lightblue);
-draw(p,currentpen*2);
+draw(p,currentpen);
 
 shipout(prefix="denseMaze",format="pdf");

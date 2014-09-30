@@ -13,7 +13,7 @@ DEFINITION. \emph{The points $A$, $A'$ are said to lie in the plane $\alpha$ on 
 
 DEFINITION. Let $A$, $A'$, $O$, $B$ be four points of the line $a$ such that $O$ lies between $A$ and $B$ but not between $A$ and $A'$. The points $A$, $A'$ are then said to lie \emph{on the line $a$ on one and the same side of the point $O$ and the points $A$, $B$ are said to lie on the line on different sides of the point $O$. The totality of points of the line $A$ that lie on one and the same side of $O$ is called a \emph{ray} emanating from $O$. Thus every point of a line partitions it into two rays.}
 
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 8.}
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 8)}
 \end{quotation}
 
 Though we shall not need the notion of rays in our verifications, we shall describe some of its formalisation. The definition is effectively the one-dimensional analogue of THEOREM~8, and we will use it to explain the general approach to verifying that theorem. We also mention that \emph{rays} make for a useful abstraction in later definitions and axioms (see \S\ref{sec:RaysDef} below).
@@ -29,7 +29,7 @@ We briefly justify keeping the definition of rays in our formalisation. Rays are
 \ldots
 
 III,~4. \emph{Let $\angle (h,k)$ be an angle in a plane $\alpha$ and $a'$ a line in a plane $\alpha'$ and let a definite side of $a'$ in $\alpha'$ be given. Let $h'$ be a ray on the line $a'$ that emanates from the point $O'$. Then there exists in the plane $\alpha'$ one and only one ray $k'$ such that the angle $\angle (h,k)$ is congruent or equal to the angle $\angle (h',k')$ and at the same time all interior points of the angle $\angle (h',k')$ lie on the given side of $a'$.}
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 11.}
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 11)}
 \end{quotation}
 
 Notice how much more complicated Hilbert's axioms have become by this group. Here, we have an axiom which juggles eight geometric entities, six of which are not even primitive. It is easy to make a mistake here and we recommend that, if this axiom is to be reliably formalised, that the notions of \emph{angle}, and thus, the dependent notion of \emph{ray} must be fully formalised and a decent theory developed before we can trust that the definitions and axiom are correct. In simple type theory, one can gain further confidence by introducing rays as an abstract type, which can simplify the formalisation of Axiom~III,~4 by pushing constraints into the type-checker (see earlier work~\cite{ScottMScThesis}). 
@@ -47,7 +47,7 @@ Unfortunately, we do not have types for the domains of the equivalence relations
 We were not sure how best to tackle this problem, and we have not implemented a generic solution. Instead, in this section, we review one possible strategy which takes us to our new quotiented type via an intermediate type. Here, we will only consider the strategy applied to rays. The half-planes case is exactly analogous.
 
 \subsubsection{Intermediate Types}
-For any point $O$, we must consider the set of all points $P$ in space which are not on $O$. We can do this by considering $O$ and $P$ as a pair in an abstract type of pairs of distinct points. We call this type \code{arrow}. It is the type of directed line-segments, or \emph{arrows} $\overrightarrow{OP}$, where $O \neq P$. The origin of the arrow is the point $O$, and the arrow \emph{points} in the direction $P$. In defining this type, we obtain abstraction and representation functions $\code{mk\_arrow}$ and $\code{dest\_arrow}$, similar to $\code{mk\_ind}$ and $\code{dest\_ind}$ from the last chapter. These map back-and-forth between pairs of paints and the arrows they represent.
+For any point $O$, we must consider the set of all points $P$ in space which are not on $O$. We can do this by creating an abstract type of pairs $(O,P)$ where both components are distinct. We call this type \code{arrow}. It is the type of directed line-segments, or \emph{arrows} $\overrightarrow{OP}$, where $O \neq P$. The origin of the arrow is the point $O$, and the arrow \emph{points} in the direction $P$. By defining this type, we obtain abstraction and representation functions $\code{mk\_arrow}$ and $\code{dest\_arrow}$, similar to $\code{mk\_ind}$ and $\code{dest\_ind}$ from the last chapter. These map back-and-forth between pairs of points and the arrows they represent.
 
 The relation ``same side of'' can now be reinterpreted on these arrows. Our relation will effectively ask whether two arrows have the same position and direction. With some abuse of HOL~Light notation (we pretend that we can extract the two endpoints of an arrow with a \emph{pattern match}), we have:
 \begin{equation}\label{eq:EquivArrowDef}
@@ -175,7 +175,7 @@ Bernays thought the mere claim of a proof's existence was insufficient. In Suppl
 It behooves one to deduce the proof by means of THEOREM~4. It can be carried out as follows: If the line $a$ met the segments $BC$, $CA$, $AB$ at the points $D$, $E$, $F$ then these points would be distinct. By THEOREM~4 one of these points would lie between the other two.
 
 If, say, $D$ lay between $E$ and $F$, then an application of Axiom~II,~4 to the triangle $AEF$ and the line $BC$ would show that this line would have to pass through a point of the segment $AE$ or $AF$. In both cases a contradiction of Axiom~II,~3 or Axiom~I,~2 would result.
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 200.}
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 200)}
 \end{quotation}
 
 \begin{figure}

@@ -39,7 +39,7 @@ In 2009, Dufourd~\cite{DufourdJordanCurve} formally verified a constructive proo
   DEFINITION. A set of segments $AB$, $BC$, $CD$, $\ldots$, $KL$ is called a \emph{polygonal segment} that connects the points $A$ and $L$. Such a polygonal segment will also be briefly denoted by $ABCD\ldots KL$. The points inside the segments $AB$, $BC$, $CD$, $\ldots$, $KL$ as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ are collectively called the \emph{points of the polygonal segment}. 
 
 In addition, for a polygonal segment $A$, $B$, $C$, $\ldots$, $L$, we shall call the segments $AB$, $BC$, $CD$, $\dots$, $KL$ the \emph{sides} of the polygonal segment.
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 8.}
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 8)}
 \end{quotation}
 This is Hilbert's first key definition, defining what Veblen calls \emph{broken lines}, and what we shall prefer to call \emph{polygonal paths}. Contrary to his conventions~(see \S\ref{sec:DistinctVars}), Hilbert does not insist that the points involved here are distinct. Indeed, he adds an explicit distinctness clause when he defines simple polygons (see \S\ref{sec:polygonFormalisation}).
 
@@ -48,9 +48,9 @@ One thing which is clear to us is that Hilbert's notation is doing the heavy lif
 Had Hilbert given a proof of the polygonal Jordan Curve Theorem, he would have probably used his notation to do more heavy lifting, as Veblen did in his own proof. Veblen's argument ends up running over symbols and numerical subscripts in a way which seems to take us out of the world of synthetic geometry, and back into the sort of computational metatheory we saw in \ref{eq:six} from Chapter~\ref{chapter:LinearOrder}.
 \begin{quotation}
   By the case $n=3$, $q$ meets the boundary of the triangle $P_1P_2P_3$ in at least one point other than $O$. If this point is on the broken line $P_1P_2P_3$ the lemma is verified. If not, $q$ has at least one point on $P_1P_3$, and at least one of the segments $Q_1'Q_2'$, $Q_2'Q_3'$ has no point or end-point on $P_1P_3$. Let this segment be one segment of a broken line $Q_kQ_{k+1}\cdots Q_{j-1}Q_j$ of segments of $q$ not meeting $P_1P_3$ but such that $Q_{k-1}Q_k$ and $Q_jQ_{j+1}$ do each have a point or endpoint in common with $P_1P_3$ ($1 \leq k < j \leq m$; if $k = 1$, $Q_{k-1} = Q_m$; if $j = m$, $Q_{j+1} = Q_1$). If $O_j$ is the point common to $P_1P_3$ and $Q_jQ_{j+1}$ or $Q_{j+1}$, and $O_k$ is the point common to $P_1P_3$ and $Q_{k-1}Q_k$ or $Q_{k-1}$, the broken line $O_kQ_kQ_{k+1}\cdots Q_{j-1}Q_jO_j$, has a point inside and also a point outside the triangle $P_1P_2P_3$ and cuts the broken line $P_1P_2P_3$ only once.
-\flushright{\cite{Veblenphd}, page 365.}
+\flushright{\cite{Veblenphd} (page 365)}
 \end{quotation}
-Looking at Veblen's proof attempt, one might suspect that manipulations of sequences of points in general configurations and reasoning about such sequences of points would dominate the argument, rather than synthetic constructions of diagrams. but this is not entirely the case. Our verification shows that there are a \emph{lot} of useful lemmas very similar to those we saw in Chapter~\ref{chapter:Group2Eval}, whose synthetic proofs obtain and then reason about properties of diagrams.
+Looking at Veblen's proof attempt, one might expect the argument to be dominated by computations and lemmas about point sequences, and not by synthetic constructions of diagrams, but this is not entirely the case. Our verification shows that there are a \emph{lot} of useful lemmas very similar to those we saw in Chapter~\ref{chapter:Group2Eval}, whose synthetic proofs obtain and then reason about properties of diagrams.
 
 % Metatheoretical arguments like this go at least back to Euclid. Consider Euclid's classic Proposition 20 from Book IX:
 % \begin{quote}
@@ -202,8 +202,8 @@ The term ``side'' is ambiguous between the segments of a polygon and the half-pl
 Combining this with the definition of polygon gives us the following formalisation:
 \begin{equation}\label{eq:SimplePolygonDef}
   \begin{split}
-  \vdash_{def}&\code{simple\_polygon}\,:\,[\code{point}] \rightarrow \code{bool}\\
-  &\code{simple\_polygon}\ Ps \iff \\
+  &\code{simple\_polygon}\,:\,\code{plane} \rightarrow [\code{point}] \rightarrow \code{bool}\\
+  &\code{simple\_polygon}\vdash_{def}\ \alpha\ Ps \iff \\
   &\qquad 3 \leq \code{length}\ Ps\\
   &\qquad\wedge \code{head}\ ps = \code{last}\ Ps\\
   &\qquad\wedge (\forall P.\;\code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha)\\
@@ -262,7 +262,7 @@ With the breakdown considered, we turn to the formalisation of all four clauses.
 \vdash &\code{simple\_polygon}\ \alpha\ Ps\\
        &\implies \exists P\;\exists Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
        &\qquad\wedge \neg\code{on\_polyseg}\ Ps\ P \wedge \neg\code{on\_polyseg}\ Ps\ Q\\
-       &\qquad\wedge \neg\code{seg\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ Q
+       &\qquad\wedge \neg\code{polypath\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ Q
   \end{split}
 \end{equation}
 
@@ -271,9 +271,9 @@ With the breakdown considered, we turn to the formalisation of all four clauses.
 \vdash &\code{simple\_polygon}\ \alpha\ Ps\\
        &\wedge \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha \wedge \code{on\_plane}\ R\ \alpha\\
        &\wedge \neg\code{on\_polyseg}\ Ps\ P\wedge \neg\code{on\_polyseg}\ Ps\ Q\wedge \neg\code{on\_polyseg}\ Ps\ R\\
-       &\implies \code{seg\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ Q\\
-       &\qquad\quad\vee \code{seg\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ R\\
-       &\qquad\quad\vee \code{seg\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ Q\ R
+       &\implies \code{polypath\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ Q\\
+       &\qquad\quad\vee \code{polypath\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ R\\
+       &\qquad\quad\vee \code{polypath\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ Q\ R
      \end{split}
 \end{equation}
 
@@ -287,7 +287,8 @@ With the breakdown considered, we turn to the formalisation of all four clauses.
 \begin{equation}\label{eq:jordanFormal4}
   \begin{split}
     &(\forall P.\;\code{on\_line}\ P\ a \vee \code{on\_line}\ P\ b\implies \neg\code{on\_polypath}\ Ps\ P)\\
-    &\qquad\wedge\code{on\_line}\ A\ a \wedge\code{on\_line}\ B\ a\\
+    &\qquad\wedge\code{on\_plane}\ A\ \alpha \wedge\code{on\_plane}\ B\ \alpha\\
+    &\qquad\wedge\code{on\_line}\ A\ a \wedge\code{on\_line}\ B\ b\\
     &\qquad\implies \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ A\ B.
   \end{split}
 \end{equation}

@@ -2,7 +2,7 @@
 We now come to the first of our two main contributions. We must verify Theorem~\ref{eq:jordanFormal1} from Hilbert's axioms of ordered geometry. We assume a simple polygon, and must find two points in the plane with the following property: given an arbitrary polygonal path connecting the two points, we can find another point at which the path intersects the simple polygon. The overall idea of this proof is very similar to Veblen's 1904 proof~\cite{Veblenphd} which we described in detail in \S\ref{sec:VeblenProof}. We give the correct version of this proof now.
 
 \section{Sketch Proof}\label{sec:ParityProofInformal}
-Consider the polygon $Ps$ shown in Figure~\ref{fig:rayCast1}. We pick an arbitrary point $O$ between $P_1$ and $P_2$  and then cast an arbitrary ray $h$ from $O$ to a segment of the polygon other than $P_1P_2$. Of all the intersections that $h$ makes with the polygon, we pick the one closest to $O$ and label it $H$. We then pick an arbitrary point $A$ between $O$ and $H$. For this point, we have that the segment $AX$ does not intersect the polygon $Ps$. Finally, we consider the ray emanating from $O$ in the other direction. Applying the same reasoning as above, we find a point $B$ such that $BX$ does not intersect $Ps$. We end up with a segment $AB$ which intersects the polygon $Ps$ exactly once between $P_1$ and $P_2$, namely at the point $O$.
+Consider the polygon $Ps$ shown in Figure~\ref{fig:rayCast1}. We pick an arbitrary point $O$ between $P_1$ and $P_2$  and then cast an arbitrary ray $h$ from $O$ to a segment of the polygon other than $P_1P_2$. Of all the intersections that $h$ makes with the polygon, we pick the one closest to $O$ and label it $H$. We then pick an arbitrary point $A$ between $O$ and $H$. For this point, we have that the segment $AO$ does not intersect the polygon $Ps$. Finally, we consider the ray emanating from $O$ in the other direction. Applying the same reasoning as above, we find a point $B$ such that $BO$ does not intersect $Ps$. We end up with a segment $AB$ which intersects the polygon $Ps$ exactly once between $P_1$ and $P_2$, namely at the point $O$.
 
 \begin{figure}
 \centering\includegraphics{jordanVerification1/rayCast1}
@@ -240,7 +240,7 @@ Veblen's definition is significantly shorter, but we wanted to try leveraging ou
   \end{split}
 \end{equation}
 
-That said, with our definition, our early verifications about triangles always became bloated in the same clumsy way. When we started from a hypothesis that a point lies inside a triangle, we found ourselves having to extract all three witnessed half-planes in the definition and all twelve conjuncts they satisfy. In many cases, we found that the the main body of the proof was shorter than the bloated statement of the assumptions. It might be suggested that this ugliness could have been avoided had we persevered instead with Veblen's definition, and tried to avoid reasoning about half-planes. We have some circumstantial against this: if Veblen's definition is a more useful starting point for reasoning about the interiors of triangle's, we should expect that his formulation would appear as an immediate step in our proofs. But this never happened. There was no need obtain the two point witnesses given in Veblen's definition. Conversely, there were twelve places in our verifications where we had two points that could satisfy Veblen's definition, and where we appealed to a lemma which shows Veblen's definition implies our own. This suggests that our formulation is the more useful starting point.
+That said, with our definition, our early verifications about triangles always became bloated in the same clumsy way. When we started from a hypothesis that a point lies inside a triangle, we found ourselves having to extract all three witnessed half-planes in the definition and all twelve conjuncts they satisfy. In many cases, we found that the the main body of the proof was shorter than the bloated statement of the assumptions. It might be suggested that this ugliness could have been avoided had we persevered instead with Veblen's definition, and tried to avoid reasoning about half-planes. We have some circumstantial against this: if Veblen's definition is a more useful starting point for reasoning about the interiors of triangle's, we should expect that his formulation would appear as an immediate step in our proofs, whereupon we can reason more effectively about interiors. But this was never the case. There was no need obtain the two point witnesses given in Veblen's definition. Conversely, there were twelve places in our verifications where we had two points that could satisfy Veblen's definition, and where we appealed to a lemma which shows Veblen's definition implies our own. This suggests that our formulation is the more useful starting point.
 
 % These two observations can be understood by again dividing geometric lemmas into those which introduce geometric entities and those which allow us to infer properties from a figure. As a theorem, Veblen's definition is weak for introducing entities, but useful for inferring properties of figures.
 
@@ -800,8 +800,6 @@ For the second approach, we need to compute a single consistent value for the in
 
 Now it turns out that if we push the final context back through the above function, we end up with the same value. Formally, $(\Gamma_{final}\ (A,B,C)\ \Gamma\ segments)$ is a fixpoint of the function $(\lambda \Gamma'.\; \Gamma_{final}\ (A,B,C)\ \Gamma'\ segments)$ for arbitrary $\Gamma$. No matter what our starting choice of $\Gamma$, the computed final context $\Gamma_{final}$ can be consistently taken as the initial context from then on. This expression therefore gives us a suitable starting context.
 
-With this second approach, we do not have to rotate our polygon during the proof, and this means we can opt for a simple structural inductive verification.
-
 The computation of the initial context appears in our specification of crossings, and the fact that this expression denotes a fixpoint is a lemma used in the verification of Theorem~\ref{eq:polypathCrossingsEven}.
 
 \subsection{The Specification of Crossings}
@@ -926,11 +924,13 @@ Here, we assume two polygons of length at least two, namely $\append{[P_1,P_2]}{
 
 Of particular note is how we formalise the idea that $Qs$ crosses the edge $P_1P_2$ in terms of the function \code{polypath\_crossings}. To do this, we abstract away the $C$ and the $\Gamma$ variables with universal and existential quantifiers, knowing it is valid to do so based on our well-definedness theorems.
 
-Our aim will be to show that there is an odd number of crossings on $P_1P_3$, after which we can apply the inductive hypothesis. We get to assume that there is no crossing at $P_2P_3$, since otherwise we are done. In Mizar~Light, this assumption is made quite literally:
+Using structural induction on the list $Ps$, we become tasked with showing that the polygonal path $Qs$ crosses the path $[P_2,P_3] + Ps' + [P_1]$ for any $P_3$ and $Ps'$ where $Ps'$ satisfies the inductive hypothesis. To do this, we show that the number of crossings at $P_1P_3$ is odd, and then apply the induction hypothesis, to tell us that $Qs$ crosses the path $[P_3] + Ps' + [P_1]$ from. The desired result then follows.
+
+We assume here that $Qs$ does not cross at $P_2P_3$, since otherwise we are done. In Mizar~Light, this assumption is made quite literally:
 
 \begin{center}\boxed{\code{assume}\ \neg(\exists X.\; \code{on\_polypath}\ [P_2, P_3]\ X \wedge \code{on\_polypath}\ Qs\ X)}\end{center}
 
-According to our treatment of the idea of crossings from \S\ref{sec:CrossingsWellDefined}, our goal is therefore formalised as
+Now according to our treatment of the idea of crossings from \S\ref{sec:CrossingsWellDefined}, our goal is formalised as
 \begin{equation*}
 % !C'. on_plane C' 'a
 %                    /\ ~(?a. on_line A a /\ on_line C a /\ on_line C' a)
@@ -959,7 +959,7 @@ We now have an idea of how the quantifiers in this formula are to be used. We ne
 By applying Theorems~\ref{eq:crossNZIntersect} and~\ref{eq:polypathCrossingsEven}, we can then conclude that there must be an odd number of crossings at $P_1P_3$ \emph{with respect to the triangle $P_1P_2P_3$}. All we need now to complete the inductive step is to generalise this claim by quantifying over the variable $P_2$. For this final step, we just use our well-definedness theorem~\eqref{eq:changeTriangle}.
 
 \subsection{A Theorem of Polygonal Paths}\label{sec:PathTheorem}
-Theorem~\ref{eq:oddCrossClosedPolypath} is all we need to show that a simple polygon divides the plane into two regions. It is interesting to note, however, that we have not mentioned path connectedness in this theorem, nor have we supposed that the polygons concerned are simple. This suggests there is a more general corollary to be had, one whose formalisation does not mention \emph{crossings} at all. Indeed, this ugly concept serves only as the crucial scaffolding of the verification. It can be stripped away when presenting the final theorem.
+Theorem~\ref{eq:oddCrossClosedPolypath} is all we need to show that a simple polygon divides the plane into two regions. It is interesting to note, however, that we have not mentioned path connectedness in this theorem, nor have we supposed that the polygons concerned are simple. This suggests there is a more general corollary to be had, one whose formalisation does not mention \emph{crossings} at all. Indeed, this ugly concept serves only as the crucial scaffolding of the verification. It appears absent when presenting the final theorem.
 
 In a fairly short verification (42 steps), we apply Theorem~\ref{eq:oddCrossClosedPolypath} to obtain a beautifully symmetric theorem concerning arbitrary intersecting polygons:
 \begin{equation}\label{eq:intersectPolypathClosed}

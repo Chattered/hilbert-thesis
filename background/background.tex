@@ -32,7 +32,7 @@ Next, we have \emph{terms} based on an alphabet of term constants and term varia
 \begin{enumerate}
 \item every term constant and every term variable is a term;
 \item for terms $f\ :\ \tau_1\rightarrow\tau_2$ and $x\ :\ \tau_1$, we have that $f\ x$ is a term such that \mbox{$f\ x : \tau_2$}. These \emph{combinations} are left-associative: $f\ g\ h = (f\ g)\ h$;
-\item given a term variable $x : \tau_1$ and a term $y : \tau_2$, there is a term $\lambda x.\;\lambda y\;:\;\tau_1 \rightarrow \tau_2$. These \emph{lambda abstractions} consume everything to the right, so $\lambda x.\; f\ x\ y$ parses as $\lambda x.\; ((f\ x)\ y)$.
+\item given a term variable $x : \tau_1$ and a term $y : \tau_2$, there is a term $\lambda x.\;\lambda y.\;:\;\tau_1 \rightarrow \tau_2$. These \emph{lambda abstractions} consume everything to the right, so $\lambda x.\; f\ x\ y$ parses as $\lambda x.\; ((f\ x)\ y)$.
 \end{enumerate}
 
 The idea is that the type $\tau_1 \rightarrow \tau_2$ is inhabited by functions with domain $\tau_1$ and codomain $\tau_2$. A lambda abstraction in this type is then a function literal, and the notation $\lambda x.\; f\ x$ can be understood as the familiar mathematical notation $x \mapsto f\ x$.
@@ -91,8 +91,8 @@ All encodings are intuitionistic. In particular, notice that \mbox{$P \implies Q
 \begin{tabular}{|c|c|c|}
 \hline
 $(p,q)$          & $\lambda f.\; f\ p\ q$                  & Pairing\\
-$fst\ P$         & $P\ (\lambda x\;\lambda y.\; x)$                & First projection\\
-$snd\ P$         & $P\ (\lambda x\;\lambda y.\; y)$                & Second projection\\
+$fst\ P$         & $P\ (\lambda x.\;\lambda y.\; x)$                & First projection\\
+$snd\ P$         & $P\ (\lambda x.\;\lambda y.\; y)$                & Second projection\\
 $\top$           & $(\lambda x.\; x) = \lambda x.\; x$       & Truth\\
 $\bot$           & $\forall P.\; P$                        & Absurdity\\
 $\neg P$         & $P = \bot$                            & Negation\\
@@ -165,7 +165,7 @@ The axiom of choice is sufficient to derive the law of excluded-middle, by explo
  (u \wedge \neg v) \vee P.\label{eq:AxiomChoiceDerive}
 \end{equation}
 
-Now on the hypothesis of $P$, the terms $u$ and $v$ simplify to $(\epsilon x.\; x \vee \top) = \epsilon x.\; \top$ and $(\epsilon x\.\; \neg x \vee \top) = \epsilon x.\; \top$ respectively. Thus, they become equal. We then have
+Now on the hypothesis of $P$, the terms $u$ and $v$ simplify to $(\epsilon x.\; x \vee \top) = \epsilon x.\; \top$ and $(\epsilon x.\; \neg x \vee \top) = \epsilon x.\; \top$ respectively. Thus, they become equal. We then have
 \begin{displaymath}
 P \implies u = v \implies \neg (u \wedge \neg v),
 \end{displaymath}
@@ -193,7 +193,7 @@ Some tactics in HOL~Light are decision procedures or otherwise fully automated v
 More recently, HOL~Light has been able to make use of external theorem proving programs. Eekelen et al~\cite{HOLLightBoolean} have implemented HOL~Light code to take proof certificates output by automated theorem provers for universally quantified propositional logic. These certificates are then interpreted in ML and translated into the appropriate HOL~Light inference rules needed to produce corresponding HOL~Light sequents. Similar progress has been made in HOL4~\cite{HOLBoolean} and Isabelle~\cite{IsabelleSledgehammer}.
 
 \section{Declarative Proof}\label{sec:DeclarativeProof}
-Proof assistants input verifications in broadly two forms: declarative and procedural. In a procedural language, the user employs tactics to compose automated tools in order to produce the desired sequents. Different tactic languages have their own styles and idioms, but they usually support both forward reasoning from the premises of an argument to its conclusion, and backward reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural transformations rather than logical formulas, which are sometimes entirely absent from the procedural proof texts. 
+Proof assistants input verifications in languages of broadly two forms: declarative and procedural. In a procedural language, the user employs tactics to compose automated tools in order to produce the desired sequents. Different tactic languages have their own styles and idioms, but they usually support both forward reasoning from the premises of an argument to its conclusion, and backward reasoning, breaking down the goal conclusion into simpler subgoals. Always the focus is on procedural transformations rather than logical formulas, which are sometimes entirely absent from the procedural proof texts. 
 
 % Consider our procedural verification of the fact that $xs ++ ys = us ++ vs \iff xs = us \wedge ys = vs$ for lists $xs$, $ys$, $us$ and $vs$ where $xs$ and $ys$ have the same length:
 
@@ -207,7 +207,7 @@ Proof assistants input verifications in broadly two forms: declarative and proce
 % \end{align*}
 % \end{scriptsize}
 
-Declarative proof assistants on the other hand, inspired by \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The verifications show the flow of argument as \emph{steps} which introduce intermediate formulas, with branches at subproofs and case-splits. The proofs make progress by moving forward from assumptions to conclusion, focusing on \emph{what} the logical relations between formulas are, rather than \emph{how} the internal state (the goal stack in the case of tactics) is transformed to represent such relations. This style of proof assistant relies heavily on automation, guided by how the user breaks the proof down into intermediate formulas.
+Declarative proof assistants on the other hand, inspired by \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The verifications show the flow of argument as \emph{steps} which introduce intermediate formulas, with branches at subproofs and case-splits. The proofs begin by stating assumptions, with steps always being justified either from known lemmas or from prior steps. The focus is on \emph{what} the logical relations between formulas are, rather than \emph{how} the internal state (the goal stack in the case of tactics) is transformed to represent such relations. This style of proof assistant relies heavily on automation, guided by how the user breaks the proof down into intermediate formulas.
 
 The declarative style was a natural choice for verifying synthetic geometry. As we explained in Chapter~\ref{chapter:Introduction}, we want our verifications to follow the structure of synthetic prose arguments, building diagrams and reasoning about their properties. Procedural verifications, often relying on contextual rewriting, would not be well-suited to this domain but are better suited to analytic geometry. This is a difficult claim to back up. Maybe we could have made better use of tactics with representations more amenable to rewrites, but for now, we just note that the majority of our lemmas and theorems are non-equational and have large numbers of hypotheses. These are difficult to apply as contextual rewrite rules.
 
@@ -443,7 +443,7 @@ Throughout the thesis, we shall give sample verifications. These depict actual O
     $\lambda$  & \code{\tt\char`\\} \\
   $P \neq Q$ & \code{\tt\char`~(P=Q)}\\
   $\alpha$, $\beta$, $\gamma$ & \code{'a}, \code{'b}, \code{'c}\\
-  $x,y \in A,B$ & \code{x IN A /{\tt\char`\\} y IN A /{\tt\char`\\} x IN B /{\tt\char`\\} y IN A}\\
+  $x,y \in A,B$ & \code{x IN A /{\tt\char`\\} y IN A /{\tt\char`\\} x IN B /{\tt\char`\\} y IN B}\\
   \hline
   \end{tabular}
 \end{center}

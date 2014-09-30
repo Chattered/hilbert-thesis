@@ -2,14 +2,14 @@
 The next theorem on the agenda is THEOREM~6, and in this chapter, we will look at two different ways to deal with it formally. The theorem itself tells us that any finite set of points on a line is linearly ordered in terms of betweenness. One approach to formalising this is at the meta-level, where it can be treated as an algorithm for enumerating cases of betweenness. In another approach, we can formalise the theorem at the object level and verify it. In so doing, we shall derive the axiom of infinity, thereby showing the axiom redundant given Hilbert's geometric axioms.
 
 \section{THEOREM 6 at the Meta-level}\label{sec:Theorem6}
-We ended the last chapter by discussing two of the three parts of Hilbert's proof of THEOREM~5. The third and final part of the proof can be generalised to verify THEOREM~6..
+We ended the last chapter by discussing two of the three parts of Hilbert's proof of THEOREM~5. The third and final part of the proof can be generalised to verify THEOREM~6.
 
 \begin{quote}
   ``THEOREM 6 (generalisation of THEOREM~5). Given any finite number of points on a line it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc. Besides this order of labelling there is only the reverse one that has the same property.''
 \flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, pages 7-8}
 \end{quote}
 
-It strikes us that a \emph{labelling} of points is a syntactic device, a way of referring to symbols used to mention points rather than the points themselves. Thinking more formally, we could identify a labelling with an assignment of values to variables. The existence of a labelling is then the existence of these assignments. With this in mind, a first pass at trying to faithfully formalise THEOREM~6 could view it as a \emph{schema}, asserting that the given some points on a line $A'$, $B'$, $C'$, $D'$, $\ldots$, $K'$, there exists an appropriate assignment to the points $A$, $B$, $C$, $D$, $\ldots$, $K$:
+It strikes us that a \emph{labelling} of points is a syntactic device, a way of referring to symbols used to mention points rather than the points themselves. Thinking more formally, we could identify a labelling with an assignment of values to variables. The existence of a labelling is then the existence of these assignments. With this in mind, a first pass at trying to faithfully formalise THEOREM~6 could view it as a \emph{schema}, asserting that, given some points on a line $A'$, $B'$, $C'$, $D'$, $\ldots$, $K'$, there exists an appropriate assignment to the points $A$, $B$, $C$, $D$, $\ldots$, $K$:
 \begin{equation*}
   \begin{split}
     &\exists a.\;\code{on\_line}\ A'\ a\wedge\code{on\_line}\ B'\ a\wedge\code{on\_line}\ C'\ a\wedge\code{on\_line}\ D'\ a\\
@@ -70,7 +70,7 @@ Hilbert does not state THEOREM~6 with any efficiency in mind, as he lists all po
 \label{fig:Theorem5CasesFormalised}
 \end{figure}
 
-Firstly, we must note the fact that Hilbert's geometry has no preferred orientation, no preferred $x$, $y$ and $z$ direction, and no preferred clockwise or anticlockwise direction for specifying the three points of a triangle. This is in contrast to coordinate free methods such as the signed-area method~\cite{SignedAreaMethod}. But in Hilbert's geometry, we \emph{can} treat the first argument to the between predicate as a parameter giving the preferred origin. Then, we can regard the partially applied relation as an ordering on every possible ray emanating from the origin. More precisely, we can read $\between{A}{B}{C}$ as saying that $B<C$ from the perspective of origin $A$ and direction $\overrightarrow{AB}$.
+Firstly, we must note the fact that Hilbert's geometry has no preferred orientation. For instance, there is no preferred $x$, $y$ and $z$ direction and no preferred clockwise or anticlockwise direction for three non-collinear points. This is in contrast to coordinate free methods such as the signed-area method~\cite{SignedAreaMethod}. But in Hilbert's geometry, we \emph{can} treat the first argument to the between predicate as a parameter giving the preferred origin. Then, we can regard the partially applied relation as an ordering on every possible ray emanating from the origin. More precisely, we can read $\between{A}{B}{C}$ as saying that $B<C$ from the perspective of origin $A$ and direction $\overrightarrow{AB}$.
 
 We can then represent total orders as conjunctions ordering adjacent points. So, if $A,B,C,D,E,F,G,H$ occur along a line in that order, we just need the six conjuncts
 \begin{multline}\label{theorem:OrderRepExample}
@@ -149,7 +149,7 @@ Our definition assumes the existence of natural numbers, but Hilbert was not cle
 
 Euclid does much the same when he expresses the same property using the word ``multiplied'' (though Euclid mistakes this property for a \emph{definition}):
 \begin{quote}
-  ``Magnitudes are said to have a ratio to one another which can, when multiplied, exceed one another''
+  ``Magnitudes are said to have a ratio to one another which can, when multiplied, exceed one another.''
 \flushright{\cite{HeathElements}}
 \end{quote}
 
@@ -165,7 +165,7 @@ The theorem stating that natural numbers exist is derivable in HOL~Light assumin
 
 This asserts that there is a one-one but not onto function $f$ on the set of individuals. From it, we can nominate an arbitrary member of the set \mbox{$\{ i : ind\ \vert\ \neg(\exists i'.\; f\ i' = i) \}$} to serve as the number $0$, nominate $f$ as the successor function, and carve out the natural numbers as the smallest set containing $0$ and its own image under $f$.
 
-The existence of the infinite domain $ind$ is not generally assumed as part of classical logic proper, and Russell, in his classic \emph{Principia Mathematica}, took it as a mere antecedent hypothesis on the results which required it~\cite{LogicismRevisited}. Without the axiom, there are models of the logic for which all domains --- the sets of set theory and the types of simple type theory --- each has only finitely many inhabitants.
+The existence of the infinite domain $ind$ is not generally assumed as part of classical logic proper, and Russell, in his classic \emph{Principia Mathematica}, took it as a mere antecedent condition on the results which required it~\cite{LogicismRevisited}. Without the axiom, there are models of the logic for which all domains --- the sets of set theory and the types of simple type theory --- each has only finitely many inhabitants.
 
 This should not be the case for the primitive domains of Hilbert's geometry. Hilbert insists as much for his Theorem~7, which states quite plainly that ``between any two points on a line there exists an infinite number of points.'' 
 
@@ -380,7 +380,7 @@ $S$ \text{ lies between } $P$ \text{ and } $R$,
 
 Hilbert says the case-analysis arises from applications of \ref{eq:four}, which tells us that of three points, one lies between the other two. When we generalise from four points to $n+1$ points, we apply induction, and two of the applications of \ref{eq:four} become applications of our inductive hypothesis to $n$ points. We give the generalised proof now together with some verified lemmas. We follow the original proof closely to show how the inferences become generalised.
 
-\begin{proposition}\label{eq:PlaneThree}
+\begin{proposition}
 THEOREM~6 (generalization of Theorem~5). Given any finite number of points on a line it is always possible to label them it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc.
 \end{proposition}
 \begin{proof}
@@ -478,7 +478,7 @@ To round up this chapter, we will demonstrate the use of our linear reasoning ta
 %In a sense, this has been covered indirectly by Theorem~\ref{eq:Infinity}, but our purpose with that theorem was to settle foundational questions about our logical assumptions, and provide us with enough expressive power to formally verify THEOREM~6. Here, we can be more direct in our formalisation.
 \begin{quotation}
   ``THEOREM~7. Between any two points on a line there exists an infinite number of points.''
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 8.}  
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 8)}  
 \end{quotation}
 \begin{equation*}
 \vdash P\neq Q \implies \code{infinite}\ \{R\; \vert\; \between{P}{R}{Q}\}.

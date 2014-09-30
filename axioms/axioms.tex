@@ -22,11 +22,11 @@ In a foreword to the text, Professor Goheen says that there must, in fact, be \e
 
 There is often an implicit assumption on sorts, namely that they are inhabited. This assumption is removed in \emph{free-logics}, usually for philosophical concerns, and often at the expense of breaking standard inference rules (see Mendelson's classic text~\cite{Mendelson}).
 
-Whether or not Hilbert was making the assumption that his sets were inhabited is unclear. Fortunately, we do not need to be too concerned, since the assumption is not needed. To formally settle this, we briefly consider a formalisation that Goheen perhaps neglected: we will represent each of Hilbert's three sets by three predicates, and consider relativising Hilbert's axioms to these predicates. This is, in effect, the embedding of a free-logic in classical logic. It has the additional benefit of allowing us to consider just one primitive incidence relation on one primitive sort.
+Whether or not Hilbert was making the assumption that his sets were inhabited is unclear. Fortunately, we do not need to be too concerned, since the assumption is not needed. To formally settle this, we consider a formalisation that Goheen perhaps neglected: we will represent each of Hilbert's three sets by three predicates, and consider relativising Hilbert's axioms to these predicates. This is, in effect, the embedding of a free-logic in classical logic. It has the additional benefit of allowing us to consider just one primitive incidence relation on one primitive sort.
 
 Before we give our formalisation, we mention that we shall be adopting Hilbert's convention throughout this work, that points are denoted by uppercase Roman, $A$, $B$, $C$, $P$, $Q$, $R$, $X$, $Y$, $Z$, and so on. Lines are denoted by lowercase Roman $a$, $b$, $c$. And planes are denoted by Greek $\alpha$, $\beta$, $\gamma$.
 
-The formalisation of this single-sorted geometry is given in Figure~\ref{fig:InhabitedTypes}. We have formalised four of Hilbert's incidence axioms (\ref{eq:g11}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g18}) as conditions on the predicate sets \code{point}, \code{line} and \code{plane} and the single relation \code{lie}. The predicates are polymorphic of a single type variable $\tau$, which formalises the single sort for all our geometric entities. We then verified that any four objects satisfying these conditions are such that the three predicate sets are inhabited.
+The formalisation of this single-sorted geometry is given in Figure~\ref{fig:InhabitedTypes}. We have formalised four of Hilbert's incidence axioms (\ref{eq:g11}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g18}) as conditions on the predicate sets \code{point}, \code{line} and \code{plane} and the single relation \code{lie}. The predicates are polymorphic of a single type variable $\tau$, which formalises the single sort for all our geometric entities. We have verified that any four objects satisfying these conditions are such that the three predicate sets are inhabited.
 
 \begin{figure}
   \begin{align*}
@@ -53,11 +53,11 @@ Our single-sorted formalisation shows us that Hilbert's primitive sets must be i
 
 We then consider two incidence relations: one tells us whether points lie on a line and the other whether points lie on a plane. This gives a more readable formalisation than that of Figure~\ref{fig:InhabitedTypes}, since we can drop the relativising predicates. It also improves type-safety: HOL~Light can reject axioms which do not use the primitive relations in sensible ways, and it removes the possibility of nonsense expressions such as ``a plane lies on a point.''
 
-We now give Hilbert's incidence axioms as they appear on page 4 of the second edition of the \emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}.
+We now give Hilbert's incidence axioms as they appear in the second edition of the \emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, translated from the tenth edition of the \emph{Grundlagen der Geometrie}.
 \begin{quotation}
 \begin{enumerate}
 \item[I, 1] \emph{For every two points $A$, $B$ there exists a line $a$ that contains each of the points $A$, $B$.}
-\item[I, 2] \emph{For every two points $A$, $B$ there exits [sic --- translation error] no more than one line that contains each of the points $A$, $B$.}
+\item[I, 2] \emph{For every two points $A$, $B$ there exits [sic] no more than one line that contains each of the points $A$, $B$.}
 \item[I, 3] \emph{There exist at least two points on a line. There exist at least three points that do not lie on a line.}
 \item[I, 4] \emph{For any three points $A$, $B$, $C$ that do not lie on the same line there exits [sic] a plane $\alpha$ that contains each of the points $A$, $B$, $C$. For every plane there exists a point which it contains.}
 \item[I, 5] \emph{For any three points $A$, $B$, $C$ that do not lie on one and the same line there exists no more than one plane that contains each of the three points $A$, $B$, $C$.}
@@ -65,11 +65,12 @@ We now give Hilbert's incidence axioms as they appear on page 4 of the second ed
 \item[I, 7] \emph{If two planes $\alpha$, $\beta$ have a point $A$ in common then they have at least one more point $B$ in common.}
 \item[I, 8] \emph{There exist at least four points which do not lie in a plane.}
 \end{enumerate}
+\rightflush(page 4)
 \end{quotation}
 
 These axioms have undergone substantial revision since the first edition, being reordered, with some combined, some split and redundancies deleted. The fact that there are redundancies in the first place goes to show that Hilbert's later claim that his axioms are independent was never \emph{fully} investigated in the \emph{Grundlagen der Geometrie}. In fact, only a few interdependencies were ever considered.
 
-The axioms are formalised in Figure~\ref{fig:Group1Axioms} and are asserted in HOL~Light. We just give some supplementary discussion of the axioms as of the tenth edition of the \emph{Grundlagen der Geometrie}.
+The axioms are formalised in Figure~\ref{fig:Group1Axioms} and are asserted in HOL~Light. We just give some supplementary discussion of the axioms as they appear in the English translation of the tenth edition of the \emph{Grundlagen der Geometry}.
 
 \begin{figure}
 \begin{equation}\label{eq:g11}
@@ -133,7 +134,7 @@ The axioms are formalised in Figure~\ref{fig:Group1Axioms} and are asserted in H
 
 Hilbert's Axioms I, 3 and I, 4 each contain two distinct claims. We have not identified any interesting logical connection between these, and so we have split them in our formalisation into Axiom~\ref{eq:g13a}, \ref{eq:g13b}, \ref{eq:g14a} and \ref{eq:g14b}, giving a total of 10 axioms.
 
-Axioms~\ref{eq:g11} and~\ref{eq:g12}, which were a single axiom in the first edition, require that two points uniquely determine a line. Analogous axioms for planes are given by~\ref{eq:g14a} and \ref{eq:g15}. The converse, namely that a line is determined by two points, appears with the addition of Axiom~\ref{eq:g13a}. The converse for planes, that a plane is determined by three non-collinear points, was an axiom of the first-edition, but was later weakened to assert only that a plane contains at least one point in Axiom~\ref{eq:g13b}. Hilbert must have been aware that the former could be derived from the latter when he removed the redundancy, but a statement of this fact and the proof are both absent from the text. We present our own proof and verification in \S\ref{sec:PlaneThree}.
+Axioms~\ref{eq:g11} and~\ref{eq:g12}, which were a single axiom in the first edition of the \emph{Grundlagen der Geometrie}, require that two points uniquely determine a line. Analogous axioms for planes are given by~\ref{eq:g14a} and \ref{eq:g15}. The converse, namely that a line is determined by two points, appears with the addition of Axiom~\ref{eq:g13a}. The converse for planes, that a plane is determined by three non-collinear points, was an axiom of the first-edition, but was later weakened to assert only that a plane contains at least one point in Axiom~\ref{eq:g13b}. Hilbert must have been aware that the former could be derived from the latter when he removed the redundancy, but a statement of this fact and the proof are both absent from the text. We present our own proof and verification in \S\ref{sec:PlaneThree}.
 
 \label{sec:DanglingPoints}
 We should note that there is some ambiguity in Axiom~\ref{eq:g13a}. Is Hilbert saying that there are two points and some line such that the points lie on that line, or is he saying more generally that \emph{every} line contains two points? We took the latter view, since on the weaker interpretation, we could formalise a model of the first group of axioms following the technique in \S\ref{sec:FiniteModel}, and show in this model that there is a line with \emph{no} incident points. We assume Hilbert did not intend this.
@@ -163,7 +164,7 @@ Hilbert highlights two results for his first group.
   THEOREM~1. Two lines in a plane either have one point in common or none at all. Two planes have no point in common, or have one line and otherwise no other point in common. A plane and a line that does not lie in it either have one point in common or none at all.~\footnote{We need classical logic already here. The very first clause of THEOREM~1 assumes that point equality is decidable. See Dehlinger et al~\cite{DehlingerFOG}.}
 
   THEOREM 2. Through a line and a point that does not lie on it, as well as through two distinct lines with one point in common, there always exists one and only one plane.
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 4.}
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 4)}
 \end{quotation}
 
 The proofs are straightforward. In fact, the first and last clauses in THEOREM~1 are barely rewordings of Axiom~\ref{eq:g12} and Axiom~\ref{eq:g16}, and so we did not bother to formalise them.
@@ -185,7 +186,7 @@ THEOREM~2, split into two separate propositions, is easily verified. The verific
   \implies\exists!\alpha.\; \forall P.\; \code{on\_line}\ P\ a \vee \code{on\_line}\ P\ b \implies\code{on\_plane}\ Q\ \alpha.
 \end{multline*}
 
-Note that the symbol $\exists!$ is another defined quantifier in HOL~Light. It asserts of its variable that it exists \emph{uniquely}, and it can be defined thus:
+Note that the symbol $\exists!$ is another defined quantifier in HOL~Light. It asserts of its argument --- a predicate --- that it is satisfied \emph{uniquely}, and it can be defined thus:
 
 \begin{displaymath}
   \vdash_{def}(\exists! P) = (\exists P) \wedge (\forall x\;\forall y.\; P\ x \wedge P\ y \implies x = y)
@@ -254,7 +255,7 @@ It would have made our verification effort somewhat easier had we been able to m
 %One last reason we might let Hilbert off the hook is by simply claiming that his missing lemmas and missing citations are just \emph{trivial}. If the missing detail happens to end up dominating a formal verification of Hilbert's geometry, then so much for formal verification. It just confirms Poincar\'{e}'s frank dismissal of the relevance of formal verification to mathematicians that appear in both his review of the \emph{Grundlagen der Geometrie} and his review of Russell and Whitehead's \emph{Principia Mathematicia}~\cite{PoincareReview,PoincareShackles}.
 
 \subsection{Point sets}
-In our first attempts to verify Hilbert's thesis, using just the stock automation available to our theorem prover, we found that many steps were needed that did not appear explicitly in the prose. These steps almost always concerned incidence, and were rarely enlightening. The fully explicated verifications were difficult to read, and could not be used easily to comment on Hilbert's presentation, to identify dependencies, redundancies, circularities, missing details, or alternative proof strategies.
+In our first attempts to verify Hilbert's first few groups, using just the stock automation available to our theorem prover, we found that many steps were needed that did not appear explicitly in the prose. These steps almost always concerned incidence, and were rarely enlightening. The fully explicated verifications were difficult to read, and could not be used easily to comment on Hilbert's presentation, to identify dependencies, redundancies, circularities, missing details, or alternative proof strategies.
 
 Unsatisfied by this, we tried to improve the situation by reformulating statements of incidence in a way which was more expressive than the basic primitives.\footnote{Note that we do not change any axioms. We simply define our new formulation in terms of the old.} Realising that the domain of incidence reasoning is inherently combinatorial, we opted to formulate incidence claims in terms of point sets. One advantage of point sets is that they at least have the possibility of being composed via basic operations on sets.
 
@@ -412,7 +413,7 @@ Axiom~II, 4 is Pasch's axiom. So far, it is the most complex axiom we have to ap
 \end{figure}
 
 \subsection{Pasch and Incidence Reasoning}
-Our early experiences verifying Hilbert's early theorems showed that most of the effort is expended trying to verify the preconditions of Pasch's Axiom~\eqref{eq:g24}. So in order to leverage our representation in point sets, we decided to derive another formalisation of the axiom in terms of collinearity and planarity. To do this, we remove all mention of the line $a$ from the axiom, and replace it by two defining points $D$ and $E$. The point $D$ will be assumed to be the point of intersection between the line $a$ and the segment $AB$, and the point $E$ will be any other point on the line $a$. See Figure~\ref{fig:PaschDiagram}.
+Our early experiences verifying Hilbert's early theorems showed that most of the effort is expended trying to verify the preconditions of Pasch's Axiom~\eqref{eq:g24}. In order to leverage our representation in point sets, we decided to derive another formalisation of the axiom in terms of collinearity and planarity. To do this, we remove all mention of the line $a$ from the axiom, and replace it by two defining points $D$ and $E$. The point $D$ will be assumed to be the point of intersection between the line $a$ and the segment $AB$, and the point $E$ will be any other point on the line $a$. See Figure~\ref{fig:PaschDiagram}.
 
 \begin{figure}
 \centering\includegraphics{axioms/Pasch}

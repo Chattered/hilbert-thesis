@@ -1,8 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
 
--- module Maze (Maze, makeMaze, Motion(..), navigate, walledMaze, simplify, points
---             ,pack, stringMaze, toLoop) where
-
 import Control.Monad
 import Control.Monad.Random
 import Data.Array

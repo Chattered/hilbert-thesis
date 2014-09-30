@@ -32,7 +32,7 @@ The paths we have drawn through the maze are potential witnesses to the paths we
 and suppose that the witness $C$ in the conclusion is always chosen so that $B$ is half-way between $A$ and $C$. In this case, the paths sketched in Figure~\ref{fig:SketchProofJordan2} are precisely those that we witness in our formal verification.
 
 \section{Formulation and Formalisation}\label{sec:Jordan2Formulation}
-Compared to the last chapter, where we introduce the complex idea of a crossing, the basic ideas needed in the verification for this chapter are relatively straightforward. Firstly, given a simple polygon $Ps$, we will say that a point $X$ has line-of-sight to a point $X'$ if there is no point of $Ps$ which lies strictly between $X$ and $X'$. We shall say that when the point $X'$ lies between vertices $P_i$ and $P_{i+1}$ of $Ps$, then the point $X$ has line-of-sight to the \emph{wall} $P_iP_{i+1}$. The situation is formalised as
+Compared to the last chapter, where we introduce the complex idea of a crossing, the basic ideas needed in the verification for this chapter are relatively straightforward. Firstly, given a simple polygon $Ps$, we will say that a point $X$ has line-of-sight to a point $X'$ if there is no point of $Ps$ which lies strictly between $X$ and $X'$. We shall say that when the point $X'$ lies between vertices $P_i$ and $P_{i+1}$ of $Ps$, then the point $X$ has line-of-sight to the \emph{edge} $P_iP_{i+1}$. The situation is formalised as
 \begin{displaymath}
   \begin{aligned}
     &\neg\code{on\_polypath}\ Ps\ X \wedge \between{P_i}{X'}{P_{i+1}}\\
@@ -40,7 +40,7 @@ Compared to the last chapter, where we introduce the complex idea of a crossing,
   \end{aligned}
 \end{displaymath}
 
-Our verification breaks down into three parts. Firstly, we must show how every point not on a simple polygon has a line-of-sight to some wall of the maze. Next, we must show how, if a point $X$ has line-of-sight to a wall $P_iP_{i+1}$, then there is a polygonal path to a point $Y$ which has line-of-sight to the next wall $P_{i+1}P_{i+2}$. As such, for any wall and any point $X$, there is a polygonal path from $X$ to another point which has line-of-sight to that wall. Finally, we must show that if two players have line-of-sight to the same wall, and lie on the same side of that wall, then there is a polygonal path between them.
+Our verification breaks down into three parts. Firstly, we must show how every point not on a simple polygon has a line-of-sight to some edge of the maze. Next, we must show how, if a point $X$ has line-of-sight to a edge $P_iP_{i+1}$, then there is a polygonal path to a point $Y$ which has line-of-sight to the next edge $P_{i+1}P_{i+2}$. As such, for any edge and any point $X$, there is a polygonal path from $X$ to another point which has line-of-sight to that edge. Finally, we must show that if two players have line-of-sight to the same edge, and lie on the same side of that edge, then there is a polygonal path between them.
 
 We shall describe the informal proofs and verifications of each part in \S\ref{sec:NavigationVerification}. First, we consider the crucial supporting lemmas.
 
@@ -170,7 +170,7 @@ As we suggested earlier, Theorem~\ref{eq:Squeeze} is quite powerful. In this sec
 \label{fig:Squeeze1}
 \end{figure}
 
-Consider Figure~\ref{fig:Squeeze1}. Here, we have slightly modified and relabelled the diagram from Figure~\ref{fig:SqueezeDiagonal} so that we can interpret the point $A$ as our player's starting location, with line-of-sight to a point $B$ on the wall $P_{11}P_{12}$ of a simple polygon. The goal is to obtain line-of-sight to a given point $C$ on that same wall.
+Consider Figure~\ref{fig:Squeeze1}. Here, we have slightly modified and relabelled the diagram from Figure~\ref{fig:SqueezeDiagonal} so that we can interpret the point $A$ as our player's starting location, with line-of-sight to a point $B$ on the edge $P_{11}P_{12}$ of a simple polygon. The goal is to obtain line-of-sight to a given point $C$ on that same edge.
 
 The idea is that if the player proceeds far enough down their initial line-of-sight, we can easily rotate them to the new line-of-sight. We do this by applying Theorem~\ref{eq:Squeeze} and taking $path$ to be the fragment of the polygon $P_{12}P_1P_2\ldots P_{11}$. Let us think about how to fulfil the hypotheses. We are basically being asked to rule out the possibility that the polygonal path $[A,B,C]$ is not intersected by this fragment, save for possible intersections at $A$ and at $C$. 
 
@@ -195,7 +195,7 @@ Applying Theorem~\ref{eq:Squeeze} is not quite enough. We now have a point $A'$ 
   \end{aligned}
 \end{equation}
 
-Now because $AB$ is a line-of-sight, we know that $AA''$ is part of a polygonal path which does not intersect $P_1P_2\ldots P_{11}P_{12}P_{1}$. What we have exploited here is the fact that we can always move along our lines-of-sight without intersecting the polygon. The use of squeeze \eqref{eq:Squeeze} in this section is therefore telling us how to build up paths through a maze, by getting the player to move far enough along their line-of-sight that they will be able to see a point further down the current wall. 
+Now because $AB$ is a line-of-sight, we know that $AA''$ is part of a polygonal path which does not intersect $P_1P_2\ldots P_{11}P_{12}P_{1}$. What we have exploited here is the fact that we can always move along our lines-of-sight without intersecting the polygon. The use of squeeze \eqref{eq:Squeeze} in this section is therefore telling us how to build up paths through a maze, by getting the player to move far enough along their line-of-sight that they will be able to see a point further down the current edge. 
 
 The next application of squeeze will be just as critical for our verifications.
 
@@ -205,7 +205,7 @@ The next application of squeeze will be just as critical for our verifications.
 \caption{Obtaining line-of-sight to the interior of $AB$}
 \label{fig:Squeeze2}
 \end{figure}
-In Figure~\ref{fig:Squeeze2}, we have again modified and relabelled the diagram. The idea here is that our player is situated at a point $C$ and initially has line-of-sight to the vertex $B$. The problem with this scenario is that, in our verifications, we are more concerned about having lines-of-sight to points on a polygon which are \emph{not} vertices (for a start, this forces the player off the line of the wall).  So we want our player to rotate their line-of-sight slightly. 
+In Figure~\ref{fig:Squeeze2}, we have again modified and relabelled the diagram. The idea here is that our player is situated at a point $C$ and initially has line-of-sight to the vertex $B$. The problem with this scenario is that, in our verifications, we are more concerned about having lines-of-sight to points on a polygon which are \emph{not} vertices (for a start, this forces the player off the line of the edge).  So we want our player to rotate their line-of-sight slightly. 
 
 Therefore, we apply Theorem~\ref{eq:Squeeze} by reversing the order of $A$, $B$ and $C$. The polygonal fragment we are concerned with here is again $P_{12}P_1P_2\ldots P_{11}$, and as before, we have to be sure that the hypotheses of Theorem~\ref{eq:Squeeze} have been met. That is, we must show that the polygonal path $[A,B,C]$ is not intersected by the fragment $P_{12}P_1P_2\ldots P_{11}$. 
 
@@ -215,25 +215,25 @@ The reader may have noticed that we have not mentioned the segment $BP_{12}$ sho
 
 To summarise, we can say that the first use of squeeze allows us to reduce the \emph{distance} to the point $B$ sufficiently and thus obtain a new line-of-sight, while this second use of squeeze is telling us that we can reduce the \emph{angle} $ABC$ sufficiently. What the theorem gives us is the ability to reduce distances and angles even without a general theory for comparing them, and without any sort of arithmetic for them. We ``squeeze'' our distances and angles by working exclusively with a weak order relation and properties of incidence.
 
-\section{Wall-to-Wall}\label{sec:NavigationVerification}
-Since a simple polygon is just a list of adjacent edges, we can navigate every single wall just by moving between one wall and the next in the adjacency list. In Section~\ref{sec:Jordan2Formulation}, we explained that the movement from a wall $P_{i}P_{i+1}$ to a wall $P_{i+1}P_{i+2}$ amounts to showing three things: (1) that there is a point $X$ with line-of-sight to $P_{i}P_{i+1}$; (2) that there is a point $Y$ with line-of-sight to $P_{i+1}P_{i+2}$; and (3), that there is a polygonal path between $X$ and $Y$.
+\section{Edge-to-Edge}\label{sec:NavigationVerification}
+Since a simple polygon is just a list of adjacent edges, we can navigate every single edge just by moving between one edge and the next in the adjacency list. In Section~\ref{sec:Jordan2Formulation}, we explained that the movement from a edge $P_{i}P_{i+1}$ to a edge $P_{i+1}P_{i+2}$ amounts to showing three things: (1) that there is a point $X$ with line-of-sight to $P_{i}P_{i+1}$; (2) that there is a point $Y$ with line-of-sight to $P_{i+1}P_{i+2}$; and (3), that there is a polygonal path between $X$ and $Y$.
 
-Now when inside a convex polygon, this matter is completely trivial. Indeed, \emph{every} interior point of a convex polygon has line-of-sight to \emph{every} wall, as in Figure~\ref{fig:ConvexEasy}. The salient fact to notice is that, in a convex polygon, interior points are on the same side of every wall as every other vertex. 
+Now when inside a convex polygon, this matter is completely trivial. Indeed, \emph{every} interior point of a convex polygon has line-of-sight to \emph{every} edge, as in Figure~\ref{fig:ConvexEasy}. The salient fact to notice is that, in a convex polygon, interior points are on the same side of every edge as every other vertex. 
 
 \begin{figure}
 \centering\includegraphics[scale=0.75]{jordanVerification2/ConvexEasy}
-\caption{Wall-to-wall in a convex polygon}
+\caption{Edge-to-edge in a convex polygon}
 \label{fig:ConvexEasy}
 \end{figure}
 
-Generalising this, we can say that two walls $P_{i}P_{i+1}$ and $P_{i+1}P_{i+2}$ appear ``locally convex'' from the perspective of a point $P$ if the point $P$ is on the same side of $P_{i}P_{i+1}$ as $P_{i+2}$. Otherwise, we can say that the walls appear ``locally concave''. These provide our two cases for how we navigate the walls of a simple polygon.
+Generalising this, we can say that two edges $P_{i}P_{i+1}$ and $P_{i+1}P_{i+2}$ appear ``locally convex'' from the perspective of a point $P$ if the point $P$ is on the same side of $P_{i}P_{i+1}$ as $P_{i+2}$. Otherwise, we can say that the edges appear ``locally concave''. These provide our two cases for how we navigate the edges of a simple polygon.
 
-\subsection{Locally Convex Walls}\label{sec:ConcaveMove}
-To explain the case for locally convex walls, we shall assume we have a polygon $P_1P_2P_3\ldots P_n$, and we shall assume that we are moving from wall $P_1P_2$ to wall $P_2P_3$ (we can use the polygon rotations described in \S\ref{sec:PolygonRotation} to consider the other pairs of walls).
+\subsection{Locally Convex Edges}\label{sec:ConcaveMove}
+To explain the case for locally convex edges, we shall assume we have a polygon $P_1P_2P_3\ldots P_n$, and we shall assume that we are moving from edge $P_1P_2$ to edge $P_2P_3$ (we can use the polygon rotations described in \S\ref{sec:PolygonRotation} to consider the other pairs of edges).
 
 \begin{figure}
 \centering\includegraphics[scale=0.75]{jordanVerification2/Convex1}
-\caption{Wall-to-wall in a locally convex polygon}
+\caption{Edge-to-edge in a locally convex polygon}
 \label{fig:Convex1}
 \end{figure}
 
@@ -255,7 +255,7 @@ This done, we have our desired path $XY$. We know that this path does not inters
 
 \begin{figure}
 \centering\includegraphics[scale=0.75]{jordanVerification2/Convex2}
-\caption{Wall-to-wall in a locally convex polygon (continued)}
+\caption{Edge-to-edge in a locally convex polygon (continued)}
 \label{fig:Convex2}
 \end{figure}
 
@@ -299,14 +299,14 @@ The verification shown in Figure~\ref{fig:ConvexVerification} matches this argum
 \label{fig:ConvexVerification}
 \end{boxedfigure}
 
-\subsection{Locally Concave Walls}
-When the walls are (strictly) locally concave, we have it that our starting point $X$ is on the opposite side of the line $P_1P_2$ as the point $P_3$. In this case, we will generally need to ``round the corner'' $P_1P_2P_3$ to get line-of-sight with the next wall. 
+\subsection{Locally Concave Edges}
+When the edges are (strictly) locally concave, we have it that our starting point $X$ is on the opposite side of the line $P_1P_2$ as the point $P_3$. In this case, we will generally need to ``round the corner'' $P_1P_2P_3$ to get line-of-sight with the next edge. 
 
 Before we apply Theorem~\ref{eq:Squeeze2}, we will pick our destination. This will be the point $Y'$ shown in Figure~\ref{fig:Concave1}. This point is ``just off'' the vertex $P_2$, and can be found by ray-casting (Theorem~\ref{eq:RayCast}) from $P_2$ in the direction $\overrightarrow{P_1P_2}$. We then use Theorem~\ref{eq:Squeeze2} as described in \S\ref{sec:MoveToNew}, moving along our initial line-of-sight $XX'$ to obtain a new line-of-sight with $Y'$. The segment $XYY'$ will then be the required path.
 
 \begin{figure}
 \centering\includegraphics[scale=0.75]{jordanVerification2/Concave1}
-\caption{Wall-to-wall in a locally concave polygon}
+\caption{Edge-to-edge in a locally concave polygon}
 \label{fig:Concave1}
 \end{figure}
 
@@ -318,15 +318,15 @@ The way these segments were obtained via Theorem~\ref{eq:Squeeze2} guarantees th
 
 It might seem that these cases would boil down to reasoning with half-planes again, since $YY'$ and $Y'Y''$ are part of two rays emanating in opposite directions from the line of $P_1P_2$. But we were surprised to find that, when we set our discoverer at the problem, it showed that $Y'Y''$ is off the fragment $P_1P_2P_3$ and thus a line-of-sight according to incidence reasoning alone.
 
-The discoverer also showed that $YY'$ does not intersect the wall $P_1P_2$. We only need to use half-planes to show that it does not intersect the wall $P_2P_3$, using the same sort of tidy declarative verification that we saw in the last subsection: since $Y$ lies between $X$ and $P_1P_2$, and $X$ and $P_3$ lie on opposite sides of $P_1P_2$, it must be the case that $Y$ and $P_3$ lie on opposite sides of this line as well. And then, since $Y'$ is on the line of $P_1P_2$, it follows from Theorem~\ref{eq:betOnHalfPlane1} that every point on $YY'$ lies on the opposite side to $P_3$, and thus, does not lie on the line of $P_1P_2$. 
+The discoverer also showed that $YY'$ does not intersect the edge $P_1P_2$. We only need to use half-planes to show that it does not intersect the edge $P_2P_3$, using the same sort of tidy declarative verification that we saw in the last subsection: since $Y$ lies between $X$ and $P_1P_2$, and $X$ and $P_3$ lie on opposite sides of $P_1P_2$, it must be the case that $Y$ and $P_3$ lie on opposite sides of this line as well. And then, since $Y'$ is on the line of $P_1P_2$, it follows from Theorem~\ref{eq:betOnHalfPlane1} that every point on $YY'$ lies on the opposite side to $P_3$, and thus, does not lie on the line of $P_1P_2$. 
 
 \begin{figure}
 \centering\includegraphics[scale=0.75]{jordanVerification2/Concave2}
-\caption{Wall-to-wall in a locally concave polygon (continued)}
+\caption{Edge-to-edge in a locally concave polygon (continued)}
 \label{fig:Concave2}
 \end{figure}
 
-This almost completes the verification. We have not talked about the case that $P_1$, $P_2$ and $P_3$ are collinear, which requires one application of Theorem~\ref{eq:Squeeze2}, but we hope by this stage the reader is convinced we can achieve this, and is further convinced of how powerful our squeeze theorem is in allowing us to move between walls of a maze in a geometrically intuitive way.
+This almost completes the verification. We have not talked about the case that $P_1$, $P_2$ and $P_3$ are collinear, which requires one application of Theorem~\ref{eq:Squeeze2}, but we hope by this stage the reader is convinced we can achieve this, and is further convinced of how powerful our squeeze theorem is in allowing us to move between edges of a maze in a geometrically intuitive way.
 
 \subsection{Putting it all Together}
 We have packaged all the details discussed so far in this section into a single declarative verification consisting of 119 steps. That we can manage such long verifications shows how easily Mizar~Light, with our additional automated tools, can scale.
@@ -365,9 +365,9 @@ We would like to draw special attention to the hypotheses in the verified theore
 \end{equation}
 
 \section{Without-Loss-of-Generality}
-In the last section, we described how to move wall-to-wall in a polygon. However, we effectively made a without-loss-of-generality assumption when stating the theorem, since we assumed that the walls in question were defined by the first three elements of the vertex list. More generally, they could be any two walls defined by  three adjacent elements of the list, or, if we are considering moving forward from the last wall of a polygon back to the first, then the vertices defining the walls come from the last two elements and the first two elements.
+In the last section, we described how to move edge-to-edge in a polygon. However, we effectively made a without-loss-of-generality assumption when stating the theorem, since we assumed that the edges in question were defined by the first three elements of the vertex list. More generally, they could be any two edges defined by  three adjacent elements of the list, or, if we are considering moving forward from the last edge of a polygon back to the first, then the vertices defining the edges come from the last two elements and the first two elements.
 
-We can follow Harrison's approach to dealing with without-loss-of-generality assumptions~\cite{HarrisonWLOG} if we can find an equivalence relation which preserves the properties of interest to us. In effect, we say that before we move a player to the next wall, we must be able to transform the polygon's vertex list into the player's perspective, much as we would perform a coordinate transform.
+We can follow Harrison's approach to dealing with without-loss-of-generality assumptions~\cite{HarrisonWLOG} if we can find an equivalence relation which preserves the properties of interest to us. In effect, we say that before we move a player to the next edge, we must be able to transform the polygon's vertex list into the player's perspective, much as we would perform a coordinate transform.
 
 \subsection{Polygon Rotations: Formulation}\label{sec:PolygonRotation}
 To make the idea work formally, we will need a way to represent a polygon rotation. Since our polygons are being represented by vertex lists, we must briefly leave the pleasant world of synthetic geometry and instead look at computing with lists. On the upside, some of these ideas are a general contribution to the theory of lists, and can be applied in other contexts. 
@@ -406,7 +406,7 @@ The proofs are not exactly straightforward, since the set of points of a polygon
 \end{equation}
 
 \subsection{Example}
-We end this section by explaining some of the reasoning that goes into using polygon rotations in the context of the main proof for this chapter. Suppose we have a polygon $Ps$ as a vertex list, and we know we have line-of-sight to a point $X'$ on a wall of the polygon. We can formally describe the position of $X'$ with:
+We end this section by explaining some of the reasoning that goes into using polygon rotations in the context of the main proof for this chapter. Suppose we have a polygon $Ps$ as a vertex list, and we know we have line-of-sight to a point $X'$ on a edge of the polygon. We can formally describe the position of $X'$ with:
 \begin{displaymath}
   \exists P_i\;\exists P_{i+1}.\; \code{mem}\ (P_i,P_{i+1})\ (\code{adjacent}\ Ps) \wedge \between{P_i}{X'}{P_{i+1}}.
 \end{displaymath}
@@ -419,7 +419,7 @@ The presence of $\code{adjacent}$ is troublesome, but we have verified a theorem
 \exists ws\;\exists zs.\; xs = \append{ws}{\append{[x,y]}{zs}}.
 \end{equation*}
 
-This gives us just about everything we need to perform a rotation. We know that if the witnessed $ys$ is empty, then our wall $[x,y]$ must already be at the front of the list. Otherwise, we know that the list $xs$ is of the form
+This gives us just about everything we need to perform a rotation. We know that if the witnessed $ys$ is empty, then our edge $[x,y]$ must already be at the front of the list. Otherwise, we know that the list $xs$ is of the form
 \begin{displaymath}
   xs = \append{[w]}{\append{ws}{\append{[x,y]}{\append{zs}{[w]}}}}
 \end{displaymath}
@@ -429,12 +429,12 @@ which is a rotation of
   xs = \append{[x,y]}{\append{zs}{\append{[w]}{\append{ws}{[x]}}}}.
 \end{displaymath}
 
-This puts the wall at the front of the list, as we require to apply Theorem~\ref{eq:PolygonMove}. Our invariance theorem \eqref{eq:PolygonRotateInvariant} assures us that the rotation will not change the set of points defined by the vertex list, nor affect the simplicity of the polygon.
+This puts the edge at the front of the list, as we require to apply Theorem~\ref{eq:PolygonMove}. Our invariance theorem \eqref{eq:PolygonRotateInvariant} assures us that the rotation will not change the set of points defined by the vertex list, nor affect the simplicity of the polygon.
 
-\section{Moving to Any Wall}
-We are now able to move between any two walls of a polygon. This takes us a significant way towards a verification of this last half of the Polygonal Jordan Curve Theorem. 
+\section{Moving to Any Edge}
+We are now able to move between any two edges of a polygon. This takes us a significant way towards a verification of this last half of the Polygonal Jordan Curve Theorem. 
 
-In particular, we have shown that, given a point $X$ with line-of-sight to a point $X'$ on some wall, there must be a polygonal path-connected point $Y$ which has line-of-sight to a point $Y'$ on the \emph{first} wall. Formally, we verify:
+In particular, we have shown that, given a point $X$ with line-of-sight to a point $X'$ on some edge, there must be a polygonal path-connected point $Y$ which has line-of-sight to a point $Y'$ on the \emph{first} edge. Formally, we verify:
 \begin{equation*}
   % "!'a Ps X P Q hand.
   %  simple_polygon 'a Ps
@@ -462,9 +462,9 @@ Note that for the very first time we are working on the hypothesis that our vert
 \item $\neg(\exists Z.\; \between{P_1}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Z)$.
 \end{enumerate}
 
-By allowing $Ps$ to be an arbitrarily rotated polygon, the first of these assumptions will require that all vertices are distinct and that no vertex appears on another wall. The second will require that the walls themselves do not intersect. This is just to say that the polygonal segment $Ps$ must be simple.
+By allowing $Ps$ to be an arbitrarily rotated polygon, the first of these assumptions will require that all vertices are distinct and that no vertex appears on another edge. The second will require that the edges themselves do not intersect. This is just to say that the polygonal segment $Ps$ must be simple.
 
-To conclude this section, we will give some perspective on what is involved in the proof so far. In Figure~\ref{fig:SketchProofJordan2Full}, we have reproduced the example from \S\ref{sec:SketchProofJordan2}, showing three players navigating a maze in order to have line-of-sight to the wall $P_1P_2$. However, we can now explain the peculiar shape of the red and blue paths, understanding that they have been obtained by precise applications of Theorem~\ref{eq:Squeeze2} using the auxiliary dashed lines. Each dashed line marks a point on a player's line-of-sight that they move towards, or a point on a wall towards which they rotate. Thus, we see each player navigating without compass or ruler, using only incidence and ordering.
+To conclude this section, we will give some perspective on what is involved in the proof so far. In Figure~\ref{fig:SketchProofJordan2Full}, we have reproduced the example from \S\ref{sec:SketchProofJordan2}, showing three players navigating a maze in order to have line-of-sight to the edge $P_1P_2$. However, we can now explain the peculiar shape of the red and blue paths, understanding that they have been obtained by precise applications of Theorem~\ref{eq:Squeeze2} using the auxiliary dashed lines. Each dashed line marks a point on a player's line-of-sight that they move towards, or a point on a edge towards which they rotate. Thus, we see each player navigating without compass or ruler, using only incidence and ordering.
 
 \begin{figure}
   \centering\includegraphics[scale=0.9]{jordanVerification2/SketchProofFull}
@@ -473,27 +473,27 @@ To conclude this section, we will give some perspective on what is involved in t
 \end{figure}
 
 \section{Final Steps}
-We are almost there. To finish the proof, we will need to show that when two points are on the same side and looking at the same wall, then they are polygonal path-connected. We shall deal with this matter in \S\ref{sec:SameSideWallConnected}. First, we shall deal with the neglected matter of how we are able to obtain line-of-sight to a wall in the first place. Both problems will have us reusing our near ubiquitous squeeze theorem~\eqref{eq:Squeeze2}.
+We are almost there. To finish the proof, we will need to show that when two points are on the same side and looking at the same edge, then they are polygonal path-connected. We shall deal with this matter in \S\ref{sec:SameSideEdgeConnected}. First, we shall deal with the neglected matter of how we are able to obtain line-of-sight to a edge in the first place. Both problems will have us reusing our near ubiquitous squeeze theorem~\eqref{eq:Squeeze2}.
 
 \subsection{Getting onto the Maze}
-If we take an arbitrary point $X$ in the plane and an arbitrary point $X'$ on a maze, then a simple ray-cast gives us line-of-sight to some other point $X''$ of the maze. If this point $X''$ lies between two other vertices, we have a line-of-sight to a wall. 
+If we take an arbitrary point $X$ in the plane and an arbitrary point $X'$ on a maze, then a simple ray-cast gives us line-of-sight to some other point $X''$ of the maze. If this point $X''$ lies between two other vertices, we have a line-of-sight to a edge. 
 
-However, if $X''$ coincides with a vertex as shown in Figure~\ref{fig:SightToWall}, we will need to rotate our line-of-sight slightly. We will first assume, without loss-of-generality (or more accurately, we will assume we have rotated the polygon's vertex list) so that the vertex $X''$ coincides with the vertex $P_2$. We will want to obtain line-of-sight to either the wall $P_1P_2$ or $P_2P_3$.
+However, if $X''$ coincides with a vertex as shown in Figure~\ref{fig:SightToEdge}, we will need to rotate our line-of-sight slightly. We will first assume, without loss-of-generality (or more accurately, we will assume we have rotated the polygon's vertex list) so that the vertex $X''$ coincides with the vertex $P_2$. We will want to obtain line-of-sight to either the edge $P_1P_2$ or $P_2P_3$.
 
 \begin{figure}
-  \centering\includegraphics[scale=0.75]{jordanVerification2/SightToWall}
-  \caption{Obtaining line-of-sight with a wall}
-  \label{fig:SightToWall}
+  \centering\includegraphics[scale=0.75]{jordanVerification2/SightToEdge}
+  \caption{Obtaining line-of-sight with a edge}
+  \label{fig:SightToEdge}
 \end{figure}
 
-We can do this by applying Theorem~\ref{eq:Squeeze2} to the wall $P_1P_2$ and the polygonal fragment $P_3P_4\ldots P_n$ as described in \S\ref{sec:RotateToNew}. This will not generally give us our required point of intersection. In fact, it might be that there is \emph{no} line-of-sight from $X$ to the wall $P_1P_2$, because the wall $P_2P_3$ is in the way. 
+We can do this by applying Theorem~\ref{eq:Squeeze2} to the edge $P_1P_2$ and the polygonal fragment $P_3P_4\ldots P_n$ as described in \S\ref{sec:RotateToNew}. This will not generally give us our required point of intersection. In fact, it might be that there is \emph{no} line-of-sight from $X$ to the edge $P_1P_2$, because the edge $P_2P_3$ is in the way. 
 
 This does not pose much of a problem. If the segment $XY$ intersects $P_3X''$ at the point $Y'$, then we shall just take $Y'$ as our line-of-sight. We just need two steps for this, one exploiting our linear reasoning tactic and the other our incidence discoverer, to show that the segment $XY'$ is our required line-of-sight. On the other hand, if $XY$ does not intersect $P_3X''$, then one step with our incidence discoverer verifies that it is the required line-of-sight. 
 
-We have formalised the result in Figure~\ref{fig:RotateToWall}, retaining the without-loss-of-generality assumption. This allows us to review which hypotheses are actually needed for this particular theorem, and is one of the great benefits of formal verification. The labour involved in teasing out the necessary hypotheses means we usually end up with very tight lemmas with which to easily trace dependencies. Consider that this theorem appears in our theory file before simple polygons are even \emph{defined}.
+We have formalised the result in Figure~\ref{fig:RotateToEdge}, retaining the without-loss-of-generality assumption. This allows us to review which hypotheses are actually needed for this particular theorem, and is one of the great benefits of formal verification. The labour involved in teasing out the necessary hypotheses means we usually end up with very tight lemmas with which to easily trace dependencies. Consider that this theorem appears in our theory file before simple polygons are even \emph{defined}.
 
 \begin{figure}
-\begin{equation}\label{eq:RotateToWall}
+\begin{equation}\label{eq:RotateToEdge}
   \begin{split}
   % "!P1 P2 P3 Ps X 'a.
   %  on_plane P1 'a /\ on_plane P2 'a /\ on_plane P3 'a /\ on_plane X 'a
@@ -518,33 +518,33 @@ We have formalised the result in Figure~\ref{fig:RotateToWall}, retaining the wi
     &\qquad \wedge \neg(\exists Z.\; \between{X}{Z}{Y} \wedge \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z).
   \end{split}
 \end{equation}
-\caption{Rotating a line-of-sight to a wall}
-\label{fig:RotateToWall}
+\caption{Rotating a line-of-sight to a edge}
+\label{fig:RotateToEdge}
 \end{figure}
 
-We can now get any point to have line-of-sight to the maze, and thus we can connect every point in the plane to another point with line-of-sight to any wall. This means that, if we have three points in the plane, we can find three paths which bring them together at the same wall. It is enough now to verify that two of the three points are polygonal path-connected.
+We can now get any point to have line-of-sight to the maze, and thus we can connect every point in the plane to another point with line-of-sight to any edge. This means that, if we have three points in the plane, we can find three paths which bring them together at the same edge. It is enough now to verify that two of the three points are polygonal path-connected.
 
-\subsection{There are at Most Two Regions}\label{sec:SameSideWallConnected}
-Here is where we are: we have three points with line-of-sight to a wall $P_1P_2$ (without loss of generality). We know that two of these points $X$ and $Y$ are on the same side of $P_1P_2$. We will show that these two points can be polygonal path-connected.
+\subsection{There are at Most Two Regions}\label{sec:SameSideEdgeConnected}
+Here is where we are: we have three points with line-of-sight to a edge $P_1P_2$ (without loss of generality). We know that two of these points $X$ and $Y$ are on the same side of $P_1P_2$. We will show that these two points can be polygonal path-connected.
 
 First off, we have to consider that $X$ and $Y$ have line-of-sight to \emph{different} points $X'$ and $Y'$. Our diagrams so far in this chapter have given a different impression, but we must remember that the points obtained in our proofs ultimately rely on Axiom~\ref{eq:g22}. This axiom allows us to extend a line-segment, but there are many possible witnesses for its existential conclusion, and we have generally allowed the abstraction to proliferate in our theory, rather than eliminating it with the epsilon-operator. 
 
 \begin{figure}
-\centering\includegraphics[scale=0.6]{jordanVerification2/SameSideWallConnected1}
+\centering\includegraphics[scale=0.6]{jordanVerification2/SameSideEdgeConnected1}
 \caption{Connecting the final points}
-\label{fig:SameSideWallConnected}
+\label{fig:SameSideEdgeConnected}
 \end{figure}
 
-Consider the scenario depicted in Figure~\ref{fig:SameSideWallConnected}(a). Here, our points $X$ and $Y$ have line-of-sight to different points on the same wall, so our first order of business is to get $X$ and $Y$ to have line-of-sight to the same point. Again, we use Theorem~\ref{eq:Squeeze2} against the fragment $P_2P_3\ldots P_n$, moving $X$ along its line-of-sight to a point $X''$ so that it now has line-of-sight with $Y'$. A second application of the same theorem, moving along our new line-of-sight sees us facing the point $Y$. With the two points in each other's sights, we have the last piece of our path.
+Consider the scenario depicted in Figure~\ref{fig:SameSideEdgeConnected}(a). Here, our points $X$ and $Y$ have line-of-sight to different points on the same edge, so our first order of business is to get $X$ and $Y$ to have line-of-sight to the same point. Again, we use Theorem~\ref{eq:Squeeze2} against the fragment $P_2P_3\ldots P_n$, moving $X$ along its line-of-sight to a point $X''$ so that it now has line-of-sight with $Y'$. A second application of the same theorem, moving along our new line-of-sight sees us facing the point $Y$. With the two points in each other's sights, we have the last piece of our path.
 
 We are almost home free. We still need to factor in the fact that $X$ and $Y$ are on the same side of $P_1P_2$. This is needed because we only applied Theorem~\ref{eq:Squeeze2} to the fragment $P_2P_3\ldots P_n$. The resulting lines-of-sight will not intersect this fragment, but we will need to account for the segment $P_1P_2$ separately.
 
 Yet again, this is settled with our theorems for half-planes. Since $X$ lies on the same side of $P_1P_2$ as $Y$, and $X'$ lies on $P_1P_2$, all points on the segment $XX''$ must also lie on the same side. The same argument applies to the segment $X''Y'$, and finally to $Y'Y$. Since all of these points are on the same side of $P_1P_2$, they must lie off the line $P_1P_2$. 
 
-The final extract of the verified proof, witnessing the final path and showing this line of argument, is reproduced in Figure~\ref{fig:SameSideWallConnectedExtract}. We have omitted references to earlier steps.
+The final extract of the verified proof, witnessing the final path and showing this line of argument, is reproduced in Figure~\ref{fig:SameSideEdgeConnectedExtract}. We have omitted references to earlier steps.
 
 \begin{equation}
-  \label{eq:SameSideWallConnected}
+  \label{eq:SameSideEdgeConnected}
   \begin{split}
   % "!P1 P2 Ps X Y hand hand' hp 'a. 
   %    on_plane P1 'a /\ on_plane P2 'a
@@ -619,14 +619,14 @@ The final extract of the verified proof, witnessing the final path and showing t
   &\qquad \code{qed}\ \code{from}\ \ldots\\
   &\code{qed}\ \code{from}\ \ldots,21\ \code{by}\ \eqref{eq:OnPolyPath},\eqref{eq:g21}
 \end{align*}
-\caption{Verification Extract for Theorem~\ref{eq:SameSideWallConnected}}
-\label{fig:SameSideWallConnectedExtract}
+\caption{Verification Extract for Theorem~\ref{eq:SameSideEdgeConnected}}
+\label{fig:SameSideEdgeConnectedExtract}
 \end{boxedfigure}
 
 \section{Conclusion}
-The proof of the final result, Theorem~\ref{eq:jordanFormal2}, puts all of the pieces together. We start from three arbitrary points in the plane not on the polygonal segment, have each obtain a line-of-sight to a wall of the maze, and then use polygon rotations and Theorem~\ref{eq:PolygonMove} to find three paths to three points with line-of-sight to the first wall of the maze. We then apply  Theorem~\ref{eq:HalfPlaneCover} which says that two of these points must be on the same side of the first wall, and thus, from Theorem~\ref{eq:SameSideWallConnected}, we know that these two points are polygonal path-connected.
+The proof of the final result, Theorem~\ref{eq:jordanFormal2}, puts all of the pieces together. We start from three arbitrary points in the plane not on the polygonal segment, have each obtain a line-of-sight to a edge of the maze, and then use polygon rotations and Theorem~\ref{eq:PolygonMove} to find three paths to three points with line-of-sight to the first edge of the maze. We then apply  Theorem~\ref{eq:HalfPlaneCover} which says that two of these points must be on the same side of the first edge, and thus, from Theorem~\ref{eq:SameSideEdgeConnected}, we know that these two points are polygonal path-connected.
 
-%As with the final theorem in the last chapter, the final theorem here is much more readable than the lemmas considered up to now. The theory so far builds theorems with large numbers of complicated hypotheses, such as those for Theorem~\ref{eq:SameSideWallConnected} (and remember that for brevity, we have omitted all the planar hypotheses needed for every one of these theorems). When developing a theory such as this, where theorems are almost made opaque by their hypotheses, we have to pay particularly close attention to be confident that we are making progress. Fortunately, success in formal verification is unambiguous.
+%As with the final theorem in the last chapter, the final theorem here is much more readable than the lemmas considered up to now. The theory so far builds theorems with large numbers of complicated hypotheses, such as those for Theorem~\ref{eq:SameSideEdgeConnected} (and remember that for brevity, we have omitted all the planar hypotheses needed for every one of these theorems). When developing a theory such as this, where theorems are almost made opaque by their hypotheses, we have to pay particularly close attention to be confident that we are making progress. Fortunately, success in formal verification is unambiguous.
 \begin{equation}\tag{\ref{eq:jordanFormal2}}
 \begin{aligned}
 \vdash &\code{simple\_polygon}\ Ps\\

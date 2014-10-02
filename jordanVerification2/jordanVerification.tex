@@ -137,7 +137,7 @@ In case (b) of Figure~\ref{fig:TriCut3}, we find that $P$ is now an interior poi
 \subsubsection{Subtriangles}\label{sec:Subtriangles}
 In our verification of Theorem~\ref{eq:Squeeze}, we consider a sequence of triangles such as those of Figure~\ref{fig:SqueezeDiagonal}, namely $\triangle ABC$, $\triangle A_3BC$, $\triangle A_4BC$, $\triangle A_6BC$ and $\triangle A'BC$. Each of these is intended to exclude one vertex of $Ps$ from its interior. By the time we reach the last triangle, we can conclude that all vertices of $Ps$ will lie outside the interior. This conclusion assumes a transitivity property, which is given by our second lemma. It shows that the ordering of $A$, $A_3$, $A_4$, $A_6$ and $A'$ along the segment $AB$ yields a sequence of triangles with \emph{nested} interiors. 
 
-The verification, given in Figure~\ref{fig:SubTriangleProof}, is extremely short and readable, making use of a number of lemmas we have previously considered, including Theorem~\ref{eq:TriCut3} from the last subsection. With this theorem, we can put a point $Q$ on the line $A'C$, where we know it must be interior to $\triangle ABC$ on the basis of Theorem~\ref{eq:inTriangle1}. It then follows by Theorem~\ref{eq:inTriangle2} that $P$ must also be interior. See Figure~\ref{fig:SubTriangle}.
+The verification, given in Figure~\ref{fig:SubTriangleProof}, is extremely short and readable, making use of a number of lemmas we have previously considered, including Theorem~\ref{eq:TriCut3} from the last subsection. We show that any point $P$ interior to a triangle $AA'C$ is interior to any triangle $ABC$ where $A'$ is between $A$ and $B$. That is, the interior of $AA'C$ is nested in $ABC$. To prove it, we put a point $Q$ on the line $A'C$, where we know it must be interior to $\triangle ABC$ on the basis of Theorem~\ref{eq:inTriangle1}. It then follows by Theorem~\ref{eq:inTriangle2} that $P$ must also be interior. See Figure~\ref{fig:SubTriangle}.
 
 \begin{figure}
 \centering\includegraphics[scale=1.2]{jordanVerification2/SubTriangle}
@@ -243,7 +243,7 @@ In Figure~\ref{fig:Convex1}, we start at a point $X$ which has line-of-sight to 
 
 %We then use $\code{MATCH\_MP}$ to retrieve our hypotheses as a big conjunction, and then split each off into its own subgoal. We then tackle these one at a time. Afterwards, we can gather up all the dependent assumptions and prove the original goal in one step. We just need a bit of tactic script to help \code{MESON}, but as usual, we make sure not to destructively modify the goal state, and we reference our justifying theorem \eqref{eq:Squeeze2}. The step is still largely declarative.
 
-\fbox{\begin{minipage}{\linewidth}\setlength\abovedisplayskip{0cm}
+\fbox{\begin{minipage}{\boxwidth}\setlength\abovedisplayskip{0cm}
 \begin{align*}
 \small
 &\code{obviously by\_incidence so consider}\ Y\ \code{such that}\ \between{X}{Y}{X'}\\
@@ -358,7 +358,7 @@ We would like to draw special attention to the hypotheses in the verified theore
     &\wedge \neg(\exists Z.\; \between{X}{Z}{X'} \wedge \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z)\\
     &\wedge \neg(\exists Z.\; \between{P_1}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Z)\\
     &\wedge \neg(\exists Z.\; \between{P_2}{Z}{P_3} \wedge \code{on\_polypath}\ (\cons{P_3}{Ps})\ Z)\\
-    &\implies \exists Y\;\exists Y'.\; \code{polypath\_connected}\ (\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}}))\ X\ Y\\
+    &\implies \exists Y.\;\exists Y'.\; \code{polypath\_connected}\ (\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}}))\ X\ Y\\
     &\qquad\wedge \between{P_2}{Y'}{P_3}\wedge \neg\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Y)\\
     &\qquad\wedge \neg\exists Z.\; \between{Y}{Z}{Y'} \wedge (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z).
   \end{split}
@@ -376,7 +376,7 @@ It is not uncommon, for instance, to need to rotate a list. This can be understo
 \begin{displaymath}
   \begin{split}
 &\code{rotation\_of}\; :\; [\alpha] \rightarrow [\alpha] \rightarrow \code{bool}\\
-&\code{rotation\_of}\ ps\ qs \iff \exists xs\;\exists ys.\; ps = \append{xs}{ys} \wedge qs = \append{ys}{xs}.\\
+&\code{rotation\_of}\ ps\ qs \iff \exists xs.\;\exists ys.\; ps = \append{xs}{ys} \wedge qs = \append{ys}{xs}.\\
   \end{split}
 \end{displaymath}
 This defines an equivalence relation, but our use-case for list rotations gives us a complication. We represent a polygon by a vertex list where we assume that the first and last elements are duplicated. We cannot simply rotate this vertex list, since this will generally give us duplicate vertices and endpoints which do not match. Instead, we should only rotate the largest non-trivial prefix of the list, and then duplicate the new head at the end. 
@@ -385,7 +385,7 @@ The definition of this sort of rotation is slightly more complex, but assuming t
 \begin{align*}
     \vdash_{def}\;&\code{rotation\_of}\ Ps\ Qs \iff\\
     &\qquad\begin{aligned}
-    \exists P\;\exists Q\;\exists Ps\;\exists Qs.\; Ps &= (\append{[P]}{\append{Ps'}{\append{[Q]}{\append{Ps''}{[P]}}}})\\
+    \exists P.\;\exists Q.\;\exists Ps.\;\exists Qs.\; Ps &= (\append{[P]}{\append{Ps'}{\append{[Q]}{\append{Ps''}{[P]}}}})\\
     \wedge\; Qs &= (\append{[Q]}{\append{Ps''}{\append{[P]}{\append{Ps'}{[Q]}}}})\\
     \vee\; Ps &= Qs.
   \end{aligned}
@@ -408,7 +408,7 @@ The proofs are not exactly straightforward, since the set of points of a polygon
 \subsection{Example}
 We end this section by explaining some of the reasoning that goes into using polygon rotations in the context of the main proof for this chapter. Suppose we have a polygon $Ps$ as a vertex list, and we know we have line-of-sight to a point $X'$ on a edge of the polygon. We can formally describe the position of $X'$ with:
 \begin{displaymath}
-  \exists P_i\;\exists P_{i+1}.\; \code{mem}\ (P_i,P_{i+1})\ (\code{adjacent}\ Ps) \wedge \between{P_i}{X'}{P_{i+1}}.
+  \exists P_i.\;\exists P_{i+1}.\; \code{mem}\ (P_i,P_{i+1})\ (\code{adjacent}\ Ps) \wedge \between{P_i}{X'}{P_{i+1}}.
 \end{displaymath}
 
 The presence of $\code{adjacent}$ is troublesome, but we have verified a theorem to help us out here:
@@ -416,7 +416,7 @@ The presence of $\code{adjacent}$ is troublesome, but we have verified a theorem
   % (`!x:a y xs. MEM (x,y) (ADJACENT xs)
   %      <=> ?ys zs. xs = APPEND ys (CONS x (CONS y zs))`,
 \vdash  \code{mem}\ (x,y)\ (\code{adjacent}\ xs) \iff 
-\exists ws\;\exists zs.\; xs = \append{ws}{\append{[x,y]}{zs}}.
+\exists ws.\;\exists zs.\; xs = \append{ws}{\append{[x,y]}{zs}}.
 \end{equation*}
 
 This gives us just about everything we need to perform a rotation. We know that if the witnessed $ys$ is empty, then our edge $[x,y]$ must already be at the front of the list. Otherwise, we know that the list $xs$ is of the form
@@ -449,7 +449,7 @@ In particular, we have shown that, given a point $X$ with line-of-sight to a poi
 \vdash    &\code{simple\_polygon}\ Ps \wedge \neg\code{on\_polypath}\ Ps\ X\\
     &\wedge \code{mem}\ (P,Q)\ (\code{adjacent}\ Ps) \wedge \between{P}{X'}{Q}\\
     &\wedge\neg(\exists Z.\; \between{X}{Z}{X'} \wedge \code{on\_polypath}\ Ps\ Z)\\
-    &\qquad\implies \exists Y\;\exists Y'.\; \code{polypath\_connected}\ (\code{on\_polypath}\ Ps)\ X\ Y\\
+    &\qquad\implies \exists Y.\;\exists Y'.\; \code{polypath\_connected}\ (\code{on\_polypath}\ Ps)\ X\ Y\\
     &\qquad\qquad\qquad\wedge\neg\code{on\_polypath}\ Ps\ Y\\
     &\qquad\qquad\qquad\wedge \between{(\code{head}\ Ps)}{Y'}{(\code{head}\ (\code{tail}\ Ps))}\\
     &\qquad\qquad\qquad\wedge \neg\exists Z.\; \between{Y}{Z}{Y'} \wedge \code{on\_polypath}\ Ps\ Z.
@@ -481,7 +481,7 @@ If we take an arbitrary point $X$ in the plane and an arbitrary point $X'$ on a 
 However, if $X''$ coincides with a vertex as shown in Figure~\ref{fig:SightToEdge}, we will need to rotate our line-of-sight slightly. We will first assume, without loss-of-generality (or more accurately, we will assume we have rotated the polygon's vertex list) so that the vertex $X''$ coincides with the vertex $P_2$. We will want to obtain line-of-sight to either the edge $P_1P_2$ or $P_2P_3$.
 
 \begin{figure}
-  \centering\includegraphics[scale=0.75]{jordanVerification2/SightToEdge}
+  \centering\includegraphics[scale=0.75]{jordanVerification2/SightToWall}
   \caption{Obtaining line-of-sight with a edge}
   \label{fig:SightToEdge}
 \end{figure}
@@ -512,7 +512,7 @@ We have formalised the result in Figure~\ref{fig:RotateToEdge}, retaining the wi
     &\wedge\neg\code{on\_polypath}\ (\cons{P_3}{Ps})\ P_2\\
     &\wedge\neg(\exists Z.\; \between{P_1}{Z}{P_2} \wedge \code{on\_polypath}\ (\cons{P_2}{\cons{P_3}{Ps}})\ Z)\\
     &\wedge\neg(\exists Z.\; \between{P_2}{Z}{P_3} \wedge \code{on\_polypath}\ (\cons{P_3}{Ps})\ Z)\\
-    &\wedge\neg\code{on\_polyseg}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ X\\
+    &\wedge\neg\code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ X\\
     &\wedge\neg(\exists Z.\; \between{P_2}{Z}{X} \wedge \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z)\\
     &\implies\exists Y.\; (\between{P_1}{Y}{P_2} \vee \between{P_2}{Y}{P_3})\\
     &\qquad \wedge \neg(\exists Z.\; \between{X}{Z}{Y} \wedge \code{on\_polypath}\ (\cons{P_1}{\cons{P_2}{\cons{P_3}{Ps}}})\ Z).
@@ -530,7 +530,7 @@ Here is where we are: we have three points with line-of-sight to a edge $P_1P_2$
 First off, we have to consider that $X$ and $Y$ have line-of-sight to \emph{different} points $X'$ and $Y'$. Our diagrams so far in this chapter have given a different impression, but we must remember that the points obtained in our proofs ultimately rely on Axiom~\ref{eq:g22}. This axiom allows us to extend a line-segment, but there are many possible witnesses for its existential conclusion, and we have generally allowed the abstraction to proliferate in our theory, rather than eliminating it with the epsilon-operator. 
 
 \begin{figure}
-\centering\includegraphics[scale=0.6]{jordanVerification2/SameSideEdgeConnected1}
+\centering\includegraphics[scale=0.6]{jordanVerification2/SameSideWallConnected1}
 \caption{Connecting the final points}
 \label{fig:SameSideEdgeConnected}
 \end{figure}
@@ -629,11 +629,12 @@ The proof of the final result, Theorem~\ref{eq:jordanFormal2}, puts all of the p
 %As with the final theorem in the last chapter, the final theorem here is much more readable than the lemmas considered up to now. The theory so far builds theorems with large numbers of complicated hypotheses, such as those for Theorem~\ref{eq:SameSideEdgeConnected} (and remember that for brevity, we have omitted all the planar hypotheses needed for every one of these theorems). When developing a theory such as this, where theorems are almost made opaque by their hypotheses, we have to pay particularly close attention to be confident that we are making progress. Fortunately, success in formal verification is unambiguous.
 \begin{equation}\tag{\ref{eq:jordanFormal2}}
 \begin{aligned}
-\vdash &\code{simple\_polygon}\ Ps\\
-       &\wedge \neg\code{on\_polyseg}\ Ps\ P\wedge \neg\code{on\_polyseg}\ Ps\ Q\wedge \neg\code{on\_polyseg}\ Ps\ R\\
-       &\implies \code{seg\_connected}\ (\code{on\_polyseg}\ Ps)\ P\ Q\\
-       &\qquad\quad\vee \code{seg\_connected}\ (\code{on\_polyseg}\ Ps)\ P\ R\\
-       &\qquad\quad\vee \code{seg\_connected}\ (\code{on\_polyseg}\ Ps)\ Q\ R.
+\vdash &\code{simple\_polygon}\ \alpha\ Ps\\
+       &\wedge \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha \wedge \code{on\_plane}\ R\ \alpha\\
+       &\wedge \neg\code{on\_polypath}\ Ps\ P\wedge \neg\code{on\_polypath}\ Ps\ Q\wedge \neg\code{on\_polypath}\ Ps\ R\\
+       &\implies \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q\\
+       &\qquad\quad\vee \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ R\\
+       &\qquad\quad\vee \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ Q\ R
 \end{aligned}
 \end{equation}
 

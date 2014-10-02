@@ -65,7 +65,7 @@ Looking at Veblen's proof attempt, one might expect the argument to be dominated
 
 % \begin{quote}Let this segment be one segment of a broken line $Q_kQ_{k+1}\cdots Q_{j-1}Q_j$ of segments of $q$ not meeting $P_1P_3$ but such that $Q_{k-1}Q_k$ and $Q_jQ_{j+1}$ do each have a point or endpoint in common with $P_1P_3$ ($1 \leq k < j \leq m$; if $k = 1$, $Q_{k-1} = Q_m$; if $j = m$, $Q_{j+1} = Q_1$). If $O_j$ is the point common to $P_1P_3$ and $Q_jQ_{j+1}$ or $Q_{j+1}$, and $O_k$ is the point common to $P_1P_3$ and $Q_{k-1}Q_k$ or $Q_{k-1}$, the broken line $O_kQ_kQ_{k+1}\cdots Q_{j-1}Q_jO_j$, has a point inside and also a point outside the triangle $P_1P_2P_3$ and cuts the broken line $P_1P_2P_3$ only once.\end{quote}
 
-%As we described Hilbert's Theorem~6 (see \S\ref{sec:Theorem6}) as a meta-theorem, we would describe Veblen's argument here as a \emph{metaproof}. The use of such metatheoretical arguments in axiomatic geometry probably goes back to Euclid, who 
+%As we described Hilbert's Theorem~6 (see \S\ref{sec:Theorem6}) as a metatheorem, we would describe Veblen's argument here as a \emph{metaproof}. The use of such metatheoretical arguments in axiomatic geometry probably goes back to Euclid, who 
 
 With the notation doing such heavy lifting, we will formalise it directly. We opted to represent polygonal paths as their finite sequence of points, from which the original polygonal paths can be recovered. With this definition, the clumsy constraint about segments sharing endpoints is handled implicitly. The heavy lifting will be carried out as computations on lists, which are available to us in the logic, ultimately being defined in terms of natural numbers. As we saw in Chapter~\ref{chapter:LinearOrder}, this means they are still ultimately represented by geometric figures. 
 
@@ -135,12 +135,12 @@ $\dag$ This function is a more well-defined version of the existing function in 
 \label{fig:ListDefinitions}
 \end{figure}
 
-With the function $\code{adjacent}$, we can define the points of a polygonal path. As per Hilbert's definition, these are the points of the vertex list and the points inside each individual segment $(x,y)$. We can test for each using the list-membership predicate $\code{mem}$.
+With the function $\code{adjacent}$, we can define the points of a polygonal path. As per Hilbert's definition, these are the points of the vertex list and the points inside each individual segment $(x,y)$. We can test for each using the list-membership predicate~$\code{mem}$.
 \begin{equation}\label{eq:OnPolyPath}
   \begin{split}
     &\code{on\_polypath}\,:\,[\code{point}] \rightarrow \code{point} \rightarrow \code{bool}\\
     \vdash_{def}\;&\code{on\_polypath}\ Ps\ P \iff \\
-    &\quad\code{mem}\ P\ Ps\vee\,\exists x\;\exists y.\; \code{mem}\ (x,y)\ (\code{adjacent}\ Ps) \wedge \between{x}{P}{y}.
+    &\quad\code{mem}\ P\ Ps\vee\,\exists x.\;\exists y.\; \code{mem}\ (x,y)\ (\code{adjacent}\ Ps) \wedge \between{x}{P}{y}.
   \end{split}
 \end{equation}
 
@@ -189,26 +189,24 @@ Obviously, we will need the three theorems \emph{somewhere} in our later verific
 \subsection{Polygons}\label{sec:polygonFormalisation}
 Hilbert continues his definitions as follows:
 \begin{quote}
-``If the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ all lie in a plane and the point $A$ coincides with the point $L$ then the polygonal path is called a \emph{polygon} and is denoted as the polygon $ABCD\ldots K$. The segments $AB$, $BC$, $CD$, \ldots, $KA$ are also called the \emph{sides of the polygon}. The points $A$, $B$, $C$, $D$, $\ldots$, $K$ are called the \emph{vertices of the polygon.} Polygons of $3$, $4$, $\ldots$, $n$ \emph{vertices} are called \emph{triangles}, \emph{quadrilaterals}, $\ldots$, \emph{n-gons}.''
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, pages 8-9.}  
+``If the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ all lie in a plane and the point $A$ coincides with the point $L$ then the polygonal path is called a \emph{polygon} and is denoted as the polygon $ABCD\ldots K$. The segments $AB$, $BC$, $CD$, \ldots, $KA$ are also called the \emph{sides of the polygon}. The points $A$, $B$, $C$, $D$, $\ldots$, $K$ are called the \emph{vertices of the polygon.} Polygons of $3$, $4$, $\ldots$, $n$ \emph{vertices} are called \emph{triangles}, \emph{quadrilaterals}, $\ldots$, \emph{n-gons}.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, pages 8-9.)  
 \end{quote}
 
 The term ``side'' is ambiguous between the segments of a polygon and the half-planes of a given line. As such, we shall refer to the segments defining both a polygonal path and a polygon as \emph{edges}, and reserve \emph{side} for half-planes. These definitions will help us orientate ourselves within the familiar world of geometry, but we do not believe they correspond to any useful abstractions for verification. As such, we shall only use them informally to explain parts of the verification. The important definition for the verification is the one for \emph{simple polygons}:
 \begin{quote}
-  ``DEFINITION. If the vertices of a polygon are all distinct, none of them falls on [an edge] and no two of its nonadjacent [edges] have a point in common, the polygon is called \emph{simple}.''
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 9.}  
+  ``DEFINITION. If the vertices of a polygon are all distinct, none of them falls on [an edge] and no two of its nonadjacent [edges] have a point in common, the polygon is called \emph{simple}.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 9.) 
 \end{quote}
 
 Combining this with the definition of polygon gives us the following formalisation:
 \begin{equation}\label{eq:SimplePolygonDef}
   \begin{split}
   &\code{simple\_polygon}\,:\,\code{plane} \rightarrow [\code{point}] \rightarrow \code{bool}\\
-  &\code{simple\_polygon}\vdash_{def}\ \alpha\ Ps \iff \\
+  &\vdash_{def}\code{simple\_polygon}\ \alpha\ Ps \iff \\
   &\qquad 3 \leq \code{length}\ Ps\\
   &\qquad\wedge \code{head}\ ps = \code{last}\ Ps\\
   &\qquad\wedge (\forall P.\;\code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha)\\
   &\qquad\wedge \code{pairwise}\ (\neq)\ (\code{butlast}\ Ps)\\
-  &\qquad\wedge \neg(\exists P\;\exists Q\;\exists X.\; \code{mem}\;X\;Ps\wedge\code{mem}\;(P,Q)\;(\code{adjacent}\;Ps)\wedge\between{P}{X}{Q})\\
+  &\qquad\wedge \neg(\exists P.\;\exists Q.\;\exists X.\; \code{mem}\;X\;Ps\wedge\code{mem}\;(P,Q)\;(\code{adjacent}\;Ps)\wedge\between{P}{X}{Q})\\
   &\qquad\wedge \code{pairwise}\ (\lambda(P,Q)\;(P',Q').\\
   &\qquad\qquad\neg(\exists X.\;\between{P}{X}{P'} \wedge \between{Q}{X}{Q'})\ (\code{adjacent}\;Ps)).
   \end{split}
@@ -232,12 +230,12 @@ For now, inspection is the best way to inspire confidence in the definition, but
 \begin{equation*}
   \begin{split}
     \vdash&\Triangle{a}{A}{B}{C}\\
-    &\code{on\_plane}\ A \alpha\wedge\code{on\_plane}\ B \alpha\wedge\code{on\_plane}\ C \alpha\\
+    &\code{on\_plane}\ A\ \alpha\wedge\code{on\_plane}\ B\ \alpha\wedge\code{on\_plane}\ C\ \alpha\\
     &\implies \code{simple\_polygon}\ \alpha\ [A,B,C,A].
   \end{split}
 \end{equation*}
 
-Note that for the Chapters~\ref{chapter:JordanVerification1} and~\ref{chapter:JordanVerification2}, we shall elide all terms involving $\code{on\_plane}$, and thus present this verification as if from planar rather than spatial axioms. This is merely for clarity. Had we been working from planar axioms, all of these terms would be absent, since they serve only to relativise formulas to a single plane (see \S\ref{sec:PlanarProofs} for some discussion).
+Note that for Chapters~\ref{chapter:JordanVerification1} and~\ref{chapter:JordanVerification2}, we shall elide all terms involving $\code{on\_plane}$, and thus present this verification as if from planar rather than spatial axioms. This is merely for clarity. Had we been working from planar axioms, all of these terms would be absent, since they serve only to relativise formulas to a single plane (see \S\ref{sec:PlanarProofs} for some discussion).
 
 \subsection{Goal Theorems}
 In \S\ref{sec:segConnectEquivalence}, we said that we would understand the regions defined by the Polygonal Jordan Curve Theorem as equivalence classes under polygonal path-connectedness. If we were to follow the style of Chapter~\ref{chapter:HalfPlanes}, we would quotient an appropriate data-type under this relation and regions would be abstract.
@@ -260,9 +258,9 @@ With the breakdown considered, we turn to the formalisation of all four clauses.
 \begin{equation}\label{eq:jordanFormal1}
   \begin{split}
 \vdash &\code{simple\_polygon}\ \alpha\ Ps\\
-       &\implies \exists P\;\exists Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
-       &\qquad\wedge \neg\code{on\_polyseg}\ Ps\ P \wedge \neg\code{on\_polyseg}\ Ps\ Q\\
-       &\qquad\wedge \neg\code{polypath\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ Q
+       &\implies \exists P.\;\exists Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
+       &\qquad\wedge \neg\code{on\_polypath}\ Ps\ P \wedge \neg\code{on\_polypath}\ Ps\ Q\\
+       &\qquad\wedge \neg\code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q
   \end{split}
 \end{equation}
 
@@ -270,17 +268,18 @@ With the breakdown considered, we turn to the formalisation of all four clauses.
   \begin{split}
 \vdash &\code{simple\_polygon}\ \alpha\ Ps\\
        &\wedge \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha \wedge \code{on\_plane}\ R\ \alpha\\
-       &\wedge \neg\code{on\_polyseg}\ Ps\ P\wedge \neg\code{on\_polyseg}\ Ps\ Q\wedge \neg\code{on\_polyseg}\ Ps\ R\\
-       &\implies \code{polypath\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ Q\\
-       &\qquad\quad\vee \code{polypath\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ P\ R\\
-       &\qquad\quad\vee \code{polypath\_connected}\ \alpha\ (\code{on\_polyseg}\ Ps)\ Q\ R
+       &\wedge \neg\code{on\_polypath}\ Ps\ P\wedge \neg\code{on\_polypath}\ Ps\ Q\wedge \neg\code{on\_polypath}\ Ps\ R\\
+       &\implies \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q\\
+       &\qquad\quad\vee \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ R\\
+       &\qquad\quad\vee \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ Q\ R
      \end{split}
 \end{equation}
 
 \begin{equation}\label{eq:jordanFormal3}
   \begin{split}
-    \vdash
-    \exists a.\; \forall P.\; \code{on\_line}\ P\ a \implies \neg\code{on\_polypath}\ P\ Ps.
+    &\vdash
+    (\forall P.\; \code{on\_polypath}\ Ps\ P \implies \code{on\_plane}\ P\ \alpha)
+    \\&\implies\exists a.\; \forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha\wedge\neg\code{on\_polypath}\ Ps\ P.
     \end{split}
 \end{equation}
 

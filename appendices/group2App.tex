@@ -135,7 +135,7 @@
 \begin{equation}\tag{\ref{eq:HalfPlaneCover}}
   \begin{split}
     \vdash&(\forall P.\; \code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha)\\
-    &\implies \exists hp\;\exists hq.\; hp \neq hq\\
+    &\implies \exists hp.\;\exists hq.\; hp \neq hq\\
     &\qquad \wedge a = \code{line\_of\_half\_plane}\ hp \wedge a = \code{line\_of\_half\_plane}\ hq\\
     &\qquad \wedge (\forall P.\; \code{on\_plane}\ P\ \alpha\\
     &\qquad\qquad \iff \code{on\_line}\ P\ a \vee \code{on\_half\_plane}\ hp\ P \vee \code{on\_half\_plane}\ hq\ P)
@@ -207,8 +207,8 @@
          %               X = ray_origin r \/ on_ray r X \/ on_ray s X))
   \begin{split}
     \vdash&\code{on\_line}\ P\ a\\
-    &\qquad\implies \exists r\;\exists s.\; r \neq s\wedge P = \code{ray\_origin}\ r \wedge Q = \code{ray\_origin}\ s\\
-    &\qquad\qquad \wedge (\forall X.\; \code{on\_line}\ X\ a \iff X = \code{ray\_origin}\ r \vee \code{on\_ray}\ r\ X \vee \code{on\_ray}\ s\ X)
+    &\implies \exists r.\;\exists s.\; r \neq s\wedge P = \code{ray\_origin}\ r \wedge Q = \code{ray\_origin}\ s\\
+    &\qquad \wedge (\forall X.\; \code{on\_line}\ X\ a \iff X = \code{ray\_origin}\ r \vee \code{on\_ray}\ r\ X \vee \code{on\_ray}\ s\ X)
     \end{split}
 \end{equation*}
 
@@ -221,8 +221,8 @@
 %               ~between P (ray_origin r) Q /\
 %               on_line Q a)
     \vdash&(\forall R.\; \code{on\_ray}\ r\ R \implies \code{on\_line}\ R\ a) \wedge \code{on\_ray}\ r\ P\\
-    &\qquad\implies (\code{on\_ray}\ r\ Q\\
-    &\qquad\qquad\iff Q \neq \code{ray\_origin}\ r \wedge \neg\between{P}{(\code{ray\_origin}\ r)}{Q} \wedge \code{on\_line}\ Q\ a
+    &\quad\implies (\code{on\_ray}\ r\ Q\\
+    &\quad\qquad\iff Q \neq \code{ray\_origin}\ r \wedge \neg\between{P}{(\code{ray\_origin}\ r)}{Q} \wedge \code{on\_line}\ Q\ a
   \end{split}
 \end{equation*}
 %%% Local Variables: 

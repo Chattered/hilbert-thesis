@@ -72,9 +72,9 @@ For each edge, we shall therefore declare the $\top$ side for the corresponding 
 
 In Figure~\ref{fig:ContextChangesTriangle}, we show the assignment of the combined context value to each vertex of a polygon intersecting a triangle $ABC$. Here, if an edge $P_iP_{i+1}$ is such that $P_{i+1}$ lies outside the triangle, then the edge is assigned $\bot$. If $P_{i+1}$ lies inside the triangle, then the edge is assigned $\top$. The only complication is how to set the context when the point $P_{i+1}$ lands on an edge. For this, we think about the three component contexts for each edge of the triangle in terms of the ideas from the previous subsection.
 
-Take the segment $P_5P_6$. The point $P_6$ lands on the edge $AB$. Notice that the point $P_5$ lies on the side of $AB$ which contains the triangle's interior, and so, at $P_5$, the component of the context for $AB$ is $\top$. Following the ideas from the previous section, it should stay at $\top$, since $P_6$ lies on $AB$.
+Take the segment $P_5P_6$. The point $P_6$ lands on the edge $AB$, so the component context for this edge is propagated from the previous segment. In particular, since $P_5$ lies on the side of $AB$ which contains the triangle's interior, we propagate the value $\top$.
 
-Now for the contexts of the other two edges. The component of the context for the side $BC$ switches from $\bot$ to $\top$, since $P_6$ is on the side of $BC$ containing the triangle's interior while $P_5$ is on the opposite side. Finally, the component of the context for $AC$ stays at $\top$, since both $P_5$ and $P_6$ lie on the side of $AC$ containing the triangle's interior. Since the three component contexts for $P_6$ are all $\top$, so is the combined context.
+The component of the context for the side $BC$ is simply $\top$, since $P_6$ is on the side of $BC$ containing the triangle's interior. The component of the context for $AC$ is also $\top$, since $P_6$ lies on the side of $AC$ containing the triangle's interior. Since the three component contexts for $P_6$ are all $\top$, so is the combined context.
 
 To bring these ideas together, we will compute the number of crossings at each edge of the triangle as follows: first, we count a crossing for $P_iP_{i+1}$ and the edge $AB$ (or $AC$ or $BC$) every time there is a point on $AB$ which is strictly between $P_i$ and $P_{i+1}$. The only other crossings occur when $P_i$ lies on the segment $AB$. Here, we count a crossing in two circumstances:
 \begin{itemize}
@@ -208,14 +208,14 @@ The above formulations and formalisation assume that we know how to express the 
 \begin{equation*}
 \begin{split}
   &\code{in\_triangle\_veblen}\ (A,B,C)\ P \iff\\
-  &\qquad\exists X\;\exists Y.\; \between{A}{X}{B} \wedge \between{A}{Y}{C} \wedge \between{X}{P}{Y}.
+  &\qquad\exists X.\;\exists Y.\; \between{A}{X}{B} \wedge \between{A}{Y}{C} \wedge \between{X}{P}{Y}.
 \end{split}
 \end{equation*}
 
 \begin{equation}\label{eq:inTriangleDef}
 \begin{split}
   \vdash_{def}\;&\code{in\_triangle}\ (A,B,C)\ P \iff\\
-    &\qquad\exists hp\;\exists hq\;\exists hr.\;\code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp)\\
+    &\qquad\exists hp.\;\exists hq.\;\exists hr.\;\code{on\_line}\ A\ (\code{line\_of\_half\_plane}\ hp)\\
     &\qquad\qquad\wedge \code{on\_line}\ B\ (\code{line\_of\_half\_plane}\  hp)\\
     &\qquad\qquad\wedge \code{on\_line}\ A\ (\code{line\_of\_half\_plane}\  hq)\\
     &\qquad\qquad\wedge \code{on\_line}\ C\ (\code{line\_of\_half\_plane}\  hq)\\
@@ -240,7 +240,7 @@ Veblen's definition is significantly shorter, but we wanted to try leveraging ou
   \end{split}
 \end{equation}
 
-That said, with our definition, our early verifications about triangles always became bloated in the same clumsy way. When we started from a hypothesis that a point lies inside a triangle, we found ourselves having to extract all three witnessed half-planes in the definition and all twelve conjuncts they satisfy. In many cases, we found that the the main body of the proof was shorter than the bloated statement of the assumptions. It might be suggested that this ugliness could have been avoided had we persevered instead with Veblen's definition, and tried to avoid reasoning about half-planes. We have some circumstantial against this: if Veblen's definition is a more useful starting point for reasoning about the interiors of triangle's, we should expect that his formulation would appear as an immediate step in our proofs, whereupon we can reason more effectively about interiors. But this was never the case. There was no need obtain the two point witnesses given in Veblen's definition. Conversely, there were twelve places in our verifications where we had two points that could satisfy Veblen's definition, and where we appealed to a lemma which shows Veblen's definition implies our own. This suggests that our formulation is the more useful starting point.
+That said, with our definition, our early verifications about triangles always became bloated in the same clumsy way. When we started from a hypothesis that a point lies inside a triangle, we found ourselves having to extract all three witnessed half-planes in the definition and all twelve conjuncts they satisfy. In many cases, we found that the the main body of the proof was shorter than the bloated statement of the assumptions. It might be suggested that this ugliness could have been avoided had we persevered instead with Veblen's definition, and tried to avoid reasoning about half-planes. We have some circumstantial against this: if Veblen's definition were a more useful starting point for reasoning about the interiors of triangles, we would expect that his formulation would appear as an immediate step in our proofs, whereupon we can reason more effectively about interiors. But this was never the case. There was no need obtain the two point witnesses given in Veblen's definition. Conversely, there were twelve places in our verifications where we had two points that could satisfy Veblen's definition, and where we appealed to a lemma which shows Veblen's definition implies our own. This suggests that our formulation is the more useful starting point.
 
 % These two observations can be understood by again dividing geometric lemmas into those which introduce geometric entities and those which allow us to infer properties from a figure. As a theorem, Veblen's definition is weak for introducing entities, but useful for inferring properties of figures.
 
@@ -575,7 +575,7 @@ Because a vertex of the polygon $P_{i+1}$ is the successor of $P_i$, what we are
 \subsection{Overview of Some Verification}
 Rather than go into all the details of the verification, we will give a typical extract of a specific case, showing how in these proofs we are still relying on our discovery algebra from Chapter~\ref{chapter:Automation} and our linear ordering tactic from Chapter~\ref{chapter:LinearOrder}. We also see how we leverage our lemmas for this section, and thus avoid having to deal directly with half-planes.
 
-The case we consider says that if a segment $P_iP_{i+1}$ crosses a triangle $ABC$ exactly once between $P_i$ and $P_{i+1}$, and not at a vertex, then its endpoints are in different regions with respect to the triangle. 
+The case we consider is equivalent to saying that if a segment $P_iP_{i+1}$ crosses a triangle $ABC$ exactly once between $P_i$ and $P_{i+1}$ at $AB$, then one of $P_i$ and $P_{i+1}$ is interior to the triangle while the other is exterior.
 \begin{multline}\label{eq:IH3}
 % crossing (A,B,C) was\_inside P Q = 1
 %          ==> crossing (A,C,B) was_inside P Q = 0
@@ -842,7 +842,7 @@ The computation of the initial context appears in our specification of crossings
   \end{aligned}\right)
 \end{multline}
 
-\begin{multline}\label{eq:changeTriangle}
+  \begin{multline}\label{eq:changeTriangle}
   %        Qs = CONS P (APPEND Ps [P]) /\
   %        on_plane A 'a /\
   %        on_plane B 'a /\
@@ -870,7 +870,7 @@ The computation of the initial context appears in our specification of crossings
     &\implies \exists \Gamma'.\; \code{polypath\_crossings}\ (A,B,C)\ (\Gamma_{final}\ (A,B,C)\ \Gamma\ (\code{adjacent}\ Qs))\\
     &\qquad\qquad\qquad(\code{adjacent}\ Qs)\\
     &\qquad = \code{polypath\_crossings}\ (A,B,C')\ (\Gamma_{final}\ (A,B,C')\ \Gamma'\ (\code{adjacent}\ Qs))\\
-    &\qquad\qquad\qquad(\code{adjacent}\ Qs)\\
+    &\qquad\qquad\qquad(\code{adjacent}\ Qs)
   \end{aligned}
 \end{multline}
 \caption{Final specification of crossings}
@@ -883,7 +883,12 @@ The first theorem~\eqref{eq:crossNZIntersect} is mostly a convenience. It simply
 
 Theorem~\ref{eq:polypathCrossingsEven} assumes that we have a polygon $Qs$ and sets an initial context as described in the previous section. It also assumes we have a triangle $ABC$ and that $Qs$ does not intersect any of its vertices, as per our discussion in \S\ref{sec:NoVertexAssumption}. Under these conditions, the total number of crossings against the three sides is always even.
 
-Theorem~\ref{eq:changeTriangle} tells us that the choice of $C$ when counting crossings is arbitrary, so long as it is not on the line $AB$. There is a slight complication, in that the theorem tells us to reset the initial context using the supplied $\Gamma'$ given in the conclusion, but since Theorem~\ref{eq:polypathCrossingsEven} holds for arbitrary choices of $\Gamma$, we can ignore this constraint when we apply the two theorems.
+Theorem~\ref{eq:changeTriangle} tells us that the choice of $C$ when counting
+crossings is arbitrary, so long as it is not on the line $AB$. There is a slight
+complication, in that the theorem tells us to reset the initial context using the
+supplied $\Gamma'$ given in the conclusion, but since
+Theorem~\ref{eq:polypathCrossingsEven} holds for arbitrary choices of $\Gamma$, we
+can ignore this constraint when we apply the two theorems.
 
 The upshot of Theorem~\ref{eq:changeTriangle} is that we can understand a crossing without reference to a triangle, but instead only with reference to the points $A$ and $B$. In the next section, we shall see how this more general understanding plays out in our verification.
 
@@ -922,9 +927,9 @@ This argument readily formalises as a proof by induction, which gives us a nice 
 
 Here, we assume two polygons of length at least two, namely $\append{[P_1,P_2]}{\append{Ps}{[P_1]}}$ and $Qs$. The polygon $Qs$ is assumed to cross the edge $P_1P_2$ an odd number of times. We then conclude that $Qs$ intersects the tail of $\append{[P_1,P_2]}{\append{Ps}{[P_1]}}$, exactly as we require in the sketch proof.
 
-Of particular note is how we formalise the idea that $Qs$ crosses the edge $P_1P_2$ in terms of the function \code{polypath\_crossings}. To do this, we abstract away the $C$ and the $\Gamma$ variables with universal and existential quantifiers, knowing it is valid to do so based on our well-definedness theorems.
+Of particular note is how we formalise the idea that $Qs$ crosses the edge $P_1P_2$ in terms of the function \code{polypath\_crossings}: we abstract away the $C$ and the $\Gamma$ variables with universal and existential quantifiers, knowing it is valid to do so based on our well-definedness theorems.
 
-Using structural induction on the list $Ps$, we become tasked with showing that the polygonal path $Qs$ crosses the path $[P_2,P_3] + Ps' + [P_1]$ for any $P_3$ and $Ps'$ where $Ps'$ satisfies the inductive hypothesis. To do this, we show that the number of crossings at $P_1P_3$ is odd, and then apply the induction hypothesis, to tell us that $Qs$ crosses the path $[P_3] + Ps' + [P_1]$ from. The desired result then follows.
+Using structural induction on the list $Ps$, we become tasked with showing that the polygonal path $Qs$ crosses the path $[P_2,P_3] + Ps' + [P_1]$ for any $P_3$ and $Ps'$ where $Ps'$ satisfies the inductive hypothesis. To do this, we show that the number of crossings at $P_1P_3$ is odd, and then apply the induction hypothesis, to tell us that $Qs$ crosses the path $[P_3] + Ps' + [P_1]$. The desired result then follows.
 
 We assume here that $Qs$ does not cross at $P_2P_3$, since otherwise we are done. In Mizar~Light, this assumption is made quite literally:
 
@@ -1005,7 +1010,7 @@ We have come this far by building a large tower of abstractions, complicated and
 \begin{equation}
   \begin{split}
     \vdash&\code{simple\_polygon}\ \alpha\ Ps\\
-    &\implies \exists P\;\exists Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
+    &\implies \exists P.\;\exists Q.\; \code{on\_plane}\ P\ \alpha \wedge \code{on\_plane}\ Q\ \alpha\\
     &\qquad\wedge \neg\code{on\_polypath}\ Ps\ P \wedge \neg\code{on\_polypath}\ Ps\ Q\\
     &\qquad\wedge \neg\code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ P\ Q.
   \end{split}\tag{\ref{eq:jordanFormal1}}

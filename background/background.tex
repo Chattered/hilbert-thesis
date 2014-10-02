@@ -32,7 +32,7 @@ Next, we have \emph{terms} based on an alphabet of term constants and term varia
 \begin{enumerate}
 \item every term constant and every term variable is a term;
 \item for terms $f\ :\ \tau_1\rightarrow\tau_2$ and $x\ :\ \tau_1$, we have that $f\ x$ is a term such that \mbox{$f\ x : \tau_2$}. These \emph{combinations} are left-associative: $f\ g\ h = (f\ g)\ h$;
-\item given a term variable $x : \tau_1$ and a term $y : \tau_2$, there is a term $\lambda x.\;\lambda y.\;:\;\tau_1 \rightarrow \tau_2$. These \emph{lambda abstractions} consume everything to the right, so $\lambda x.\; f\ x\ y$ parses as $\lambda x.\; ((f\ x)\ y)$.
+\item given a term variable $x : \tau_1$ and a term $y : \tau_2$, there is a term $\lambda x.\;y\;:\;\tau_1 \rightarrow \tau_2$. These \emph{lambda abstractions} consume everything to the right, so $\lambda x.\; f\ x\ y$ parses as $\lambda x.\; ((f\ x)\ y)$.
 \end{enumerate}
 
 The idea is that the type $\tau_1 \rightarrow \tau_2$ is inhabited by functions with domain $\tau_1$ and codomain $\tau_2$. A lambda abstraction in this type is then a function literal, and the notation $\lambda x.\; f\ x$ can be understood as the familiar mathematical notation $x \mapsto f\ x$.
@@ -128,7 +128,7 @@ User code, again written in ML, calls the inference rules of the kernel in order
 We are not expected to exploit the implementation of sequents and inference rules, and indeed \emph{cannot}. Unlike the term data-type (\code{term} in HOL~Light), the sequent data type (\code{thm}) is made \emph{abstract} to user code. ML's strong type system guarantees that user code cannot break this abstraction. Any sequent constructed in user code is a sequent that was ultimately constructed legitimately via the kernel's inference rules.
 
 \subsection{Additional Functionality}
-HOL~Light extends the simple theory of types by allowing us to add new axioms~(see \S\ref{sec:ClassicalAxioms}) and add new basic term and type definitions. \emph{Basic definitions} cannot contain free variables on their right hand sides, nor can they be recursive. Thus, they always yield a conservative extension of the logic: we could potentially substitute the right hand sides of any definitions through all terms without affecting the validity of the derivations.
+The HOL~Light kernel extends the simple theory of types by allowing us to add new axioms~(see \S\ref{sec:ClassicalAxioms}) and add new basic term and type definitions. \emph{Basic definitions} cannot contain free variables on their right hand sides, nor can they be recursive. Thus, they always yield a conservative extension of the logic: we could potentially substitute the right hand sides of any definitions through all terms without affecting the validity of the derivations.
 
 HOL~Light also extends the simple theory of types by allowing one to define a new type of values, the \emph{abstract} type, in bijection with a non-empty subset of an existing type, the \emph{representation} type. This feature is particularly useful when forcing derived definitions to be used in a way which respects an abstraction.
 
@@ -153,7 +153,7 @@ With it, one can show that $f = g$ precisely when $f\ x = g\ x$ for arbitrary $x
 
 The propositional fragment of HOL becomes classical with the introduction of the term $\epsilon$, whose sole axiom is:\footnote{Here, $\epsilon$ acts as a binder, like $\lambda$, $\forall$ and $\exists$, but this is syntax sugar. In reality, $\epsilon$ is a term of type $(\tau \rightarrow \code{bool}) \rightarrow \tau$.}
 \begin{displaymath}
-\vdash \forall P\;\forall x.\; P\ x \implies P\ (\epsilon x.\; P\ x).
+\vdash \forall P.\;\forall x.\; P\ x \implies P\ (\epsilon x.\; P\ x).
 \end{displaymath}
 
 We are to understand $\epsilon x.\; P\ x$ as \emph{the arbitrarily chosen $x$ satisfying $P$}. This is the full axiom of choice, used frequently as a definitional tool. It should be contrasted with the weaker $\iota$ binder, which yields expressions $\iota x.\; P\ x$ to be read as \emph{the uniquely specified $x$ satisfying $P$.} The distinction is discussed further in \S\ref{sec:UseOfIota}.
@@ -185,7 +185,7 @@ Outside of the relatively tiny HOL~Light kernel is a huge collection of verifica
 \subsection{Tactics}
 HOL~Light implements the LCF tactic system~\cite{Tactics}, in which we understand the process of constructing a sequent as the solving of a goal by breaking it into subgoals. We will need to briefly discuss the implementation of tactics for \S\ref{sec:DeclarativeProof}, since we make use of some of the lower level details.
 
-As far as tactics go, a \emph{goal} is a pair consisting of a goal formula together with \emph{hypotheses}. The purpose of a tactic is to input a goal and produce zero or more subgoals. These are then collected onto a goal stack, which acts like an agenda of problems that the user must solve. The user's aim is to apply tactics until the agenda is empty. The original goal can then be automatically reconstituted as a proven sequent.
+As far as tactics go, a \emph{goal} is a pair consisting of a goal formula together with \emph{hypotheses}. The purpose of a tactic is to input a goal and produce zero or more subgoals. These are then collected onto a goal stack, which acts like an agenda of problems that the user must solve. The user's aim is to apply tactics until the agenda is empty. A sequent is then automatically proven by following the trace of the tactic steps back to the goal.
 
 \subsection{Fully Automated Procedures}
 Some tactics in HOL~Light are decision procedures or otherwise fully automated verification tools. Generally, these are used to solve a goal outright; that is, without generating any new subgoals. Among HOL~Light's decision procedures are those for checking tautologies, for deciding problems in linear arithmetic, and for computing ideal elements via Gr\"{o}bner bases~\cite{BuchbergerGrobner}.
@@ -207,7 +207,7 @@ Proof assistants input verifications in languages of broadly two forms: declarat
 % \end{align*}
 % \end{scriptsize}
 
-Declarative proof assistants on the other hand, inspired by \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The verifications show the flow of argument as \emph{steps} which introduce intermediate formulas, with branches at subproofs and case-splits. The proofs begin by stating assumptions, with steps always being justified either from known lemmas or from prior steps. The focus is on \emph{what} the logical relations between formulas are, rather than \emph{how} the internal state (the goal stack in the case of tactics) is transformed to represent such relations. This style of proof assistant relies heavily on automation, guided by how the user breaks the proof down into intermediate formulas.
+Declarative proof languages on the other hand, inspired by \emph{Mizar}~\cite{MizarMathematicalVernacular}, have attempted to imitate the style of ordinary mathematics. The verifications show the flow of argument as \emph{steps} which introduce intermediate formulas, with branches at subproofs and case-splits. The proofs begin by stating assumptions, with steps always being justified either from known lemmas or from prior steps. The focus is on \emph{what} the logical relations between formulas are, rather than \emph{how} the internal state (the goal stack in the case of tactics) is transformed to represent such relations. This style of proof assistant relies heavily on automation, guided by how the user breaks the proof down into intermediate formulas.
 
 The declarative style was a natural choice for verifying synthetic geometry. As we explained in Chapter~\ref{chapter:Introduction}, we want our verifications to follow the structure of synthetic prose arguments, building diagrams and reasoning about their properties. Procedural verifications, often relying on contextual rewriting, would not be well-suited to this domain but are better suited to analytic geometry. This is a difficult claim to back up. Maybe we could have made better use of tactics with representations more amenable to rewrites, but for now, we just note that the majority of our lemmas and theorems are non-equational and have large numbers of hypotheses. These are difficult to apply as contextual rewrite rules.
 
@@ -281,7 +281,7 @@ The problem lies with case-splitting. Here are the original combinators at work 
   \footnotesize
   \code{...}
 
-  \code{have "$\forall$p1\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
+  \code{have "$\forall$p1.\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
 
   \code{proof}
 
@@ -306,7 +306,7 @@ Above, we have a case-split on formulas \code{p1 = p2} and \code{$\neg$(p1 = p2)
 \vspace{0.5cm}
 \begin{minipage}{\linewidth}
   \footnotesize
-  \code{> have "$\forall$p1\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
+  \code{> have "$\forall$p1.\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
 
   \code{> proof}
 
@@ -394,7 +394,7 @@ Returning to the example verification, our functions \code{case} and \code{end} 
 \vspace{0.5cm}
 \begin{minipage}{\linewidth}
   \footnotesize
-  \code{> lemma "$\forall$p1\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
+  \code{> lemma "$\forall$p1.\;$\forall$p2.\;$\exists$l.\;p1 ON l $\wedge$ p2 ON l" at 9}
 
   \code{>\quad fix ["p1:Point"; "p2:Point"]}
 

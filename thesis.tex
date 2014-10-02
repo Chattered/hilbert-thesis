@@ -25,6 +25,10 @@
 \makeatother 
 \renewcommand{\theboxedfigure}{\arabic{chapter}.\arabic{figure}}
 
+\newlength{\boxwidth}
+\setlength{\boxwidth}{\linewidth}
+\addtolength{\boxwidth}{3ex}
+
 \newtheorem*{proposition}{Proposition}
 \newtheorem*{lemma}{Lemma}
 
@@ -38,7 +42,7 @@
 \renewcommand{\between}[3]{\code{between}\ #1\ #2\ #3}
 \newcommand{\online}[2]{\code{on\_line}\ #1\ #2}
 \newcommand{\onplane}[2]{\code{on\_plane}\ #1\ #2}
-\newcommand{\onpolyseg}[2]{\code{on\_polyseg}\ #1\ #2}
+\newcommand{\onpolypath}[2]{\code{on\_polypath}\ #1\ #2}
 \newcommand{\collinearthree}[3]{($\exists$a.\; #1 on a $\wedge$ #2 on a $\wedge$ #3 on a)}
 \newcommand{\collinearfour}[4]{($\exists$a.\; #1 on a $\wedge$ #2 on a $\wedge$ #3 on a $\wedge$ #4 on a)}
 \newcommand{\collinearfive}[5]{($\exists$a.\; #1 on a $\wedge$ #2 on a $\wedge$ #3 on a $\wedge$ #4 on a $\wedge$ #5 on a)}

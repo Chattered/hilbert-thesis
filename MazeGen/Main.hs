@@ -164,5 +164,5 @@ pack [m]                       = ""
 
 main = do
   g <- getStdGen
-  m <- makeMaze (0,0) (25,25)
-  writeFile "mazePoints" (unlines $ map show $ map head (groupBy (==) (points (toLoop $ walledMaze 0.4 0.4 m))))
+  m <- makeMaze (0,0) (40,40)
+  writeFile "mazePoints" (unlines $ map show $ map head (groupBy (==) (points (toLoop $ walledMaze 0.25 0.25 m))))

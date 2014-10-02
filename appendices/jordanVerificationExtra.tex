@@ -25,9 +25,9 @@
     &Qs = \append{[P]}{\append{Ps}{[P]}}\\
     &\wedge \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha \wedge \code{on\_plane}\ C'\ \alpha\\
     &\wedge(\forall X.\; \code{mem}\ X\ Qs \implies \code{on\_plane}\ X\ \alpha)\\
-    &\wedge\neg\code{on\_polyseg}\ Qs\ A\\
+    &\wedge\neg\code{on\_polypath}\ Qs\ A\\
     &\wedge (\between{A}{B}{B'} \vee \between{A}{B'}{B} \vee A\neq B \wedge B\neq B')\\
-    &\wedge \neg(\exists X.\; \code{on\_polyseg}\ [B,B']\ X \wedge \code{on\_polyseg}\ Qs\ X)\\
+    &\wedge \neg(\exists X.\; \code{on\_polypath}\ [B,B']\ X \wedge \code{on\_polypath}\ Qs\ X)\\
     &\wedge\Triangle{a}{A}{B}{C}\\
     &\wedge \Triangle{a}{A}{B'}{C'}\\
     &\implies \exists \Gamma'.\; \code{polyseg\_crossings}\ (A,B,C)\ (\Gamma_{final}\ (A,B,C)\ \Gamma\ (\code{adjacent}\ Qs))\\

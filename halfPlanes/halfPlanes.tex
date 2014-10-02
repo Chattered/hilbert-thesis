@@ -35,7 +35,7 @@ III,~4. \emph{Let $\angle (h,k)$ be an angle in a plane $\alpha$ and $a'$ a line
 Notice how much more complicated Hilbert's axioms have become by this group. Here, we have an axiom which juggles eight geometric entities, six of which are not even primitive. It is easy to make a mistake here and we recommend that, if this axiom is to be reliably formalised, that the notions of \emph{angle}, and thus, the dependent notion of \emph{ray} must be fully formalised and a decent theory developed before we can trust that the definitions and axiom are correct. In simple type theory, one can gain further confidence by introducing rays as an abstract type, which can simplify the formalisation of Axiom~III,~4 by pushing constraints into the type-checker (see earlier work~\cite{ScottMScThesis}). 
 
 \subsection{Quotienting}\label{sec:RayQuotienting}
-With a slight clarification, the ``same side'' relations in Hilbert's definitions define equivalence relations, and rays and half-planes emerge as the equivalence classes. In particular, the relation ``same side of the point $O$'' quotients the set of points in space other than a point $O$ into the set of all rays emanating from $O$, or alternatively, with \emph{origin} $O$. Similarly, the relation ``same side of the line $a$'' quotients the set of points in space not on the line $a$ into the set of all half-planes bounded by $a$. Note that we do not restrict the dimension here, and thus allow rays and half-planes to emanate from a line in all directions in space. 
+With a slight clarification, the ``same side'' relations in Hilbert's definitions define equivalence relations, and rays and half-planes emerge as the equivalence classes. In particular, the relation ``same side of the point $O$'' quotients the set of points in space other than a point $O$ into the set of all rays emanating from $O$, or alternatively, with \emph{origin} $O$. Similarly, the relation ``same side of the line $a$'' quotients the set of points in space not on the line $a$ into the set of all half-planes bounded by $a$. Note that we do not restrict the dimension here, and thus allow rays to emanate from points and half-planes to emanate from lines in all directions in space. 
 
 We have had to fill in an ambiguity in Hilbert's definition, and exclude the closure points or boundary from both rays and half-planes. If we include the point $O$ for a ray, or the line $a$ for a half-plane, and we allow an arbitrary point to be on the same side of $O$ or $a$, then we will have only one equivalence class: the whole of space. If we include $O$ and $a$ in every ray and half-plane, but declare all other points to be on a different side of $O$ and $a$, then our equivalence classes tell us that the set $\{O\}$ counts as a zero-dimensional ray, while the line $a$ counts as a one-dimensional half-plane. We exclude these possibilities, and thus make all rays and half-planes, as equivalence classes, open sets: a ray does not include its origin and a half-plane does not include its boundary. Incidentally, Poincar\'{e} made the same decision, remarking parenthetically in his review of Hilbert ``I add, for precision, that I consider [the origin] as not belonging to either [half-ray]''~\cite{PoincareReview}.
 
@@ -95,10 +95,10 @@ It is trivial to verify that this relation is well-defined, but to use it effect
   \vdash\code{on\_ray\_of\_arrow}\ P\ \overrightarrow{OQ} \iff P = Q\ \vee\ \between{O}{P}{Q}\ \vee\ \between{O}{Q}{P}.
 \end{equation*}
 
-We suspect that the creation of the intermediate \code{arrow} type and the lifting of theorems through this type could be automated. That is, we propose that the presentation of the theory of rays and half-planes could be improved by extending HOL~Light's quotienting facilities, and in particular, extending it to handle indexed families of equivalence relations, such as the equivalence relation of arrows lying in the same direction, indexed by a point of origin. This would make for suitable future work, and we believe that Hilbert's geometry offers a nice example of where such facilities would be useful.
+We suspect that the creation of the intermediate \code{arrow} type and the lifting of theorems through this type could be automated, greatly improving the presentation of the theory. This would amount to an extension of HOL~Light's quotienting facilities, which would allow it to handle indexed families of equivalence relations such as that of arrows lying in the same direction, indexed by a point of origin. This would make for suitable future work, and we believe that Hilbert's geometry offers a nice example of where such facilities would be useful.
 
 \section{Theory of Half-Planes}\label{sec:HalfPlaneTheory}
-The theory of rays is largely trivial when we have our linear reasoning tactic. Everything we want to know about linear order is bound up in THEOREM~6, from which that tactic was derived. Two-dimensional order is less straight forward. We get this impression from Hilbert himself, who justifies the definition of half-planes with a distinguished theorem (THEOREM~8). He gives no corresponding theorem for rays, but instead, just assumes his definition is sound.
+The theory of rays is largely trivial when we have our linear reasoning tactic. Everything we want to know about linear order is bound up in THEOREM~6, from which that tactic was derived. Two-dimensional order is less straightforward. We get this impression from Hilbert himself, who justifies the definition of half-planes with a distinguished theorem (THEOREM~8). He gives no corresponding theorem for rays, but instead, just assumes his definition is sound.
 
 As with the theory of rays, our theory is based on lifting from an intermediate type. We mediate the notion of half-plane by a line and a point not on that line, where a ray was mediated by a point and a distinct point. The half-plane intermediary lacks the pleasing geometric interpretation of \emph{arrows}, but the basic plumbing and proofs are similar.
 \begin{equation}\label{eq:SameSidePlaneDef}
@@ -126,8 +126,6 @@ Pasch's axiom \eqref{eq:g24} asserts that, given a triangle $ABC$, if a line $a$
 We have most of these assumptions in place. We know that our points $A$, $B$ and $C$ are planar: that assumption was made part of the definition \eqref{eq:SameSidePlaneDef}. We know that the line $a$ does not meet any vertex, since this is a defining requirement of any representative of our intermediate type. The only assumption we have not met is that $A$, $B$ and $C$ form a triangle.
 
 But actually, this assumption on Pasch's axiom is not necessary. The conclusion holds even if $A$, $B$ and $C$ lie on a line, though we have not been able to prove it up until now. The verification, which uses THEOREM~6 via our linear reasoning tactic, is given in Figure~\ref{fig:PaschColCase}. 
-
-Now we had proven the transitivity relation for half-planes in our earlier work in Isabelle~\cite{ScottMScThesis}, but there, we derived two lemmas whose proofs are based on numerous case-splits. In our new formalisation, these messy details are handled automatically, and we see the usefulness of our linear reasoning tactic once again.
 
 \begin{boxedfigure}
 % let g24_col_case = theorem
@@ -210,7 +208,7 @@ We have now strengthened Pasch's axiom \eqref{eq:g24} in two ways: we have remov
     &\code{assume}\ \between{A}{D}{B} \wedge \between{A}{E}{C} \wedge \between{B}{F}{C} & 2\\
     &\code{obviously}\ \code{(by\_ncols} \circ \code{conjuncts)}\ \code{have}\ D\neq E \wedge D\neq F \wedge E\neq F\ \code{from}\ 0,2\\
     &\code{hence}\ \between{D}{E}{F}\vee\between{D}{F}{E}\vee\between{F}{D}{E}\ \code{from}\ 1\ \code{by} \ \eqref{eq:four}&3\\
-    &\code{have}\ \forall A'\;\forall B'\;\forall C'\;\forall D'\;\forall E'\;\forall F'.\; \Triangle{a}{A'}{B'}{C'}\\
+    &\code{have}\ \forall A'.\;\forall B'.\;\forall C'.\;\forall D'.\;\forall E'.\;\forall F'.\; \Triangle{a}{A'}{B'}{C'}\\
     &\qquad \between{A'}{F'}{B'} \wedge \between{A'}{E'}{C'} \wedge \between{B'}{D'}{C'}\\
     &\qquad \implies \neg\between{E'}{D'}{F'}\\ 
     &\code{proof:}\\
@@ -234,7 +232,7 @@ Our final rendition of THEOREM~8 is a theorem lifted from our intermediate type.
 \begin{equation}\label{eq:HalfPlaneCover}
   \begin{split}
     \vdash&(\forall P.\;\code{on\_line}\ P\ a \implies \code{on\_plane}\ P\ \alpha)\\
-    &\implies \exists hp\;\exists hq.\; hp \neq hq\\
+    &\implies \exists hp.\;\exists hq.\; hp \neq hq\\
     &\quad \wedge a = \code{line\_of\_half\_plane}\ hp \wedge a = \code{line\_of\_half\_plane}\ hq\\
     &\quad \wedge (\forall P.\;\code{on\_plane}\ P\ \alpha\\
     &\quad\quad \iff \code{on\_line}\ P\ a \vee \code{half\_plane\_contains}\ hp\ P \vee \code{on\_half\_plane}\ hq\ P).

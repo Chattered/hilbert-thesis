@@ -1,7 +1,7 @@
 \chapter{Automation}\label{chapter:Automation}
 In the last chapter, we formulated incidence claims in terms of point-sets, characterised by Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} from Figure~\ref{fig:PointSets}. These allowed us to write much shorter verifications~\cite{ScottMScThesis} than had been obtained by Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}, just using the theorem prover's stock automation. But we knew we could do better. The patterns that appeared in these verifications, which we shall refer to as our \emph{manual} verifications, were ripe for additional automation.
 
-The HOL~Light proof assistant expects its users to work ``close to the metal'', writing ML directly. In this environment, users become comfortable prototyping and  integrating new tools. In this chapter, we shall describe the integration of an automated tool for incidence reasoning, which can be made available as a tactic and in Mizar~Light proof steps.
+The HOL~Light proof assistant expects its users to work ``close to the metal'', writing ML directly. In this environment, users become comfortable prototyping and  integrating new tools. In this chapter, we shall describe the integration of an automated tool for incidence reasoning, which can be made available as a procedural tactic and to Mizar~Light proof steps.
 
 Much of this chapter and the subsequent chapter is an expansion and improvement on earlier work~\cite{ScottExploring,ScottComposable,ScottCombinator}. In it, we shall show how the user and tool can assist each other concurrently, thereby collaborating as the user develops a proof.
 
@@ -88,20 +88,18 @@ Forward-chaining algorithms have had recent success in automatically producing r
 
 The idea of using forward-chaining in this sort of exploratory way also opened up the possibility of designing an automated tool which could collaborate with the user as they develop a verification. Forward-chaining seemed quite apt, since its focus on cumulatively growing consequences of a set of assumptions corresponds well with how a declarative verification specifies a continually growing proof context. 
 
-The basic goal of our algorithm is to work on \emph{generations} of sequents, one for each of the different kinds of data: point equalities, point inequalities, collinear sets, non-collinear sets, and planar sets. The procedures of \S\ref{list:Procedures} are then applied across all relevant combinations of data from the five lists, to produce a new generation of lists. In this way, the algorithm produces a cumulative sequence of generations.
+Our basic approach is to produce cumulative \emph{generations} of data by combining data from previous generations. For incidence reasoning, we shall be combining the data based on the procedures of \S\ref{list:Procedures}, in the manner of forward-chaining.
 
 \subsection{Concurrency}\label{sec:NaiveConcurrency}
 Typically, the automation available in interactive proof assistants is invoked on demand by the user when they evaluate individual proof steps. But when the user writes the formal proof for the first time, or comes to edit it later, they will spend most of their time thinking, consulting texts, backtracking and typing in individual proof commands. The CPU is mostly idling during this process, and we can exploit this idle time to run automated tools concurrently.
 
 The Isabelle proof assistant has capitalised on this with Sledgehammer~\cite{IsabelleSledgehammer}. By invoking this command, the user can continue to work on a proof, while generic first-order tools are fired off as separate background processes, attempting to solve or refute the user's goals independently. If the tools reach a conclusion, the generated proof certificates can be automatically and seamlessly integrated into the user's proof-script. 
 
-We argue that we have done one better. It was almost trivial to turn our algorithm into something of a ``collaborative'' architecture. We are focusing on forward-chaining and declarative proof, and as we remarked, the way a user builds a declarative proof by growing a proof context is similar to how a forward-chaining algorithm cumulatively grows its own set of data. Since these processes are so similar, why not splice the two? The user still manually crafts a search through the proof space, but they now have access to data from a forward-chaining algorithm. At the same time, the forward-chaining algorithm works independently, but can freely incorporate the user's intermediate hypotheses as they appear in the proof context, using them for its own derivations. The two systems, the automation and the human user, can thus be seen as collaborating, sharing data as they both strive towards the goal. 
+We argue that we have done one better. It was almost trivial to turn our algorithm into something of a ``collaborative'' architecture. We are focusing on forward-chaining and declarative proof, and as we remarked, the way a user builds a declarative proof by growing a proof context is similar to how a forward-chaining algorithm cumulatively grows its own set of data. Since these processes are so similar, why not splice the two? The user still manually crafts a search through the proof space, but they now have access to data from a forward-chaining algorithm. At the same time, the forward-chaining algorithm works independently, but can freely incorporate the user's intermediate hypotheses as they appear in the proof context, using them for its own derivations. The two systems, the automation and the human user, can thus be seen as collaborating, sharing data as they both strive towards the goal. We describe the implementation in~\S\ref{sec:Concurrency}.
 
-The basic idea is very simple: we spawn a thread that is initialised with an empty generation of data. New generations are produced cumulatively through forward-chaining. At the same time, the thread monitors the proof context, so that each time the user adds a hypothesis by performing a declarative proof step, the hypothesis can be automatically inserted into the current generation and used for further chaining.
+%% The basic idea is very simple: we spawn a thread that is initialised with an empty generation of data. New generations are produced cumulatively through forward-chaining. At the same time, the thread monitors the proof context, so that each time the user adds a hypothesis by performing a declarative proof step, the hypothesis can be automatically inserted into the current generation and used for further chaining.
 
-We should be clear that much of the data in the generations will only be valid in the branch of the subproof that the user is currently working in. When they complete the subproof, they leave that branch, and assumptions of the subproof will no longer be in force. The data will then become unusable. We do not currently have a clear way to mitigate this issue, however, we \emph{do} have a way to systematically deal with case-splitting proofs which can be explored internally by the automated tool. See~\S\ref{sec:CaseAnalysis}.
-
-For the user's inspection, the thread echoes each generation of data concurrently to a separate terminal while they craft the verification. To enable the user to access the data, we introduce a variable $\code{the\_facts}$ which is updated so that when dereferenced in a verification, the current step will be justified using the latest data from forward-chaining.
+%% For the user's inspection, the thread echoes each generation of data concurrently to a separate terminal while they craft the verification. To enable the user to access the data, we introduce a variable $\code{the\_facts}$ which is updated so that when dereferenced in a verification, the current step will be justified using the latest data from forward-chaining.
 
 %When a fixpoint is detected, the user is notified, so that they can decide whether perhaps an assumption is missing, or whether a more sophisticated subproof is needed. In the meantime, the forward-chaining thread will sleep.
 
@@ -115,7 +113,7 @@ We would typically develop our geometric proofs on paper, figuring out how to di
 In this narrow domain, it was easy to imagine simple programs which could do the combinatorial search for us, and which could display a breadth of derivations in case we had missed shorter paths, or overlaps with later inferences. This, then, is not quite automated search, but more assisted search. We have chosen to give it the shorter title of \emph{discovery}, which stresses the point that we are usually interested in obtaining many derivations from the search process, including derivations we had not expected. It also stresses the point that we often did not run the searches with a concrete goal in mind. However, we should mention that our use of the word \emph{discovery} is to be contrasted with fully automated discovery systems which search for arbitrary interesting results and concepts without the need for assistance~(see the work of Colton et al.~\cite{ColtonInterestingness,MathematicalDiscovery}, McCasland and Bundy~\cite{Mathsaid}, Johansson et al~\cite{ConjectureSynthesis} and Montano-Rivas et al~\cite{SchemeBasedSynthesis,SchemeBasedConceptInvention}).
 
 \section{An Implementation in Combinators}\label{sec:DiscoveryAlgebra}
-The complexity of designing a forward-chaining algorithm tailored to our domain is the the fact that each generation of data is partitioned into five kinds. By partitioning in this way, we greatly reduce the number of combinations of data we need to try with each rule from \S\ref{list:Procedures}, but the use of these rules now becomes tricky plumbing connecting the data. The data-flow model implied by the rules is given in Figure~\ref{fig:DataFlow}.
+Our domain of incidence reasoning is naturally partitioned into data of five kinds. We aimed for an implementation which respected this partitioning, thereby greatly reducing the number of combinations of data we need to try with each rule from \S\ref{list:Procedures}. These rules become the plumbing connecting the data. The data-flow model implied is given in Figure~\ref{fig:DataFlow}.
 
 \begin{figure}
 \centering\includegraphics[scale=0.5]{automation/DataFlow}
@@ -123,12 +121,12 @@ The complexity of designing a forward-chaining algorithm tailored to our domain 
 \label{fig:DataFlow}
 \end{figure}
 
-Our aim in this section will be to show how a data-flow such as that of Figure~\ref{fig:DataFlow} can be expressed declaratively in a suitable combinator language. Combinator languagers are a staple of typed functional programming and LCF theorem provers, which already boast powerful combinators for conversions and tactics~\cite{Tactics}. By following such examples, we hope to contribute a library that has a potentially wider application than the peculiar incidence automation we need for our verifications. The incidence automation will be just one possible hand-crafted \emph{discoverer} written in this language, just as hand-crafted tactics are written in tactic languages.
+Our aim in this section will be to show how such data-flows can be expressed declaratively in a suitable combinator language. Combinator languages are a staple of typed functional programming and LCF theorem provers, which already boast powerful combinators for conversions and tactics~\cite{Tactics}. By following the example of such languages, we hope to contribute a library that has a potentially wider application than the peculiar incidence automation we need for our verifications. The incidence automation will be just one possible hand-crafted \emph{discoverer} written in this language, just as hand-crafted tactics are written in tactic languages.
 
 The advantage of choosing a combinator language, as opposed to some other kind of domain-specific language, is that it fully integrates with the host programming language, and is therefore easy to integrate with the tactic combinator language and the Mizar~Light combinator language. The user is also free to extend the language by defining derived combinators, and can easily inject their own computations into the language using lambda abstraction.
 
 \subsection{Related Work}
-The idea of an algebraic data-flow language was considered early on by Chen~\cite{ChenForwardChaining}, who gave a specification for a variety of primitives very similar to our own, though without an implementation. Since then, algebras for logic programming, handling unbounded and fair search have been developed~\cite{BacktrackingMonad,Omega}, but these lack strong guarantees on the order in which elements are found, and have unpredictable search orders.
+The idea of an algebraic data-flow language was considered early on by Chen~\cite{ChenForwardChaining}, who gave a specification for a variety of primitives very similar to our own, though without an implementation. Since then, algebras for logic programming, handling unbounded and fair search have been developed~\cite{BacktrackingMonad,Omega}, but these lack strong guarantees on the order in which elements are found, and can be unpredictable.
 
 An equivalent version of the algebra we shall consider here was originally conceived of by Spivey~\cite{SpiveyBreadthFirst}. It has been used recently by Katayama~\cite{ImprovementsMagickHaskeller} to perform exhaustive searches of functional programs, and its theoretical underpinnings have been rigorously developed~\cite{SearchAlgebras}. Unlike the other logic programming monads, it has much stronger constraints on the order in which values are searched for. 
 
@@ -141,7 +139,7 @@ For now, we leave unspecified what computations are used to generate the primiti
 
 One reason why streams and lazy lists are a good choice here is that they generalise \emph{the} ubiquitous data-structure of ML and its dialects, and have rich interfaces to manipulate them. A second reason why they are an obvious choice is that they have long been known to satisfy a simple set of algebraic identities and thus to constitute a monad~\cite{MonadWadler}. We can interpret this monad as decorating computations with non-deterministic choice and backtracking search.
 
-Monads themselves have become a popular and well-understood abstraction in functional programming. Formally, a monad is a type constructor $M$ together with three operations 
+Monads themselves have become a popular and well-understood abstraction in functional programming. Formally, a monad is a type constructor $M$ and three operations 
 \begin{align*}
 &\code{return} : \alpha \rightarrow M\;\alpha\\
 &\code{fmap} : (\alpha \rightarrow \beta) \rightarrow M\;\alpha \rightarrow M\;\beta\\
@@ -159,14 +157,14 @@ satisfying the algebraic laws given in Figure~\ref{fig:MonadLaws}.
 &(\code{join} \circ \code{fmap}\;\code{return})\;m = m\notag\\
 &\code{join} \circ \code{join} = \code{join} \circ \code{fmap}\;\code{join} \label{eq:JoinAssoc}
 \end{align}
-\label{fig:MonadLaws}
 \caption{The monad laws}
+\label{fig:MonadLaws}
 \end{figure}
 
-The monad that is typically defined on lists can be used for search, but it takes concatenation $\code{concat} : [[\alpha]] \rightarrow [\alpha]$ for its join operation. This makes it unsuitable for \emph{fair} and \emph{unbounded search} with infinite streams. If the stream $xs$ represents one unbounded search, then we have $xs + ys = xs$ for any $ys$, and thus, all items found by $ys$ are lost.\footnote{Here, $+$ is just list and stream append.} This is to be expected, since the definition of this standard monad corresponds to \emph{depth-first search}. 
+The monad that is typically defined on lists can be used for search, but it takes concatenation $\code{concat} : [[\alpha]] \rightarrow [\alpha]$ for its \code{join} operation. This makes it unsuitable for \emph{fair} and \emph{unbounded search} with infinite streams. If the stream $xs$ represents one unbounded search, then we have $xs + ys = xs$ for any $ys$, and thus, all items found by $ys$ are lost.\footnote{Here, $+$ is just list and stream append.} This is to be expected, since the definition of this standard monad corresponds to \emph{depth-first search}. 
 
 \subsection{A Monad for Breadth-First Search}\label{sec:StreamMonad}
-There is an alternative definition of the monad which is breadth-first and thus handles unbounded search. Here, the join function takes an infinite stream of infinite streams, and produces an exhaustive enumeration of all elements. We show how to achieve this in Figure~\ref{fig:ShiftGen} using a function $\code{shift}$, which moves each stream one to the ``right'' of its predecessor. We can then exhaustively enumerate every element, by enumerating each column, one-by-one, from left-to-right. 
+There is an alternative definition of the monad which is breadth-first and thus handles unbounded search. Here, the \code{join} function takes an infinite stream of infinite streams, and produces an exhaustive enumeration of all elements. We show how to achieve this in Figure~\ref{fig:ShiftGen} using a function $\code{shift}$, which moves each stream one to the ``right'' of its predecessor. We can then exhaustively enumerate every element, by enumerating each column, one-by-one, from left-to-right. 
 
 \begin{figure}
   \small
@@ -194,8 +192,8 @@ There is an alternative definition of the monad which is breadth-first and thus 
       &&&&&&&         &        & $\vdots$ &           &        &           
     \end{tabular}
   \end{tabular}
-  \label{fig:ShiftGen}
   \caption{Shifting}
+  \label{fig:ShiftGen}
 \end{figure}
 
 If we understand these streams as the outputs of a discoverer, then the outer stream can be understood as the output of a discoverer which \emph{discovers discoverers}. The join function can then be interpreted as \emph{forking} each discoverer at the point of its creation and combining the data into the output of a single discoverer. The highlighted column in Figure~\ref{fig:ShiftGen} is this combined result: a set of values generated simultaneously and thus having no specified order (this is required to satisfy Law~\ref{eq:JoinAssoc} in Figure~\ref{fig:MonadLaws}).
@@ -228,8 +226,8 @@ The transpose produces a stream of generations of generations (type $[G\;(G\;\al
                  \end{matrix}\right]\\
       \quad= &[D_{k,0}, D_{k,1}, D_{k,2}, \ldots]
   \end{align*}
-\label{fig:Transpose}
 \caption{\code{transpose} and \code{join}}
+\label{fig:Transpose}
 \end{figure}
 
 The type of streams now constitutes a monad (see Spivey~\cite{SearchAlgebras} for details). The fact that we have a monad affords us a tight integration with the host language in the following sense: we can lift arbitrary functions in the host language to functions on streams, and combine one stream $xs : [G\;\alpha]$ with another stream $xs' : \alpha \rightarrow [G\;\beta]$ which depends, via arbitrary computations, on each individual element of $xs$. 
@@ -336,14 +334,14 @@ xs \bind f &= \code{join}\;(\code{fmap}\;f\;xs) \\
 \code{filter}\;p\;xs &= xs \bind (\lambda x.\;\code{if } p\;x \code{ then } \code{return}\;x \code { else } 0).
 \end{align*}
 
-More challenging is a function to perform something akin to \emph{subsumption}. The idea here is that when a sequent is discovered which ``trivially'' entails a later sequent, the stronger sequent should take the place of the weaker. This is intended only to improve the performance of the system by discarding redundant search paths. 
+More challenging is a function to perform something akin to \emph{subsumption}. The idea here is that when a sequent is discovered which ``trivially'' entails a later sequent, the stronger sequent should take the place of the weaker. This is intended only to improve the performance of the system by discarding redundant search paths based on subsumed sequents. 
 
 We can generalise the idea to arbitrary data-types, and parameterise the filtering by any partial-ordering on the data, subject to suitable constraints. One intuitive constraint is that a stronger item of data should only replace a weaker item so long as we do not ``lose'' anything from later discovery. Formally, we require that any function $f$ used as the first argument to \code{fmap} is monotonic with respect to the partial-order. That is, if $x \leq y$ then $f(x) \leq f(y)$. 
 
 We then implement ``subsumption'' as the transformation \code{maxima}. This transforms a discoverer into one which does two things: firstly, it transforms every individual generation into one containing only maxima of the partial-order. Secondly, it discards data in generations that is strictly weaker than some item of data from an earlier generation. To handle case-splits, we assert that data higher up a case-splitting tree is always considered stronger than data below it (since it carries fewer case-splitting assumptions).
 
 \subsubsection{More Sophisticated Filtering}
-There are two pieces of missing optimisation. Suppose we have data $x$ and $y$ where $x \leq y$ and a stream $xs = \left[\{x\}, \{y\}\right].$ That is, $xs$ represents a discoverer which produces two generations of data. In the first generation is the single datum $x$ and in the second is the single datum $y$. Now suppose we have a monotonic function $f$ which happens to have the mappings
+There are two pieces of missing optimisation. Suppose we have data $x$ and $y$ where $x \leq y$ and a stream $xs = \left[\{x\}, \{y\}\right].$ That is, $xs$ represents a discoverer which produces two generations of data. In the first generation is the single datum $x$ and in the second is the single datum $y$. Now suppose we have a function $f$ which happens to have the mappings
 \begin{align*}
 x &\mapsto \left[\{\},\{\},\{\},\{\},\{x'\}\right]\\
 y &\mapsto \left[\{y'\}\right].
@@ -368,7 +366,7 @@ A second piece of potentially desirable functionality is a form of \emph{memoisa
 
 This additional functionality has not yet been implemented, and to get it to work, we might have to significantly modify the underlying data-structures for our streams. We leave such possibilities to future work.
 
-\subsection{Accumulating}
+\subsection{Accumulating}\label{sec:Accumulating}
 We supply an accumulation function which is similar to the usual \code{fold} function on lists and streams. This threads a two-argument function through the data in a stream, starting with a base-value, and folding each generation down to a single intermediate datum. Thus, we have:
 \begin{align*}
 \code{accum}\;(+)\;0\;[\{1,2\}, \{3,4\}, \{5\}, \{6,7,8\}] 
@@ -376,7 +374,7 @@ We supply an accumulation function which is similar to the usual \code{fold} fun
 &= [\{3\}, \{10\}, \{15\}, \{36\}].
 \end{align*}
 
-One useful case of this allows us to gather up all data discovered so far in a single collection. If the collection is finite lists, we just use $\code{accum}\;(\lambda xs\;\lambda x.\;x :: xs)\;[\,]$.
+One useful case of this allows us to gather up all data discovered so far in a single collection. If the collection is finite lists, we just use $\code{accum}\;(\lambda xs.\;\lambda x.\;x :: xs)\;[\,]$.
 
 % \subsection{Normalisation}
 % For efficiency, it will be useful to normalise with respect to any discovered equalities and simple rewrite rules. 
@@ -457,12 +455,16 @@ Finally, we have introduced a theorem-tactic \code{discover\_tac} with type
 \end{multline*}
 As with $\code{obviously}$ and $\code{clearly}$, we take a transformation of discoverers. Then when we apply $\code{discover\_tac}\ f\ tac$,  all goal hypotheses are fed to $f$. The resulting discovered sequents are then supplied to the function $tac$ (often just $\code{MESON}$).
 
-\subsection{Concurrency}
-In \S\ref{sec:NaiveConcurrency}, we gave a rough description of how to exploit concurrency with forward-chaining. Things are particularly easy in our implementation in lazy lists. Theorems can be output to the terminal one-by-one by iterating over these lists with an ordinary print function.
+\subsection{Concurrency}\label{sec:Concurrency}
+In \S\ref{sec:NaiveConcurrency}, we hinted at the possibility of making our algorithm concurrent and collaborative. The implementation is straightforward with streams. Theorems can be output to the terminal one-by-one simply by iterating over the streams with an ordinary print function.
 
-To monitor the proof context, we use a simple new primitive discoverer $\code{monitor}$. As we stated in our introduction in \S\ref{sec:Streams}, primitive discoverers can generate their outputs in whatever manner they want. Our $\code{monitor}$ just regularly examines the proof context and outputs its hypotheses. We ensure that only unique hypotheses are ever generated by using the function $\code{maxima}$.
+So that discoverers can incorporate the user's manual proof efforts, they need a way to inspect the proof context. We use a simple new primitive discoverer $\code{monitor}$ to allow this. As we stated in our introduction in \S\ref{sec:Streams}, primitive discoverers can generate their outputs in whatever manner they want. Our $\code{monitor}$ just regularly examines the proof context and outputs its hypotheses. We ensure that only unique hypotheses are ever generated by using the function $\code{maxima}$.
+
+Using the \code{accum} function as described in~\S\ref{sec:Accumulating}, we can gather up all theorems found so far across all of a discoverer's generations, continually storing the cumulative generation in a reference cell \code{the\_facts} which can be deferenced in the interactive proof. In this way, the user can make use of the results of concurrent discoverers as they come in.
 
 To complete the architecture, we provide signalling commands that can tell a discovery thread to pause, thereby freeing up CPU resources, to resume from a pause, or to change to an alternative theorem discoverer, so that the thread does not have to be killed.
+
+We should admit to a limitation her. Much of the data in generations will only be valid in the branch of the case-split or subproof that the user is currently working in. When they complete the branch or subproof, some of their assumptions will no longer be in force. The data generated from those assumptions will then become unusable. We do not currently have a clear way to mitigate this issue.
 
 % \begin{figure}
 % {\scriptsize\input{incidence}}
@@ -475,7 +477,7 @@ While writing a proof, we would normally start our incidence discoverer concurre
 
 A nice feature of monads in functional programming is that, when defined in the form of a \emph{transformer}, the extra book-keeping can be added in a clean and modular way. In this case, we create a generic \emph{writer transformer}.
 
-\emph{Writer} is a monad with extra functions for \emph{writing} values from any monoid in a computation, and for running computations to retrieve the final written values. It provides a modular way to introduce things such as \emph{logging} into computations. So if we have a computation which writes the value \code{"Hello"} and returns the value 1, and another computation which writes the value \code{" world!"} and returns the value 2, then when we lift addition over the two computations, we have a computation which returns the value 3 and writes \code{"Hello world!"}. The monoid here is strings with the append operation.
+\emph{Writer} is a monad with extra functions for \emph{writing} values from any monoid during a computation, and for running computations to retrieve the final written values. It provides a modular way to introduce things such as \emph{logging} into computations. So if we have a computation which writes the value \code{"Hello"} and returns the value 1, and another computation which writes the value \code{" world!"} and returns the value 2, then when we lift addition over the two computations, we have a computation which returns the value 3 and writes \code{"Hello world!"}. The monoid here is strings with the append operation.
 
 Writer can be defined as a transformer which, when applied, is made to write values inside any other monad. We made our writer work on a monoid of hypothesis sets with the union operation. These sets contain the dependent hypotheses from the proof context for every discovered sequent, and they automatically accumulate as discoverers are combined. We do not need to write any special logic for this. All the details are handled generically by the writer transformer.
 

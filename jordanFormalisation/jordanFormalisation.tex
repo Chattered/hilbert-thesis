@@ -48,7 +48,7 @@ One thing which is clear to us is that Hilbert's notation is doing the heavy lif
 Had Hilbert given a proof of the polygonal Jordan Curve Theorem, he would have probably used his notation to do more heavy lifting, as Veblen did in his own proof. Veblen's argument ends up running over symbols and numerical subscripts in a way which seems to take us out of the world of synthetic geometry, and back into the sort of computational metatheory we saw in \ref{eq:six} from Chapter~\ref{chapter:LinearOrder}.
 \begin{quotation}
   By the case $n=3$, $q$ meets the boundary of the triangle $P_1P_2P_3$ in at least one point other than $O$. If this point is on the broken line $P_1P_2P_3$ the lemma is verified. If not, $q$ has at least one point on $P_1P_3$, and at least one of the segments $Q_1'Q_2'$, $Q_2'Q_3'$ has no point or end-point on $P_1P_3$. Let this segment be one segment of a broken line $Q_kQ_{k+1}\cdots Q_{j-1}Q_j$ of segments of $q$ not meeting $P_1P_3$ but such that $Q_{k-1}Q_k$ and $Q_jQ_{j+1}$ do each have a point or endpoint in common with $P_1P_3$ ($1 \leq k < j \leq m$; if $k = 1$, $Q_{k-1} = Q_m$; if $j = m$, $Q_{j+1} = Q_1$). If $O_j$ is the point common to $P_1P_3$ and $Q_jQ_{j+1}$ or $Q_{j+1}$, and $O_k$ is the point common to $P_1P_3$ and $Q_{k-1}Q_k$ or $Q_{k-1}$, the broken line $O_kQ_kQ_{k+1}\cdots Q_{j-1}Q_jO_j$, has a point inside and also a point outside the triangle $P_1P_2P_3$ and cuts the broken line $P_1P_2P_3$ only once.
-\flushright{\cite{Veblenphd} (page 365)}
+\flushright{Veblen~\cite{Veblenphd} (page~365)}
 \end{quotation}
 Looking at Veblen's proof attempt, one might expect the argument to be dominated by computations and lemmas about point sequences, and not by synthetic constructions of diagrams, but this is not entirely the case. Our verification shows that there are a \emph{lot} of useful lemmas very similar to those we saw in Chapter~\ref{chapter:Group2Eval}, whose synthetic proofs obtain and then reason about properties of diagrams.
 
@@ -189,12 +189,12 @@ Obviously, we will need the three theorems \emph{somewhere} in our later verific
 \subsection{Polygons}\label{sec:polygonFormalisation}
 Hilbert continues his definitions as follows:
 \begin{quote}
-``If the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ all lie in a plane and the point $A$ coincides with the point $L$ then the polygonal path is called a \emph{polygon} and is denoted as the polygon $ABCD\ldots K$. The segments $AB$, $BC$, $CD$, \ldots, $KA$ are also called the \emph{sides of the polygon}. The points $A$, $B$, $C$, $D$, $\ldots$, $K$ are called the \emph{vertices of the polygon.} Polygons of $3$, $4$, $\ldots$, $n$ \emph{vertices} are called \emph{triangles}, \emph{quadrilaterals}, $\ldots$, \emph{n-gons}.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, pages 8-9.)  
+``If the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ all lie in a plane and the point $A$ coincides with the point $L$ then the polygonal path is called a \emph{polygon} and is denoted as the polygon $ABCD\ldots K$. The segments $AB$, $BC$, $CD$, \ldots, $KA$ are also called the \emph{sides of the polygon}. The points $A$, $B$, $C$, $D$, $\ldots$, $K$ are called the \emph{vertices of the polygon.} Polygons of $3$, $4$, $\ldots$, $n$ \emph{vertices} are called \emph{triangles}, \emph{quadrilaterals}, $\ldots$, \emph{n-gons}.'' \emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (pages~8--9)
 \end{quote}
 
 The term ``side'' is ambiguous between the segments of a polygon and the half-planes of a given line. As such, we shall refer to the segments defining both a polygonal path and a polygon as \emph{edges}, and reserve \emph{side} for half-planes. These definitions will help us orientate ourselves within the familiar world of geometry, but we do not believe they correspond to any useful abstractions for verification. As such, we shall only use them informally to explain parts of the verification. The important definition for the verification is the one for \emph{simple polygons}:
 \begin{quote}
-  ``DEFINITION. If the vertices of a polygon are all distinct, none of them falls on [an edge] and no two of its nonadjacent [edges] have a point in common, the polygon is called \emph{simple}.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 9.) 
+  ``DEFINITION. If the vertices of a polygon are all distinct, none of them falls on [an edge] and no two of its nonadjacent [edges] have a point in common, the polygon is called \emph{simple}.'' \emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, (page~9)
 \end{quote}
 
 Combining this with the definition of polygon gives us the following formalisation:
@@ -285,7 +285,7 @@ With the breakdown considered, we turn to the formalisation of all four clauses.
 
 \begin{equation}\label{eq:jordanFormal4}
   \begin{split}
-    &(\forall P.\;\code{on\_line}\ P\ a \vee \code{on\_line}\ P\ b\implies \neg\code{on\_polypath}\ Ps\ P)\\
+    &(\forall P.\;\code{on\_line}\ P\ a \vee \code{on\_line}\ P\ b\implies \neg\code{on\_polypath}\ Ps\ P \wedge \code{on\_plane}\ P\ \alpha)\\
     &\qquad\wedge\code{on\_plane}\ A\ \alpha \wedge\code{on\_plane}\ B\ \alpha\\
     &\qquad\wedge\code{on\_line}\ A\ a \wedge\code{on\_line}\ B\ b\\
     &\qquad\implies \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ A\ B.

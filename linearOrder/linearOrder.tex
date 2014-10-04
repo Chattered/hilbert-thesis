@@ -77,7 +77,7 @@ We can then represent total orders as conjunctions ordering adjacent points. So,
 \wedge\between{A}{E}{F}\wedge\between{A}{F}{G}\wedge\between{A}{G}{H}.
 \end{multline}
 
-We want to retrieve all other betweenness relations implied by this sequent quickly. Before we describe how we do this, we will separate THEOREM~5, whose verification we considered in the last chapter, into two separate theorems. The first theorem \eqref{eq:five2a} will ``move the origin'' from $A$ to $B$ in our representation. From the second theorem \eqref{eq:five2b}, with the $\code{between}$ relation taken as a binary relation whose first argument is the origin parameter, we get transitivity.
+We want to retrieve all other betweenness relations implied by this sequent quickly. Before we describe how we do this, we will separate THEOREM~5, whose verification we considered in the last chapter, into two separate theorems. The first theorem \eqref{eq:five2a} will ``move the origin'' from $A$ to $B$ in our representation. The second theorem \eqref{eq:five2b}, once we understand the $\code{between}$ relation as a binary relation whose first argument is the origin parameter, gives us transitivity.
 \begin{gather}
 \label{eq:five2a}\vdash \between{A}{B}{C} \wedge \between{A}{C}{D} \implies \between{B}{C}{D}.\\
 \label{eq:five2b}\vdash \between{A}{B}{C} \wedge \between{A}{C}{D} \implies \between{A}{B}{D}.
@@ -108,10 +108,10 @@ and
 &\longrightarrow \between{A}{F}{H}.
 \end{align*}
 
-The example here generalises and we have implemented it as a completely deterministic tactic, taking a sequent such as \eqref{theorem:OrderRepExample} and a formula such as $\between{C}{F}{H}$, and then verifying the formula from the order in one pass of the order conjunction.
+The example here generalises and we have implemented it as a completely deterministic tactic, taking a sequent such as \eqref{theorem:OrderRepExample} and a formula such as $\between{C}{F}{H}$, and then verifying the formula in one pass of the order conjunction.
 
 \subsection{Enumerating Possible Orderings}
-Even with the more concise representation, there are $\frac{1}{2}n!$ possible orderings to consider for $n$ points, though in practice, there are constraints on the ordering that allow us to eliminate many of the cases by appealing to Axiom~\ref{eq:g23}. For instance, if we know that $\between{B}{A}{C}$ and $\between{B}{D}{C}$, then there are only two ways to order $A$, $B$, $C$ and $D$:
+Even with the more concise representation, there are $\frac{1}{2}n!$ possible orderings to consider for $n$ points, though in practice, there are constraints on the ordering that allow us to eliminate many of the cases by appealing to Axiom~\ref{eq:g23}. For instance, if we know that $\between{B}{A}{C}$ and $\between{B}{D}{C}$, then there are only two ways to order $A$, $B$, $C$ and~$D$:
 \begin{align*}
 &\fourbet{B}{A}{D}{C}\\
 &\vee\fourbet{B}{D}{A}{C}.
@@ -147,7 +147,7 @@ Our definition assumes the existence of natural numbers, but Hilbert was not cle
 
 Euclid does much the same when he expresses the same property using the word ``multiplied'' (though Euclid mistakes this property for a \emph{definition}):
 \begin{quote}
-  ``Magnitudes are said to have a ratio to one another which can, when multiplied, exceed one another.'' Quoted in Heath~\cite{HeathElements}
+  ``Magnitudes are said to have a ratio to one another which can, when multiplied, exceed one another.'' (quoted in Heath~\cite{HeathElements})
 \end{quote}
 
 Yet elsewhere, Euclid will discuss natural numbers in geometrical terms: his books on number theory literally identify numbers with line segments. Hilbert is faithful to this idea. He shows how to recover arithmetic operations from geometrical figures by exploiting Pascal's and Desargues' Theorems. So why would either want to assume the existence of natural numbers?

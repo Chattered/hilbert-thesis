@@ -144,7 +144,7 @@ Next, we have Axiom~\ref{eq:g13b}. This is a \emph{dimension} axiom, requiring t
 
 Finally, we have the Axioms~\ref{eq:g16} and~\ref{eq:g17}. Together, these require that intersecting planes meet in a line, and thus, they restrict the dimension of the geometry to~3.
 
-It is important to note that Hilbert adopts the uncommon convention that when he writes expressions such as ``two points'', ``three points'', or ``two lines'', ``three lines'', he is assuming that the points in question are distinct\label{sec:DistinctVars}. For this reason, a number of explicit distinctness assumptions appear in our formalisation which are only implicit in the prose. Some of these distinctness assumptions can actually be dropped, such as in Axiom~I; there is a line through the points $A$ and $B$ whether or not $A$ and $B$ are distinct. We keep the weaker form as the axiom, and verify the stronger version.
+It is important to note that Hilbert adopts the uncommon convention that when he writes expressions such as ``two points'', ``three points'', or ``two lines'', ``three lines'', he is assuming that the points and lines in question are distinct\label{sec:DistinctVars}. For this reason, a number of explicit distinctness assumptions appear in our formalisation which are only implicit in the prose. Some of these distinctness assumptions can actually be dropped, such as in Axiom~I; there is a line through the points $A$ and $B$ whether or not $A$ and $B$ are distinct. We keep the weaker form as the axiom, and verify the stronger version.
 \begin{displaymath}
   \vdash \exists a.\; \code{on\_line}\ A\ a \wedge \code{on\_line}\ B\ a.
 \end{displaymath}
@@ -342,9 +342,13 @@ Like the first group, Hilbert's second group of axioms went through substantial 
 
 \subsection{Axioms and Primitive Notions}
 Hilbert's second group supplies a single new primitive, namely \emph{betweenness}, with which one can form expressions such as ``the point $B$ lies \emph{between} $A$ and $C$''. We are supposed to interpret these expressions strictly, as required by Hilbert's first axiom in the group
+\begin{quotation}
+\mbox{}\vspace{-\baselineskip}
 \begin{enumerate}
 \item[II, 1] \emph{If a point $B$ lies between a point $A$ and a point $C$ then the points $A$, $B$, $C$ are three distinct points of a line, and $B$ then also lies between $C$ and $A$.}
 \end{enumerate}
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 5)}
+\end{quotation}
 The fact that Hilbert needs to axiomatically assert the irrelevance of the order of $A$ and $C$ tells us that we are formally working with a three place relation:
 \begin{displaymath}
 \code{between}\;:\;\code{point}\rightarrow\code{point}\rightarrow\code{point}\rightarrow\code{bool}.
@@ -362,11 +366,15 @@ We have formalised a weaker version of this axiom than the one given by Hilbert.
 \end{equation}
 
 We now give the remaining axioms.
+\begin{quotation}
+\mbox{}\vspace{-\baselineskip}
 \begin{enumerate}
-  \item[II, 2] \emph{For two points $A$ and $C$, there always exists at least one point $B$ on the line $AC$ such that $C$ lies between $A$ and $B$.}
+\item[II, 2] \emph{For two points $A$ and $C$, there always exists at least one point $B$ on the line $AC$ such that $C$ lies between $A$ and $B$.}
   \item[II, 3] \emph{Of any three points on a line there exists no more than one that lies between the other two.}
   \item[II, 4] \emph{Let $A$, $B$, $C$ be three points that do not lie on a line and let $a$ be a line in the plane $ABC$ which does not meet any of the points $A$, $B$, $C$. If the line $a$ passes through a point of the segment $AB$, it also passes through a point of the segment $AC$, or through a point of the segment $BC$.}
 \end{enumerate}
+\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 5)}
+\end{quotation}
 
 Axiom~II, 2 can be compared to Euclid's second postulate: ``To produce a finite straight line continuously in a straight line.'' Here, Hilbert is telling us that we can extend the segment $AC$ to a point $B$ in the direction $\overrightarrow{AC}$. This axiom is absolutely key in building up geometrical figures.
 

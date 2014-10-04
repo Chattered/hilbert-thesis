@@ -1,7 +1,9 @@
 \chapter{Elementary Consequences in Group~II}\label{chapter:Group2Eval}
 We now come to verify some theorems of Group~II, the only theorems in the first two groups which have prose proofs. Each proof uses Axiom~\ref{eq:g24}, which, as we explained in Chapter~\ref{chapter:Axiomatics}, carries several incidence preconditions. Establishing these preconditions made up the bulk of the effort in our manual verifications~\cite{ScottMScThesis} and in the verifications of Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}.
 
-In the last chapter, we described how to implement tailored automation to handle incidence reasoning. An aim of the present chapter is to see how much this automation improves over the stock automation used in our manual verifications, in terms of writing shorter verifications which are easier to read and to develop. We will also consider to what extent the focus on automated \emph{discovery} enables us to find alternative proofs. Our ideal for the final verifications is that their steps should match those of an ideal prose proof, here modelled by Hilbert's own arguments. These steps are just those used to define and exhibit the diagram needed to establish Hilbert's result, and are rarely used for discharging tedious incidence preconditions.
+In the last chapter, we described some automation to handle the incidence reasoning.
+An aim of the present chapter is to see how much this automation can help us shorten
+our verifications, make them easier to develop and find alternative proofs. Our ideal is for the verification steps to match the steps of an ideal prose proof, here modelled by Hilbert’s own arguments, which focus on defining and exhibiting the diagram needed to establish a result, rather than discharging tedious incidence preconditions.
 
 When writing our verifications, we tried our best to follow the specific steps in Hilbert's prose, and in this chapter, we shall directly compare our verifications with the originals. As we shall see, this allows us to comment on the prose in great detail.
 
@@ -85,7 +87,7 @@ It can now be seen that the diagram obtained in Hilbert's proof of THEOREM~3 is 
 
 \begin{figure}
 \centering\includegraphics[scale=0.7]{group2eval/OuterPasch}
-\caption{Veblen versus Hilbert's Proof}
+\caption{Veblen's versus Hilbert's Proof}
 \label{fig:VeblenHilbert}
 \end{figure}
 
@@ -95,7 +97,7 @@ Veblen's diagram replaces the Inner Pasch Axiom with the Outer Pasch Axiom, but 
 [...]. Between every two distinct points there is a third point.
 
 Proof. Let $A$ and $B$ be the given points [figure]. [...] there is a point $E$ not lying on the line $AB$. By [the line extension axiom] points $C$ and $D$ exist, satisfying the order-relations $AEC$ and $BCD$. Hence, by [the Outer Pasch Axiom], $F$ exists in the order $AFB$.
-\flushright{Veblen~\cite{Veblenphd}, (page 355)}
+\flushright{Veblen~\cite{Veblenphd} (page 355)}
 \vspace{0.5cm}
 \end{quotation}
 
@@ -170,6 +172,18 @@ When we verified THEOREM~4 manually, it ran to sixty-nine steps. In this compara
 
 But with our incidence automation, we have a verification in just thirteen lines, each readily understandable, and matching the prose very closely. The verification is shown in Figure~\ref{fig:FourVerification}, and we are again reasonably close to Hilbert's prose. The only warts are due to the \code{by\_pasch} discoverer not handling the case-split in the conclusion of Axiom~\ref{eq:g24}. This requires the elimination of a disjunct and the identification of the obtained point with an existing point. Both tasks are now handled in a subproof using a second discoverer, \code{by\_eqs}. 
 
+We now review the verification. At the very start, we set our goal formula to be
+\begin{multline*}
+(\exists a.\; \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a) \\\implies\between{A}{B}{C}\vee\between{B}{A}{C}\vee\between{A}{C}{B}.
+\end{multline*}
+
+We then get to \code{assume}, just as Hilbert does, that $C$ is neither between $A$ or $B$ nor $A$ between $B$ or $C$. This is a very natural way to express one's assumptions mathematically. It goes through because of the way Mizar~Light implements the \code{assume} primitive: it first tries to prove the goal under the negation of our assumption. If this is successful, the assumption is used to rewrite the goal before being placed into the goal hypotheses. The upshot is that our goal formula gets rewritten to
+\begin{displaymath}
+(\exists a.\; \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a) \implies\between{A}{B}{C}.
+\end{displaymath}
+
+Next, we look at the first two applications of Axiom~II,~4. In our verification, we have not been able to apply this axiom in either the inner or outer forms, since we have only one order hypothesis. This means we are faced with having to eliminate a disjunct in the conclusion of Axiom~\ref{eq:g24}. To do this, we find point equalities via the composed discoverer $\code{by\_eqs}\circ\code{split}$, which tells us that, in the offending cases, the point $A$ lies between $B$ and $C$ or $C$ lies between $A$ and $B$. We have explicitly hypothesised against these two possibilities, and thus, the disjuncts can be eliminated.
+
 \begin{boxedfigure}
 \begin{align*}
 & \code{assume}\ \exists a.\; \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a & 0\\
@@ -200,18 +214,6 @@ But with our incidence automation, we have a verification in just thirteen lines
 \caption{Verification of THEOREM~4}
 \label{fig:FourVerification}
 \end{boxedfigure}
-
-We now review the verification. At the very start, we set our goal formula to be
-\begin{multline*}
-(\exists a.\; \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a) \\\implies\between{A}{B}{C}\vee\between{B}{A}{C}\vee\between{A}{C}{B}.
-\end{multline*}
-
-We then get to \code{assume}, just as Hilbert does, that $C$ is neither between $A$ or $B$ nor $A$ between $B$ or $C$. This is a very natural way to express one's assumptions mathematically. It goes through because of the way Mizar~Light implements the \code{assume} primitive: it first tries to prove the goal under the negation of our assumption. If this is successful, the assumption is used to rewrite the goal before being placed into the goal hypotheses. The upshot is that our goal formula gets rewritten to
-\begin{displaymath}
-(\exists a.\; \code{on\_line}\ A\ a\wedge\code{on\_line}\ B\ a\wedge\code{on\_line}\ C\ a) \implies\between{A}{B}{C}.
-\end{displaymath}
-
-Next, we look at the first two applications of Axiom~II,~4. In our verification, we have not been able to apply this axiom in either the inner or outer forms, since we have only one order hypothesis. This means we are faced with having to eliminate a disjunct in the conclusion of Axiom~\ref{eq:g24}. To do this, we find point equalities via the composed discoverer $\code{by\_eqs}\circ\code{split}$, which tells us that, in the offending cases, the point $A$ lies between $B$ and $C$ or $C$ lies between $A$ and $B$. We have explicitly hypothesised against these two possibilities, and thus, the disjuncts can be eliminated.
 
 In these two applications of Axiom~\ref{eq:g24}, we have used our \code{clearly} keyword to ask the \code{by\_pasch} discoverer to search for a specific conclusion of the axiom. Exploiting our discoverer in this way makes things more robust than using \code{MATCH\_MP\_TAC} as we did in \S\ref{sec:Theorem3}. With matching, we have to be careful that all the variables in the axiom line up with our desired conclusion. But when we use the discoverer, we know that its outputs are always lexicographically normalised, so there is only one conclusion we could possibly be after.
 
@@ -299,11 +301,6 @@ We can say something stronger in the conclusion here. We know that $D$, $E$ and 
   \end{split}
 \end{equation}
 
-\subsubsection{Verification}
-With these theorems now derived and with some of our automation, we obtain the verification in Figure~\ref{fig:FiveVerification1}, which is very close to the prose. We have two steps which Hilbert does not make explicit. Firstly, we note that $A\neq D$, a fact which follows from our assumptions and Axiom~II, 3, and without which we would not be able to show the existence of $\triangle ADG$ for our final application of Pasch's axiom.
-
-The other extra step is somewhat of an irritation. Instead of applying Pasch's axiom to conclude that $C$ is between $A$ and $D$, we must instead obtain a new point $C'$ and then use incidence reasoning via \code{by\_eqs} to identify it with $C$. 
-
 \begin{boxedfigure}
 \small
   \begin{align*}
@@ -326,11 +323,16 @@ The other extra step is somewhat of an irritation. Instead of applying Pasch's a
   \label{fig:FiveVerification1}
 \end{boxedfigure}
 
+\subsubsection{Verification}
+With these theorems now derived and with some of our automation, we obtain the verification in Figure~\ref{fig:FiveVerification1}, which is very close to the prose. We have two steps which Hilbert does not make explicit. Firstly, we note that $A\neq D$, a fact which follows from our assumptions and Axiom~II, 3, and without which we would not be able to show the existence of $\triangle ADG$ for our final application of Pasch's axiom.
+
+The other extra step is somewhat of an irritation. Instead of applying Pasch's axiom to conclude that $C$ is between $A$ and $D$, we must instead obtain a new point $C'$ and then use incidence reasoning via \code{by\_eqs} to identify it with $C$. 
+
 \subsubsection{Comparison with the Prose}
 The strengthened versions of the Pasch axioms mean we can be more efficient than Hilbert, who uses an unspecified number of applications of Axiom~II,~4.
 
 \begin{quote}
-``By repeated applications of Axioms II, 3 and II,~4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment $GD$ at a point $H$.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page 7.)
+``By repeated applications of Axioms II, 3 and II,~4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment $GD$ at a point $H$.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page~7.)
 \end{quote}
 
 We can say exactly how many applications are needed here. In one of our verifications of THEOREM~5, which avoids the Inner and Outer Pasch axioms and so follows Hilbert most closely, we apply Axiom~II,~4 via the \code{by\_pasch} discoverer. By doing so, we see there are exactly three applications implied by Hilbert's prose (we elide the subproofs used to reject offending disjuncts).
@@ -365,7 +367,7 @@ Finally, we mention Hilbert's final step ``one shows analogously that $B$ also l
 \end{multline*}\end{minipage}}\linebreak
 
 \subsection{Discovery at work}\label{sec:DiscoveryAtWork}
-In this subsection, we give an idea of how our discoverers interact with HOL~Light by showing the sequents generated concurrently as we interactively develop a declarative verification of THEOREM~5. We consider two discoverers, \code{by\_incidence}, which generates the five kinds of basic incidence sequents described in the last chapter, and \code{by\_pasch}, which finds potential applications of Pasch's axiom. The \code{by\_pasch} discoverer feeds off the generations produced by \code{by\_incidence}, so that their work is not duplicated. But there is no \emph{feedback}. That is, \code{by\_incidence} does not continue searching based on the results of \code{by\_pasch}. Instead, we, the user, shall take responsibility for when Pasch's axiom is applied. It is a point introduction axiom explicit in the prose that we want to keep it explicit in the verification.
+In this subsection, we give an idea of how our discoverers interact with HOL~Light by showing the sequents generated concurrently as we interactively develop a declarative verification of THEOREM~5. We consider two discoverers, \code{by\_incidence}, which generates the five kinds of basic incidence sequents described in the last chapter, and \code{by\_pasch}, which finds potential applications of Pasch's axiom. The \code{by\_pasch} discoverer feeds off the generations produced by \code{by\_incidence}, so that their work is not duplicated. But there is no \emph{feedback}. That is, \code{by\_incidence} does not continue searching based on the results of \code{by\_pasch}. Instead, we, the user, shall take responsibility for when Pasch's axiom is applied. It is a point introduction axiom explicit in the prose that we want to keep explicit in the verification.
 
 The discovery begins once we have stated the theorem's assumptions and obtained our first non-collinear point.
 
@@ -381,6 +383,23 @@ The discovery begins once we have stated the theorem's assumptions and obtained 
 Concurrently, sequents are pulled from the discoverer \code{by\_incidence}, which lazily forces values according to our data-flow diagram from Figure~\ref{fig:DataFlow}. This ultimately involves pulling hypothesis sequents from the discoverer \code{monitor}, whose job it is to inspect the proof context constructed from the steps of the declarative proof, as it is written, and add any new hypotheses which appear there. Here, we have three hypotheses, which are picked up and fed through our incidence discoverers to produce the seven generations of incidence sequents shown in Figure~\ref{fig:FirstGenerations}. If the stream is forced beyond this, only empty generations appear, indicating that no more inference is possible.
 
 The seven generations of sequents are delivered within 0.31 seconds.\footnote{We have tested this on an Intel Core 2 with a 2.53GHz clock speed.}. We write the dependent hypotheses in parentheses, and omit the turnstile $(\vdash)$ and sequent context. Note that sequents can be repeated if they can be derived in more than one way. When we are not tracking dependent hypotheses, such repetitions are automatically filtered out.
+
+As we can see, two of the seven generations are empty. This happens because of filtering: some of the inferences we use turn out to generate sequents which have already appeared, and duplicates are always removed from the discoverer. This filtering sometimes leaves generations completely empty. 
+
+Besides the selection of triangles here, we have a sequent which says that all points in our figure lie in the same plane. We can see how this sequent has grown over the generations, with larger and larger planar sets found, via rule~$\code{planeplane}$ from \S\ref{list:Procedures}. 
+
+To follow Hilbert's proof at this stage, all we need to know is that $C\neq E$, a fact which is delivered in the fourth generation. We are told that its derivation depends on hypothesis $0$, namely $\between{A}{B}{C}$, and hypothesis $2$, which is 
+\begin{displaymath}
+\Triangle{a}{A}{B}{C}.
+\end{displaymath}
+Since this was the \emph{last} hypothesis to enter the proof context, we can add it as justification to the declarative proof we are building by using the Mizar~Light keyword \code{so}. Again, appealing to the pertinent hypotheses gives the reader more information about the dependencies within the proof, and enables the discoverer to work more efficiently in replay, where it will use only those hypotheses that have been marked as justification.
+
+\fbox{\begin{minipage}{\boxwidth}\small\setlength\abovedisplayskip{-0.2cm}
+\begin{align*}
+\code{obviously by\_neqs so consider}\ F\ \code{such that}\ \between{C}{E}{F}\ \code{from}\ 0\ \code{by}\ \eqref{eq:g22} \quad 3
+\end{align*}
+\end{minipage}}
+\linebreak
 
 \begin{figure}[H]
 \doublebox{\begin{minipage}{\boxwidth}\footnotesize\setlength\abovedisplayskip{0cm}
@@ -418,23 +437,6 @@ The seven generations of sequents are delivered within 0.31 seconds.\footnote{We
 \caption{First Generations of Discovered Sequents}
 \label{fig:FirstGenerations}
 \end{figure}
-
-As we can see, two of the seven generations are empty. This happens because of filtering: some of the inferences we use turn out to generate sequents which have already appeared, and duplicates are always removed from the discoverer. This filtering sometimes leaves generations completely empty. 
-
-Besides the selection of triangles here, we have a sequent which says that all points in our figure lie in the same plane. We can see how this sequent has grown over the generations, with larger and larger planar sets found, via rule~$\code{planeplane}$ from \S\ref{list:Procedures}. 
-
-To follow Hilbert's proof at this stage, all we need to know is that $C\neq E$, a fact which is delivered in the fourth generation. We are told that its derivation depends on hypothesis $0$, namely $\between{A}{B}{C}$, and hypothesis $2$, which is 
-\begin{displaymath}
-\Triangle{a}{A}{B}{C}.
-\end{displaymath}
-Since this was the \emph{last} hypothesis to enter the proof context, we can add it as justification to the declarative proof we are building by using the Mizar~Light keyword \code{so}. Again, appealing to the pertinent hypotheses gives the reader more information about the dependencies within the proof, and enables the discoverer to work more efficiently in replay, where it will use only those hypotheses that have been marked as justification.
-
-\fbox{\begin{minipage}{\boxwidth}\small\setlength\abovedisplayskip{-0.2cm}
-\begin{align*}
-\code{obviously by\_neqs so consider}\ F\ \code{such that}\ \between{C}{E}{F}\ \code{from}\ 0\ \code{by}\ \eqref{eq:g22} \quad 3
-\end{align*}
-\end{minipage}}
-\linebreak
 
 With this declarative proof step, we add a new sequent into the proof-context, which is picked up by the \code{monitor} discoverer, to flow into the network of incidence discoverers, creating new generations of sequents. These generations are shown in Figure~\ref{fig:SecondGenerations} and are found within 1.21 seconds. Including the sequents found earlier, we have thirteen triangles identified in total, and so we are going to be interested in which applications of Axiom~\ref{eq:g24} are permissible. To find out, we look more specifically at the results of our \code{by\_pasch} discoverer. Its first eighteen generations are empty, meaning that it requires a search-depth of eighteen before all the required preconditions of Pasch have been found. We are then told that, in this early stage of the proof, there are already six possibilities to choose from. The full set is shown in Figure~\ref{fig:PaschGenerations} and is found within 2.82 seconds.
 
@@ -527,11 +529,7 @@ The last possibility corresponds to one of Hilbert's applications of Axiom~II,~4
 
 We now have a disjunction in our hypotheses. When we run the \code{by\_incidence} discoverer with the \code{split} function, it will convert this disjunction into a tree, which will combine as described in \S\ref{sec:Trees}. Our generations become proper trees, and the search space is automatically partitioned into three. 
 
-The first partition covers inferences which are made in the root node of our trees, where no particular disjunct is assumed. These generations are shown in Figure~\ref{fig:RootGenerations}. Here, the discoverer infers that the new point $G$ must, \emph{in any case}, be distinct from $A$, $C$, $D$ and $E$, and that all seven points must be planar. 
-
-We get more information in the next partition, which is the left-branch of the case-split, shown in Figure~\ref{fig:LeftGenerations}. When the trees are flattened, the sequents in this branch carry $\between{A}{G}{E}$ as a disjunctive hypothesis. For brevity, we omit sequents about the existence of planes.
-
-This is the consistent case. The triangles found here will be used as further justification for applications of Axiom~\ref{eq:g24}. The inconsistent case occurs in the remaining partition, carrying the disjunctive hypothesis $\between{C}{G}{E}$. See Figure~\ref{fig:RightGenerations}.
+The first partition covers inferences which are made in the root node of our trees, where no particular disjunct is assumed. These generations are shown in Figure~\ref{fig:RootGenerations}. Here, the discoverer infers that the new point $G$ must, \emph{in any case}, be distinct from $A$, $C$, $D$ and $E$, and that all seven points must be planar.
 
 \begin{figure}
 \doublebox{\begin{minipage}{\boxwidth}\footnotesize\setlength\abovedisplayskip{0cm}
@@ -596,6 +594,10 @@ This is the consistent case. The triangles found here will be used as further ju
 \caption{Generations found on the assumption $\between{A}{G}{E}$}
 \label{fig:LeftGenerations}
 \end{figure}
+
+We get more information in the next partition, which is the left-branch of the case-split, shown in Figure~\ref{fig:LeftGenerations}. When the trees are flattened, the sequents in this branch carry $\between{A}{G}{E}$ as a disjunctive hypothesis. For brevity, we omit sequents about the existence of planes.
+
+This is the consistent case. The triangles found here will be used as further justification for applications of Axiom~\ref{eq:g24}. The inconsistent case occurs in the remaining partition, carrying the disjunctive hypothesis $\between{C}{G}{E}$. See Figure~\ref{fig:RightGenerations}.
 
 \begin{figure}[h]
 \doublebox{\begin{minipage}{\boxwidth}\footnotesize\setlength\abovedisplayskip{0cm}

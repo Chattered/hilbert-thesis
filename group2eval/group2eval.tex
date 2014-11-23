@@ -1,5 +1,5 @@
 \chapter{Elementary Consequences in Group~II}\label{chapter:Group2Eval}
-We now come to verify some theorems of Group~II, the only theorems in the first two groups which have prose proofs. Each proof uses Axiom~\ref{eq:g24}, which, as we explained in Chapter~\ref{chapter:Axiomatics}, carries several incidence preconditions. Establishing these preconditions made up the bulk of the effort in our manual verifications~\cite{ScottMScThesis} and in the verifications of Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}.
+We now come to verify some theorems of Group~II, the only theorems in the first two groups which have prose proofs in the tenth edition of \emph{Foundations of Geometry}. Each proof uses Axiom~\ref{eq:g24}, which, as we explained in Chapter~\ref{chapter:Axiomatics}, carries several incidence preconditions. Establishing these preconditions made up the bulk of the effort in our manual verifications~\cite{ScottMScThesis} and in the verifications of Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}.
 
 In the last chapter, we described some automation to handle the incidence reasoning.
 An aim of the present chapter is to see how much this automation can help us shorten
@@ -55,10 +55,10 @@ Finally, we have used \code{MATCH\_MP\_TAC}\footnote{This standard HOL~Light fun
 \subsection{The Outer and Inner Pasch Axioms}
 THEOREM~3 was an axiom of the first edition of the \emph{Grundlagen der Geometrie}, and the full investigation of such redundant axioms can be credited to Veblen and his supervisor E.H. Moore, who investigated ordered geometry based on axioms very similar to Hilbert's. However, if we look at Veblen's system~\cite{Veblenphd}, we see he chose a different rendering of Pasch's Axiom.
 
-\begin{quotation}
+\begin{quote}
 ``AXIOM VIII \emph{(Triangle traversal axiom). If three distinct points $A$, $B$, $C$ do not lie on the same line, and $D$ and $E$ are two points in the order $BCD$ and $CEA$, then a point $F$ exists in the order $AFB$, and such that $D$, $E$, $F$ lie on the same line.}''
 \flushright{(page 355)}
-\end{quotation}
+\end{quote}
 
 This form of the axiom, known as the \emph{Outer Pasch Axiom}, is due to Peano. It is strong enough to replace Hilbert's own version, and has advantages in terms of incidence reasoning: it carries fewer incidence preconditions at the expense of one extra order condition, and the conclusion is not disjunctive, so we are saved the effort of eliminating an offending case.
 
@@ -105,10 +105,10 @@ In conclusion, for those of us who judge Hilbert's argument for THEOREM~3 to be 
 
 \section{THEOREM~4}
 In this section, we review how we used our discovery tool in an exploratory fashion, as we examine Hilbert's THEOREM~4. This result was another axiom in the first edition of the \emph{Grundlagen der Geometrie}, or more accurately, was incorporated into Axiom~\ref{eq:g23}:
-\begin{quotation}
+\begin{quote}
   ``II, 3. \emph{Of any three points situated on a straight line, there is always one and only one which lies between the other two.''}
 \flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 5)}
-\end{quotation}
+\end{quote}
 
 The ``only one'' part is all that is retained in the tenth edition. The existence part is given in a proof which Hilbert credits to Wald.
 \begin{quotation}

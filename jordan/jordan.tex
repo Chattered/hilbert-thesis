@@ -46,9 +46,9 @@ The full Jordan Curve theorem applies to arbitrary simple closed curves, and cha
 
 The three primitives at Hilbert's disposal, namely two incidence relations and a betweenness relation, are sufficient to formulate the notion of polygons, interiors and exteriors. Having already defined a segment as an unordered pair of points, Hilbert defines a \emph{polygonal segment}\footnote{Veblen calls these \emph{broken lines}.} as follows:
 
-\begin{quote}
-``DEFINITION. A set of segments $AB$, $BC$, $CD$, $\ldots$, $KL$ is called a \emph{polygonal segment} that connects the points $A$ and $L$. Such a polygonal segment will also be briefly denoted by $ABCD\ldots KL$. The points inside the segments $AB$, $BC$, $CD$, $\ldots$, $KL$ as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ are collectively called the \emph{points of the polygonal segment}.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page~8.)  
-\end{quote}
+\begin{quotation}
+DEFINITION. A set of segments $AB$, $BC$, $CD$, $\ldots$, $KL$ is called a \emph{polygonal segment} that connects the points $A$ and $L$. Such a polygonal segment will also be briefly denoted by $ABCD\ldots KL$. The points inside the segments $AB$, $BC$, $CD$, $\ldots$, $KL$ as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ are collectively called the \emph{points of the polygonal segment}. (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page~8.)  
+\end{quotation}
 
 Polygons are then polygonal segments where the points $A$ and $L$ coincide. For polygons, we refer to each of the individual segments $AB$, $BC$, $\ldots$, $KL$ as a \emph{side} of the polygon. Finally, Hilbert defines \emph{simple polygons}:
 
@@ -297,9 +297,9 @@ From this, we can obtain the first half of the Polygonal Jordan Curve Theorem, a
 
 Though we have verified this result from Hilbert's axioms (see \S\ref{sec:PathTheorem}), we gave up trying to reproduce Veblen's argument. We do not have a counterexample, as such, since we do not think Veblen's proof is sufficiently detailed to say exactly where it fails. Instead, we have tried to illustrate the difficulties we faced with the example in Figure~\ref{fig:VeblenCounter1}. This example shows a simple maze polygon $p_n$ being intersected at a point $O$ by another polygon $q$ shown in red. The goal is to identify one of the other seven points of intersection. Our labelling in the diagram is consistent with the set-up to Veblen's proof:
 
-\begin{quote}
-``If $n=3$ ($q$ having any number of sides, $m$) the theorem reduces to [the case for triangles]. We assume without loss of generality that no three vertices $P_{i-1}$, $P_i$, $P_{i+1}$ are collinear and prove the lemma for every $n$ by reducing to the case $n=3$. Let $p_n$ have $n$ vertices with the notation such that the side $P_1P_2$ meets $q$ in the side $Q_1'Q_2'$ where the segment $Q_2'O$ contains no interior point of the triangle $P_1P_2P_3$.'' Veblen~\cite{Veblenphd} (page~365)
-\end{quote}
+\begin{quotation}
+If $n=3$ ($q$ having any number of sides, $m$) the theorem reduces to [the case for triangles]. We assume without loss of generality that no three vertices $P_{i-1}$, $P_i$, $P_{i+1}$ are collinear and prove the lemma for every $n$ by reducing to the case $n=3$. Let $p_n$ have $n$ vertices with the notation such that the side $P_1P_2$ meets $q$ in the side $Q_1'Q_2'$ where the segment $Q_2'O$ contains no interior point of the triangle $P_1P_2P_3$. Veblen~\cite{Veblenphd} (page~365)
+\end{quotation}
 
 \begin{figure}
 \centering
@@ -330,9 +330,9 @@ Now there is nothing particularly informative about Veblen's last remark. Notice
 For now, we just note that Veblen's claim certainly follows. We believe the crucial point is that, as we remarked earlier, the polygonal segment $O_kQ_2'Q_3'Q_4'Q_5'Q_6'O_j$ touches $P_1P_3$ exactly twice and from opposite sides. More precisely, we just note that the interior of $O_kO$ is inside the triangle $P_1P_2P_3$,\footnote{For Veblen, this is a matter of definition. See~\S\ref{sec:TriangleInteriorDefinition}.} and thus by the Jordan Curve Theorem applied to triangles, all points of the polygonal segment $O\cdots Q_2'Q_3'Q_4'Q_5'Q_6'O_j$ other than $O_j$ must be outside the triangle. It is then possible to show that the points inside the segment $O_kO$ are on the opposite side of the line $P_1P_3$ as the points inside the segment $Q_6'O_j$, and so must be in different regions of any triangle of which $P_1P_3$ is a side. Veblen's claim then follows: the polygonal segment $O_kQ_2'Q_3'Q_4'Q_5'Q_6'O_j$ has a point inside and a point outside any triangle of which $P_1P_3$ is a side. We just needed a bit of extra work to get there.
 
 \subsection{Veblen's Conclusion}
-\begin{quote}
-``On this account if $P_1P_3P_4$ are not collinear, and obviously, if $P_1P_3P_4$ are collinear, $q$ must meet either $P_3P_4$ or $P_4$ or $P_4P_1$. If $q$ does not meet $P_3P_4$ or $P_4$, we proceed with $P_1P_4P_5$ as we did with $P_1P_3P_4$. Continuing this process, we either verify the lemma or come by $n-2$ steps to the triangle $P_1P_{n-1}P_n$ and find that $q$ must intersect the broken line $P_{n-1}P_nP_1$, which also verifies the lemma.'' Veblen~\cite{Veblenphd} (page~365)
-\end{quote}
+\begin{quotation}
+On this account if $P_1P_3P_4$ are not collinear, and obviously, if $P_1P_3P_4$ are collinear, $q$ must meet either $P_3P_4$ or $P_4$ or $P_4P_1$. If $q$ does not meet $P_3P_4$ or $P_4$, we proceed with $P_1P_4P_5$ as we did with $P_1P_3P_4$. Continuing this process, we either verify the lemma or come by $n-2$ steps to the triangle $P_1P_{n-1}P_n$ and find that $q$ must intersect the broken line $P_{n-1}P_nP_1$, which also verifies the lemma. Veblen~\cite{Veblenphd} (page~365)
+\end{quotation}
 
 This is Veblen's conclusion, and the situation described is illustrated in Figure~\ref{fig:VeblenCounter3}. The first step follows by the Jordan Curve Theorem applied to triangles: we know that $O_kQ_2'Q_3'Q_4'Q_5'O_6'O_j$ does not strictly \emph{cut}\footnote{The use of phrases such as ``strictly cut'', among many other details, will be clarified in our verification. See Chapter~\ref{chapter:JordanVerification1}.} the line $P_1P_3$, so it must instead cut either $P_1P_4$ or $P_3P_4$. We can assume that $q$ does not meet $P_3P_4$, and so we proceed with $P_1P_4P_5$. But Veblen is not clear on exactly how the argument repeats. The reason the first step follows in the above conclusion is because $O_kQ_2'Q_3'Q_4'Q_5'O_6'O_j$ does not cut $P_1P_3$, but we have now assumed that it \emph{does} cut $P_1P_4$, so we are not simply repeating the conclusion. 
 

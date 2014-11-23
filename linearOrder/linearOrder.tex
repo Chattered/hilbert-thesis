@@ -1,12 +1,12 @@
-\chapter{Infinity and Linear Ordering}\label{chapter:LinearOrder}
+o\chapter{Infinity and Linear Ordering}\label{chapter:LinearOrder}
 The next theorem on the agenda is THEOREM~6, and in this chapter, we will look at two different ways to deal with it formally. The theorem itself tells us that any finite set of points on a line is linearly ordered in terms of betweenness. One approach to formalising this is at the meta-level, where it can be treated as an algorithm for enumerating cases of betweenness. In another approach, we can formalise the theorem at the object level and verify it. In so doing, we shall derive the axiom of infinity, thereby showing the axiom redundant given Hilbert's geometric axioms.
 
 \section{THEOREM 6 at the Meta-level}\label{sec:Theorem6}
 We ended the last chapter by discussing two of the three parts of Hilbert's proof of THEOREM~5. The third and final part of the proof can be generalised to verify THEOREM~6.
 
-\begin{quote}
-  ``THEOREM 6 (generalisation of THEOREM~5). Given any finite number of points on a line it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc. Besides this order of labelling there is only the reverse one that has the same property.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, pages 7-8)
-\end{quote}
+\begin{quotation}
+  THEOREM 6 (generalisation of THEOREM~5). Given any finite number of points on a line it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc. Besides this order of labelling there is only the reverse one that has the same property. (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, pages 7-8)
+\end{quotation}
 
 It strikes us that a \emph{labelling} of points is a syntactic device, a way of referring to symbols used to mention points rather than the points themselves. Thinking more formally, we could identify a labelling with an assignment of values to variables. The existence of a labelling is then the existence of these assignments. With this in mind, a first pass at trying to faithfully formalise THEOREM~6 could view it as a \emph{schema}, asserting that, given some points on a line $A'$, $B'$, $C'$, $D'$, $\ldots$, $K'$, there exists an appropriate assignment to the points $A$, $B$, $C$, $D$, $\ldots$, $K$:
 \begin{equation*}
@@ -475,10 +475,10 @@ which is parameterised on a finite set enumeration (a term of the form $\{P_1,P_
 To round up this chapter, we will demonstrate the use of our linear reasoning tactic \code{ORDER\_TAC} by applying it to another theorem which says that there is an infinite number of points between any two others points. We have already effectively proven this theorem using the Dedekind definition of infinite, but here, we use the HOL~Light predicate $\code{infinite}$ which is just the complement of the recursively defined predicate $\code{finite}$.
 
 %In a sense, this has been covered indirectly by Theorem~\ref{eq:Infinity}, but our purpose with that theorem was to settle foundational questions about our logical assumptions, and provide us with enough expressive power to formally verify THEOREM~6. Here, we can be more direct in our formalisation.
-\begin{quotation}
+\begin{quote}
   ``THEOREM~7. Between any two points on a line there exists an infinite number of points.''
 \flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 8)}  
-\end{quotation}
+\end{quote}
 \begin{equation*}
 \vdash P\neq Q \implies \code{infinite}\ \{R\; \vert\; \between{P}{R}{Q}\}.
 \end{equation*}

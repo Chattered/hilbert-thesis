@@ -464,7 +464,7 @@ For the user's inspection, discovered theorems are output to the terminal one-by
 
 To complete the architecture, we provide signalling commands that can tell a discovery thread to pause, thereby freeing up CPU resources, to resume from a pause, or to change to an alternative theorem discoverer, so that the thread does not have to be killed.
 
-We should admit to a caveat here. Generations, as we have implemented them, are not generally valid across the branches of case-splits and the subproofs of a declarative verification. When the user completes a branch or subproof, some of their assumptions will no longer be in force, and further data generated from those assumptions will become unusable. Our implementation does not, as yet, address this issue. Instead, we simply reset the discoverers after each case-split and subproof.
+We should admit to a caveat here. Generations, as we have implemented them, are not generally usable across the branches of case-splits and subproofs of a declarative verification. When the user completes a branch or subproof, some of their assumptions will no longer be in force. Thus, the user can no longer apply data generated from those assumptions to justify the next proof step. If they try to do so, Mizar~Light will throw an error when the step command is processed, as part of the basic validity checking of the tactic system. Instead, the user must manually reset the discoverers after each case-split and subproof, to throw out the assumptions no longer in force. This is far from ideal, but as yet, our implementation does not address the issue.
 
 % \begin{figure}
 % {\scriptsize\input{incidence}}

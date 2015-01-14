@@ -1,7 +1,7 @@
 \chapter{Conclusion}\label{chapter:Conclusion}
-In an article published in the \emph{American Mathematical Monthly}~\cite{GuggenheimerJordanProof}, on the validity of the Polygonal Jordan Curve Theorem in ordered geometry, almost forgotten, Guggenheimer laments:
-\begin{quote}
-  ``It is astonishing that none of the textbooks of elementary axiomatic geometry gives a proof.''
+In an article published in the \emph{American Mathematical Monthly}, on the validity of the Polygonal Jordan Curve Theorem in ordered geometry, almost forgotten, Guggenheimer laments:
+\begin{quote} ``It is astonishing that none of the textbooks of elementary axiomatic geometry gives a proof.''
+  \flushright{\cite[p. 753]{GuggenheimerJordanProof}}
 \end{quote}
 
 We find it more astonishing considering that the axioms of ordered geometry mark the first major contribution to the modern rigorisation of geometry by Pasch, ``the father of rigour in geometry''. It stretches all our credibility when those same axioms were delineated in the most influential textbook on modern axiomatic geometry, nearly eight decades earlier,  and the theorem stated as derivable, by David Hilbert, one of the greatest mathematicians who ever lived.
@@ -14,7 +14,7 @@ This problem was compounded for us, we conjecture, because we chose a domain whi
 
 Happily, as we saw in Chapter~\ref{chapter:Group2Eval}, it turned out that the domain was amenable to a tailored proof-search. Since the inferences needed to fill the proof gaps almost never introduce points into a geometric configuration, we can exhaustively search for all the incidence relations that hold in a figure. Restricting our attention to a small finite geometry in this way, characterised by sets of collinear, non-collinear and planar points, and the rules between them, we were faced with a tractable combinatorial space.
 
-It is possible that there are other theories for which we can carve out such a space, and which have so far resisted formalisation for lack of ways to tailor a search of it. Now, by following the example of traditional theorem proving languages~\cite{Tactics}, we have shown how a combinator language could be used to rapidly prototype the appropriate search strategies using a very modest amount of declarative code. As an additional benefit, the strategies, themselves built by composition rules, are naturally extensible and composable across domains. They could potentially scale well to ever more complex problems.
+It is possible that there are other theories for which we can carve out such a space, and which have so far resisted formalisation for lack of ways to tailor a search of it. By following the example of traditional theorem proving languages~\cite{Tactics}, we have shown how a combinator language could be used to rapidly prototype the appropriate search strategies using a very modest amount of declarative code. As an additional benefit, the strategies, themselves built by composition rules, are naturally extensible and composable across domains. They could potentially scale well to ever more complex problems.
 
 A crucial assumption of our search language is that the data found (such as sequents about which sets of points are collinear) grows cumulatively. Later data are assumed not to replace earlier data, and no data are discarded as new information comes in. These are not generally realistic assumptions, and already posed some inefficiences for us when we came to think about point equalities. Such data should ideally force all prior data to be normalised.
 

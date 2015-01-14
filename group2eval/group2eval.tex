@@ -1,9 +1,9 @@
 \chapter{Elementary Consequences in Group~II}\label{chapter:Group2Eval}
-We now come to verify some theorems of Group~II, the only theorems in the first two groups which have prose proofs in the tenth edition of \emph{Foundations of Geometry}. Each proof uses Axiom~\ref{eq:g24}, which, as we explained in Chapter~\ref{chapter:Axiomatics}, carries several incidence preconditions. Establishing these preconditions made up the bulk of the effort in our manual verifications~\cite{ScottMScThesis} and in the verifications of Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}.
+We now come to verify some theorems of Group~II, the only theorems in the first two groups which have prose proofs in the tenth edition of \emph{Grundlagen der Geometry}. Each proof uses Axiom~\ref{eq:g24}, which, as we explained in Chapter~\ref{chapter:Axiomatics}, carries several incidence preconditions. Establishing these preconditions made up the bulk of the effort in our manual verifications~\cite{ScottMScThesis} and in the verifications of Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}.
 
 In the last chapter, we described some automation to handle the incidence reasoning.
 An aim of the present chapter is to see how much this automation can help us shorten
-our verifications, make them easier to develop and find alternative proofs. Our ideal is for the verification steps to match the steps of an ideal prose proof, here modelled by Hilbert’s own arguments, which focus on defining and exhibiting the diagram needed to establish a result, rather than discharging tedious incidence preconditions.
+our verifications, make it easier to develop them and to find alternative proofs. Our ideal is for the verification steps to match the steps of an ideal prose proof, here modelled by Hilbert’s own arguments, which focus on defining and exhibiting the diagram needed to establish a result, rather than discharging tedious incidence preconditions.
 
 When writing our verifications, we tried our best to follow the specific steps in Hilbert's prose, and in this chapter, we shall directly compare our verifications with the originals. As we shall see, this allows us to comment on the prose in great detail.
 
@@ -17,7 +17,7 @@ PROOF. By Axiom~I, 3 there exists a point $E$ outside the line $AC$ and by Axiom
 
 \vspace{0.5cm}
 \centering\includegraphics{group2eval/Three}
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 6)}
+\flushright{\cite[p. 6]{FoundationsOfGeometry}}
 \end{quotation}
 
 The only incidence axiom Hilbert appeals to in this proof is Axiom~I, 3, and the only order axioms are Axiom~II, 2 and Axiom~II,~4. The proof depends on more axioms than this, but Hilbert's omission is consistent with a claim we made in Chapter~\ref{chapter:Axiomatics}: Hilbert generally only cites axioms which \emph{introduce} points, omitting the others because he wants to focus on the steps which build up the diagrams. Here, we have Axiom I, 3 which can be used (indirectly) to obtain points off arbitrary lines, in this case the point $E$. We have Axiom~II, 2 which is our ``line-extension axiom'', used here to first obtain the point $F$, and then to obtain the point $G$. Finally, we have Axiom~II,~4 which finds ``exit points'' of a line passing through a triangle, in this case, the point $D$.
@@ -53,11 +53,10 @@ We reference three separate discoverers in our proof: \code{by\_incidence}, \cod
 Finally, we have used \code{MATCH\_MP\_TAC}\footnote{This standard HOL~Light function matches the conclusion of an implicational theorem with the goal formula, and then generates a new subgoal to prove the antecedent.} to apply our version of Pasch's Axiom~\eqref{eq:PaschPointSetUnfold} formulated entirely in terms of points (see Appendix~\ref{app:Group2}). This is slightly ugly, but it helps \code{MESON} by directing it to the antecedents of the matched theorem. It has no other side effects that carry over to the remaining steps, and its use does not break the declarative style since we state the implicational theorem that we have matched against. Even so, such matching is an irritation, since the free variables in the matched theorem must be lined up with those in the goal, and it is easy to get the order mixed up. We shall deal with this matter in \S\ref{sec:PaschDiscoverer}.
 
 \subsection{The Outer and Inner Pasch Axioms}
-THEOREM~3 was an axiom of the first edition of the \emph{Grundlagen der Geometrie}, and the full investigation of such redundant axioms can be credited to Veblen and his supervisor E.H. Moore, who investigated ordered geometry based on axioms very similar to Hilbert's. However, if we look at Veblen's system~\cite{Veblenphd}, we see he chose a different rendering of Pasch's Axiom.
-
+THEOREM~3 was an axiom of the first edition of the \emph{Grundlagen der Geometrie}, and the full investigation of such redundant axioms can be credited to Veblen and his supervisor E.H. Moore, who investigated ordered geometry based on axioms very similar to Hilbert's. However, if we look at Veblen's system, we see he chose a different rendering of Pasch's Axiom.
 \begin{quote}
-``AXIOM VIII \emph{(Triangle traversal axiom). If three distinct points $A$, $B$, $C$ do not lie on the same line, and $D$ and $E$ are two points in the order $BCD$ and $CEA$, then a point $F$ exists in the order $AFB$, and such that $D$, $E$, $F$ lie on the same line.}''
-\flushright{(page 355)}
+  ``AXIOM VIII \emph{(Triangle traversal axiom). If three distinct points $A$, $B$, $C$ do not lie on the same line, and $D$ and $E$ are two points in the order $BCD$ and $CEA$, then a point $F$ exists in the order $AFB$, and such that $D$, $E$, $F$ lie on the same line.}''
+\flushright{\cite[p. 355]{Veblenphd}}
 \end{quote}
 
 This form of the axiom, known as the \emph{Outer Pasch Axiom}, is due to Peano. It is strong enough to replace Hilbert's own version, and has advantages in terms of incidence reasoning: it carries fewer incidence preconditions at the expense of one extra order condition, and the conclusion is not disjunctive, so we are saved the effort of eliminating an offending case.
@@ -91,13 +90,13 @@ It can now be seen that the diagram obtained in Hilbert's proof of THEOREM~3 is 
 \label{fig:VeblenHilbert}
 \end{figure}
 
-Veblen's diagram replaces the Inner Pasch Axiom with the Outer Pasch Axiom, but is otherwise very similar. If we take a relabelling $B \mapsto C$, $C \mapsto F$, $D \mapsto G$ and $F \mapsto D$, then we see that Veblen's second use of Axiom~\ref{eq:g22} (the line extension axiom) differs from Hilbert's by finding the point $G$ on the other side of the segment $CF$ (see Figure~\ref{fig:VeblenHilbert}). Veblen sets himself up to use the Outer Pasch Axiom while Hilbert uses the Inner Pasch Axiom.
+Veblen's diagram replaces the Inner Pasch Axiom with the Outer Pasch Axiom, but is otherwise very similar. If we take a relabelling $B \mapsto C$, $C \mapsto F$, $D \mapsto G$ and $F \mapsto D$, then we see that Veblen's second use of Axiom~\ref{eq:g22} (the line extension axiom) differs from Hilbert's by finding the point $G$ on the other side of the segment $CF$ (see Figure~\ref{fig:VeblenHilbert}). Where Hilbert uses the Inner Pasch Axiom, Veblen sets himself up to use the Outer Pasch Axiom:
 
 \begin{quotation}\label{sec:VeblenThree}
 [...]. Between every two distinct points there is a third point.
 
 Proof. Let $A$ and $B$ be the given points [figure]. [...] there is a point $E$ not lying on the line $AB$. By [the line extension axiom] points $C$ and $D$ exist, satisfying the order-relations $AEC$ and $BCD$. Hence, by [the Outer Pasch Axiom], $F$ exists in the order $AFB$.
-\flushright{Veblen~\cite{Veblenphd} (page 355)}
+\flushright{\cite[p. 355]{Veblenphd}}
 \vspace{0.5cm}
 \end{quotation}
 
@@ -107,7 +106,7 @@ In conclusion, for those of us who judge Hilbert's argument for THEOREM~3 to be 
 In this section, we review how we used our discovery tool in an exploratory fashion, as we examine Hilbert's THEOREM~4. This result was another axiom in the first edition of the \emph{Grundlagen der Geometrie}, or more accurately, was incorporated into Axiom~\ref{eq:g23}:
 \begin{quote}
   ``II, 3. \emph{Of any three points situated on a straight line, there is always one and only one which lies between the other two.''}
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 5)}
+\flushright{\cite[p. 4]{FoundationsOfGeometryFst}}
 \end{quote}
 
 The ``only one'' part is all that is retained in the tenth edition. The existence part is given in a proof which Hilbert credits to Wald.
@@ -119,7 +118,7 @@ The ``only one'' part is all that is retained in the tenth edition. The existenc
 If Axiom~II,~4 is applied now to the triangle $AEG$ and to the line $CF$ it becomes evident that $D$ lies between $A$ and $E$, and by an application of the same axiom to the triangle $AEC$ and to the line $BG$ one realises that $B$ lies between $A$ and $C$.
 
 \centering \includegraphics{group2eval/Four}
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 7)}
+\flushright{\cite[p. 7]{FoundationsOfGeometry}}
 \end{quotation}
 
 \subsection{Discovering Applications of Pasch}\label{sec:PaschDiscoverer}
@@ -213,7 +212,7 @@ Next, we look at the first two applications of Axiom~II,~4. In our verification,
 \end{align*}
 \caption{Verification of THEOREM~4}
 \label{fig:FourVerification}
-\end{boxedfigure}
+\end{boxedfigure}\newpage
 
 In these two applications of Axiom~\ref{eq:g24}, we have used our \code{clearly} keyword to ask the \code{by\_pasch} discoverer to search for a specific conclusion of the axiom. Exploiting our discoverer in this way makes things more robust than using \code{MATCH\_MP\_TAC} as we did in \S\ref{sec:Theorem3}. With matching, we have to be careful that all the variables in the axiom line up with our desired conclusion. But when we use the discoverer, we know that its outputs are always lexicographically normalised, so there is only one conclusion we could possibly be after.
 
@@ -258,11 +257,11 @@ PROOF. Let $A$, $B$, $C$, $D$ be four points on a line $g$. The following will n
 1. If $B$ lies on the segment $AC$ and $C$ lies on the segment $BD$ then the points $B$ and $C$ also lie on the segment $AD$. By Axioms~I, 3 and II, 2 choose a point $E$ that does not lie on $g$, on [sic] a point $F$ such that $E$ lies between $C$ and $F$. By repeated applications of Axioms~II, 3 and II,~4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment $GD$ at a point $H$. Since $H$ thus lies on the segment $GD$ and since, however, by Axiom~II, 3, $E$ does not lie on the segment $AG$, the line $EH$ by Axiom~II,~4 meets the segment $AD$, i.e. $C$ lies on the segment $AD$. In exactly the same way one shows analogously that $B$ also lies on this segment.
 
 \centering\includegraphics{group2eval/Five}
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 7)}
+\flushright{\cite[p. 7]{FoundationsOfGeometry}}
 \end{quotation}
 
 \subsubsection{Evaluating our Manual Verification}\label{sec:FindingAEH}
-Our manual verification of this proof runs to approximately 135 lines of complicated proof steps. As we should expect by now, most of these steps were used to derive the preconditions needed for Axiom~\ref{eq:g24}. These are now handled by our incidence discoverers.
+Our manual verification of this proof runs to approximately 80 lines of complicated proof steps. As we should expect by now, most of these steps were used to derive the preconditions needed for Axiom~\ref{eq:g24}. These are now handled by our incidence discoverers.
 
 In the manual verifications, the complexity of the inferences had got the better of us. We were not able to verify Hilbert's final application of Axiom~\ref{eq:g24} with the line $EH$ and the triangle $ADG$. This requires knowing that the line $EH$ does not intersect any vertex of $ADG$, which requires, in particular, knowing that $AEH$ is a triangle.
 
@@ -332,7 +331,8 @@ The other extra step is somewhat of an irritation. Instead of applying Pasch's a
 The strengthened versions of the Pasch axioms mean we can be more efficient than Hilbert, who uses an unspecified number of applications of Axiom~II,~4.
 
 \begin{quote}
-``By repeated applications of Axioms II, 3 and II,~4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment $GD$ at a point $H$.'' (\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, page~7.)
+  ``By repeated applications of Axioms II, 3 and II,~4 it follows that the segments $AE$ and $BF$ meet at a point $G$, and moreover, that the line $CF$ meets the segment $GD$ at a point $H$.''
+  \flushright{\cite[p. 7]{FoundationsOfGeometry}}
 \end{quote}
 
 We can say exactly how many applications are needed here. In one of our verifications of THEOREM~5, which avoids the Inner and Outer Pasch axioms and so follows Hilbert most closely, we apply Axiom~II,~4 via the \code{by\_pasch} discoverer. By doing so, we see there are exactly three applications implied by Hilbert's prose (we elide the subproofs used to reject offending disjuncts).
@@ -652,7 +652,7 @@ The rest of the proof proceeds similarly. With the help of our discoverers, we r
 We now consider the second part of THEOREM~5, our verification of which matches Hilbert's logic very closely, even if we have reordered some of the derivations. The whole proof is indirect, which explains why there is no accompanying diagram, and it is one of the few proofs where Hilbert treats the disjunction in Axiom~II,~4 symmetrically: both alternatives entail a contradiction.
 
 \begin{quotation}2. If $B$ lies on the segment $AC$ and $C$ lies on the segment $AD$ then $C$ also lies on the segment $BD$ and $B$ also lies on the segment $AD$. Choose one point $G$ that does not lie on $g$, and another point $F$ such that $G$ lies on the segment $BF$. By Axioms~I, 2 and II, 3 the line $CF$ meets neither the segment $AB$ nor the segment $BG$ and hence, by Axiom~II,~4 again, does not meet the segment $AG$. But since $C$ lies on the segment $AD$, the straight line $CF$ meets then the segment $GD$ at a point $H$. Now by Axiom~II,~3 and II,~4 again the line $FH$ meets the segment $BD$. Hence $C$ lies on the segment $BD$. The rest of Assertion 2 thus follows from 1.
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 5)}
+\flushright{\cite[p. 7]{FoundationsOfGeometry}}
 \end{quotation}
 
 Our verification is shown in Figure~\ref{fig:FiveVerification2}. In the prose, Hilbert is applying Axiom~II,~4 in its contrapositive form, so we cannot follow him literally by using our \code{by\_pasch} discoverer. Instead, we run a \emph{reductio} argument in a subproof, where we can use Axiom~II,~4 in a forward direction.

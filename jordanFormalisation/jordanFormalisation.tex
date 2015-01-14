@@ -39,7 +39,7 @@ In 2009, Dufourd~\cite{DufourdJordanCurve} formally verified a constructive proo
   DEFINITION. A set of segments $AB$, $BC$, $CD$, $\ldots$, $KL$ is called a \emph{polygonal segment} that connects the points $A$ and $L$. Such a polygonal segment will also be briefly denoted by $ABCD\ldots KL$. The points inside the segments $AB$, $BC$, $CD$, $\ldots$, $KL$ as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, as well as the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ are collectively called the \emph{points of the polygonal segment}. 
 
 In addition, for a polygonal segment $A$, $B$, $C$, $\ldots$, $L$, we shall call the segments $AB$, $BC$, $CD$, $\dots$, $KL$ the \emph{sides} of the polygonal segment.
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 8)}
+\flushright{\cite[p. 8]{FoundationsOfGeometry}}
 \end{quotation}
 This is Hilbert's first key definition, defining what Veblen calls \emph{broken lines}, and what we shall prefer to call \emph{polygonal paths}. Contrary to his conventions~(see \S\ref{sec:DistinctVars}), Hilbert does not insist that the points involved here are distinct. Indeed, he adds an explicit distinctness clause when he defines simple polygons (see \S\ref{sec:polygonFormalisation}).
 
@@ -48,7 +48,7 @@ One thing which is clear to us is that Hilbert's notation is doing the heavy lif
 Had Hilbert given a proof of the polygonal Jordan Curve Theorem, he would have probably used his notation to do more heavy lifting, as Veblen did in his own proof. Veblen's argument ends up running over symbols and numerical subscripts in a way which seems to take us out of the world of synthetic geometry, and back into the sort of computational metatheory we saw in \ref{eq:six} from Chapter~\ref{chapter:LinearOrder}.
 \begin{quotation}
   By the case $n=3$, $q$ meets the boundary of the triangle $P_1P_2P_3$ in at least one point other than $O$. If this point is on the broken line $P_1P_2P_3$ the lemma is verified. If not, $q$ has at least one point on $P_1P_3$, and at least one of the segments $Q_1'Q_2'$, $Q_2'Q_3'$ has no point or end-point on $P_1P_3$. Let this segment be one segment of a broken line $Q_kQ_{k+1}\cdots Q_{j-1}Q_j$ of segments of $q$ not meeting $P_1P_3$ but such that $Q_{k-1}Q_k$ and $Q_jQ_{j+1}$ do each have a point or endpoint in common with $P_1P_3$ ($1 \leq k < j \leq m$; if $k = 1$, $Q_{k-1} = Q_m$; if $j = m$, $Q_{j+1} = Q_1$). If $O_j$ is the point common to $P_1P_3$ and $Q_jQ_{j+1}$ or $Q_{j+1}$, and $O_k$ is the point common to $P_1P_3$ and $Q_{k-1}Q_k$ or $Q_{k-1}$, the broken line $O_kQ_kQ_{k+1}\cdots Q_{j-1}Q_jO_j$, has a point inside and also a point outside the triangle $P_1P_2P_3$ and cuts the broken line $P_1P_2P_3$ only once.
-\flushright{Veblen~\cite{Veblenphd} (page~365)}
+\flushright{\cite[p. 365]{Veblenphd}}
 \end{quotation}
 Looking at Veblen's proof attempt, one might expect the argument to be dominated by computations and lemmas about point sequences, and not by synthetic constructions of diagrams, but this is not entirely the case. Our verification shows that there are a \emph{lot} of useful lemmas very similar to those we saw in Chapter~\ref{chapter:Group2Eval}, whose synthetic proofs obtain and then reason about properties of diagrams.
 
@@ -146,7 +146,7 @@ With the function $\code{adjacent}$, we can define the points of a polygonal pat
 
 Next, we need to formalise the notion of region as used in the Polygonal Jordan Curve Theorem. We shall follow our approach when formalising the notions of \emph{half-plane} and \emph{rays} (see \S\ref{sec:RayQuotienting}), and understand these regions as equivalence classes under a suitable relation, namely one which requires there to be a polygonal path between two given points. When two points satisfy this relation, we shall say that they are \emph{polygonal path-connected.}
 \begin{align*}
-  \vdash_{def}&\code{polypath\_connected}\,:\,\code{plane}\rightarrow(\code{point} \rightarrow \code{bool}) \rightarrow \code{point} \rightarrow \code{point} \rightarrow \code{bool}\\
+  \vdash_{def}\;&\code{polypath\_connected}\,:\,\code{plane}\rightarrow(\code{point} \rightarrow \code{bool}) \rightarrow \code{point} \rightarrow \code{point} \rightarrow \code{bool}\\
   &\code{polypath\_connected}\ \alpha\ figure\ P\ Q \iff\\
   &\quad\exists path.\; path \neq []\\
   &\qquad\wedge\,(\forall R.\;\code{mem}\ R\ path \implies \onplane{R}{\alpha})\\
@@ -189,19 +189,23 @@ Obviously, we will need the three theorems \emph{somewhere} in our later verific
 \subsection{Polygons}\label{sec:polygonFormalisation}
 Hilbert continues his definitions as follows:
 \begin{quotation}
-If the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ all lie in a plane and the point $A$ coincides with the point $L$ then the polygonal path is called a \emph{polygon} and is denoted as the polygon $ABCD\ldots K$. The segments $AB$, $BC$, $CD$, \ldots, $KA$ are also called the \emph{sides of the polygon}. The points $A$, $B$, $C$, $D$, $\ldots$, $K$ are called the \emph{vertices of the polygon.} Polygons of $3$, $4$, $\ldots$, $n$ \emph{vertices} are called \emph{triangles}, \emph{quadrilaterals}, $\ldots$, \emph{n-gons}. \emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (pages~8--9)
+  If the points $A$, $B$, $C$, $D$, $\ldots$, $K$, $L$ all lie in a plane and the point $A$ coincides with the point $L$ then the polygonal path is called a \emph{polygon} and is denoted as the polygon $ABCD\ldots K$. The segments $AB$, $BC$, $CD$, \ldots, $KA$ are also called the \emph{sides of the polygon}. The points $A$, $B$, $C$, $D$, $\ldots$, $K$ are called the \emph{vertices of the polygon.} Polygons of $3$, $4$, $\ldots$, $n$ \emph{vertices} are called \emph{triangles}, \emph{quadrilaterals}, $\ldots$, \emph{n-gons}.
+  \flushright{\cite[pp. 8--9]{FoundationsOfGeometry}}
 \end{quotation}
 
 The term ``side'' is ambiguous between the segments of a polygon and the half-planes of a given line. As such, we shall refer to the segments defining both a polygonal path and a polygon as \emph{edges}, and reserve \emph{side} for half-planes. These definitions will help us orientate ourselves within the familiar world of geometry, but we do not believe they correspond to any useful abstractions for verification. As such, we shall only use them informally to explain parts of the verification. The important definition for the verification is the one for \emph{simple polygons}:
 \begin{quote}
-  ``DEFINITION. If the vertices of a polygon are all distinct, none of them falls on [an edge] and no two of its nonadjacent [edges] have a point in common, the polygon is called \emph{simple}.'' \emph{Foundations of Geometry}~\cite{FoundationsOfGeometry}, (page~9)
+  ``DEFINITION. If the vertices of a polygon are all distinct, none of them falls on [an edge] and no two of its nonadjacent [edges] have a point in common, the polygon is called \emph{simple}.''
+  \flushright{\cite[p. 9]{FoundationsOfGeometry}}
 \end{quote}
 
-Combining this with the definition of polygon gives us the following formalisation:
+Combining this with the definition of polygon gives us the formalisation in Figure~\ref{fig:SimplePolygonDef}.
+
+\begin{figure}
 \begin{equation}\label{eq:SimplePolygonDef}
   \begin{split}
   &\code{simple\_polygon}\,:\,\code{plane} \rightarrow [\code{point}] \rightarrow \code{bool}\\
-  &\vdash_{def}\code{simple\_polygon}\ \alpha\ Ps \iff \\
+  &\vdash_{def}\;\code{simple\_polygon}\ \alpha\ Ps \iff \\
   &\qquad 3 \leq \code{length}\ Ps\\
   &\qquad\wedge \code{head}\ ps = \code{last}\ Ps\\
   &\qquad\wedge (\forall P.\;\code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha)\\
@@ -211,6 +215,9 @@ Combining this with the definition of polygon gives us the following formalisati
   &\qquad\qquad\neg(\exists X.\;\between{P}{X}{P'} \wedge \between{Q}{X}{Q'})\ (\code{adjacent}\;Ps)).
   \end{split}
 \end{equation}
+\caption{Formalisation of Simple Polygons}
+\label{fig:SimplePolygonDef}
+\end{figure}
 
 In this definition, we have introduced the polygon's plane as a parameter, but we are aware that this could be refactored. Any simple polygon uniquely determines the plane on which it lies, and so it might have been more elegant to hide the plane witness by an existential in the body of the definition. A function could then be defined to extract the unique witness from the list $Ps$ when $Ps$ is known to be a simple polygon. 
 
@@ -244,7 +251,7 @@ We shall not do this, however. We are not planning as of now to build on the Pol
 
 Abstractly then, the Polygonal Jordan Curve Theorem tells us that a simple polygon separates the plane into exactly two regions, but we will talk concretely in terms of the underlying representation and polygonal path-connectedness. We say firstly that there are at least two points in the plane and not on the polygon which are not polygonal path-connected. Secondly, we say that of any three points in the plane and not on the polygon, at least two of them can be polygonal path-connected.
 
-There is a final claim: one of the regions is unbounded. This theorem does not appear in Veblen's thesis, and we have left its verification to future work. Hilbert formulates the claim by saying that exactly one of the regions contains straight lines. Since we are avoiding talk of regions directly, we shall generalise and formulate it as follows:
+There is a final claim: one of the regions is unbounded. This theorem does not appear in Veblen's thesis, and we have left its verification to future work. Hilbert formulates the claim by saying that exactly one of the regions contains straight lines. Since we are avoiding talk of regions directly, we shall formulate it as follows:
 \begin{itemize}
 \item there exists a line in the plane of a polygonal path which does not intersect the polygonal path;
 \item given two lines $a$ and $b$ in the plane of a polygonal path which does not intersect the polygonal path, all points of $a$ are polygonal path-connected to all points of $b$ with respect to the polygonal path.
@@ -254,7 +261,9 @@ In the first part, the rough idea is that there is at least one region containin
 
 We have dropped the unnecessary condition that the polygonal path is a simple polygon from both parts. We have also dropped any mention of polygonal path-connectedness from the first part. A condition of polygonal path connectedness appears in the second part, and can be obtained for the first part simply by setting $a$ and $b$ to the first part's witness.
 
-With the breakdown considered, we turn to the formalisation of all four clauses. Again, we must pay careful attention to the details. Our later verification demonstrates that the first two formalisations yield verified theorems, but we have left the matter of whether they are \emph{too easily provable} to inspection.
+With the breakdown considered, we turn to the formalisation of all four clauses. Again, we must pay careful attention to the details. Our later verification demonstrates that the first two formalisations yield verified theorems, but we have left the matter of whether they are \emph{too easily provable} to inspection. The formalisations are given in Figure~\ref{fig:JCTFormal}.
+
+\begin{figure}
 \begin{equation}\label{eq:jordanFormal1}
   \begin{split}
 \vdash &\code{simple\_polygon}\ \alpha\ Ps\\
@@ -291,6 +300,9 @@ With the breakdown considered, we turn to the formalisation of all four clauses.
     &\qquad\implies \code{polypath\_connected}\ \alpha\ (\code{on\_polypath}\ Ps)\ A\ B.
   \end{split}
 \end{equation}
+\caption{The Polygonal Jordan Curve Theorem formalised}
+\label{fig:JCTFormal}
+\end{figure}
 
 Here, Theorems~\ref{eq:jordanFormal1} and~\ref{eq:jordanFormal2} formalise the fact that there are respectively at least two and at most two polygonal path-connected regions, while formulas~\ref{eq:jordanFormal3} and~\ref{eq:jordanFormal4} formalise the fact that exactly one region is unbounded.
 

@@ -13,7 +13,7 @@ DEFINITION. \emph{The points $A$, $A'$ are said to lie in the plane $\alpha$ on 
 
 DEFINITION. Let $A$, $A'$, $O$, $B$ be four points of the line $a$ such that $O$ lies between $A$ and $B$ but not between $A$ and $A'$. The points $A$, $A'$ are then said to lie \emph{on the line $a$ on one and the same side of the point $O$ and the points $A$, $B$ are said to lie on the line on different sides of the point $O$. The totality of points of the line $A$ that lie on one and the same side of $O$ is called a \emph{ray} emanating from $O$. Thus every point of a line partitions it into two rays.}
 
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 8)}
+\flushright{\cite[p. 8]{FoundationsOfGeometry}}
 \end{quotation}
 
 Though we shall not need the notion of rays in our verifications, we shall describe some of its formalisation. The definition is effectively the one-dimensional analogue of THEOREM~8, and we will use it to explain the general approach to verifying that theorem. We also mention that \emph{rays} make for a useful abstraction in later definitions and axioms (see \S\ref{sec:RaysDef} below).
@@ -29,15 +29,15 @@ We briefly justify keeping the definition of rays in our formalisation. Rays are
 \ldots
 
 III,~4. \emph{Let $\angle (h,k)$ be an angle in a plane $\alpha$ and $a'$ a line in a plane $\alpha'$ and let a definite side of $a'$ in $\alpha'$ be given. Let $h'$ be a ray on the line $a'$ that emanates from the point $O'$. Then there exists in the plane $\alpha'$ one and only one ray $k'$ such that the angle $\angle (h,k)$ is congruent or equal to the angle $\angle (h',k')$ and at the same time all interior points of the angle $\angle (h',k')$ lie on the given side of $a'$.}
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 11)}
+\flushright{\cite[p. 11]{FoundationsOfGeometry}}
 \end{quotation}
 
 Notice how much more complicated Hilbert's axioms have become by this group. Here, we have an axiom which juggles eight geometric entities, six of which are not even primitive. It is easy to make a mistake here and we recommend that, if this axiom is to be reliably formalised, that the notions of \emph{angle}, and thus, the dependent notion of \emph{ray} must be fully formalised and a decent theory developed before we can trust that the definitions and axiom are correct. In simple type theory, one can gain further confidence by introducing rays as an abstract type, which can simplify the formalisation of Axiom~III,~4 by pushing constraints into the type-checker (see earlier work~\cite{ScottMScThesis}). 
 
 \subsection{Quotienting}\label{sec:RayQuotienting}
-With a slight clarification, the ``same side'' relations in Hilbert's definitions define equivalence relations, and rays and half-planes emerge as the equivalence classes. In particular, the relation ``same side of the point $O$'' quotients the set of points in space other than a point $O$ into the set of all rays emanating from $O$, or alternatively, with \emph{origin} $O$. Similarly, the relation ``same side of the line $a$'' quotients the set of points in space not on the line $a$ into the set of all half-planes bounded by $a$. Note that we do not restrict the dimension here, and thus allow rays to emanate from points and half-planes to emanate from lines in all directions in space. 
+With a slight clarification, the ``same side'' relations in Hilbert's definitions define equivalence relations, and rays and half-planes emerge as the equivalence classes. In particular, the relation ``same side of the point $O$'' quotients the set of points in space other than a point $O$ into the set of all rays emanating from $O$, or alternatively, with \emph{origin} $O$. Similarly, the relation ``same side of the line $a$'' quotients the set of points in space not on the line $a$ into the set of all half-planes bounded by $a$. Note that we do not restrict the dimension here, and thus allow rays and half-planes to emanate in all directions in space.
 
-We have had to fill in an ambiguity in Hilbert's definition, and exclude the closure points or boundary from both rays and half-planes. If we include the point $O$ for a ray, or the line $a$ for a half-plane, and we allow an arbitrary point to be on the same side of $O$ or $a$, then we will have only one equivalence class: the whole of space. If we include $O$ and $a$ in every ray and half-plane, but declare all other points to be on a different side of $O$ and $a$, then our equivalence classes tell us that the set $\{O\}$ counts as a zero-dimensional ray, while the line $a$ counts as a one-dimensional half-plane. We exclude these possibilities, and thus make all rays and half-planes, as equivalence classes, open sets: a ray does not include its origin and a half-plane does not include its boundary. Incidentally, Poincar\'{e} made the same decision, remarking parenthetically in his review of Hilbert ``I add, for precision, that I consider [the origin] as not belonging to either [half-ray]''~\cite{PoincareReview}.
+We have had to fill in an ambiguity in Hilbert's definition, and exclude the closure points or boundary from both rays and half-planes. If we include the point $O$ for a ray, or the line $a$ for a half-plane, and we allow an arbitrary point to be on the same side of $O$ or $a$, then we will have only one equivalence class: the whole of space. If we include $O$ and $a$ in every ray and half-plane, but declare all other points to be on a different side of $O$ and $a$, then our equivalence classes tell us that the set $\{O\}$ counts as a zero-dimensional ray, while the line $a$ counts as a one-dimensional half-plane. We exclude these possibilities, and thus make all rays and half-planes, as equivalence classes, open sets: a ray does not include its origin and a half-plane does not include its boundary. Incidentally, Poincar\'{e} made the same decision, remarking parenthetically in his review of Hilbert ``I add, for precision, that I consider [the origin] as not belonging to either [half-ray]''~\cite[p. 11]{PoincareReview}.
 
 \subsection{Automatic Lifting}
 HOL~Light has several powerful procedures for automatically dealing with quotienting and producing a strong type for the quotient sets. Assuming that $(\equiv)\;:\;\tau\rightarrow \tau \rightarrow \tau$ is an equivalence relation on $\tau$, there is a procedure which splits $\tau$ into equivalence classes. A new abstract type is then introduced in the theory, isomorphic with the class of all these equivalence classes. Additional procedures then exist which allow the user to \emph{lift} HOL functions which are provably well-defined for the equivalence relation to the abstract type. We wanted to use these facilities to introduce the new abstract types of rays and half-planes, and so introduce our primitive relations on these abstract types by lifting well-defined relations. 
@@ -47,7 +47,12 @@ Unfortunately, we do not have types for the domains of the equivalence relations
 We were not sure how best to tackle this problem, and we have not implemented a generic solution. Instead, in this section, we review one possible strategy which takes us to our new quotiented type via an intermediate type. Here, we will only consider the strategy applied to rays. The half-planes case is exactly analogous.
 
 \subsubsection{Intermediate Types}
-For any point $O$, we must consider the set of all points $P$ in space which are not on $O$. We can do this by creating an abstract type of pairs $(O,P)$ where both components are distinct. We call this type \code{arrow}. It is the type of directed line-segments, or \emph{arrows} $\overrightarrow{OP}$, where $O \neq P$. The origin of the arrow is the point $O$, and the arrow \emph{points} in the direction $P$. By defining this type, we obtain abstraction and representation functions $\code{mk\_arrow}$ and $\code{dest\_arrow}$, similar to $\code{mk\_ind}$ and $\code{dest\_ind}$ from the last chapter. These map back-and-forth between pairs of points and the arrows they represent.
+For any point $O$, we must consider the set of all points $P$ in space which are not on $O$. We can do this by creating an abstract type represented by pairs $(O,P)$ where both components are distinct. We call this type \code{arrow}. It is the type of directed line-segments, or \emph{arrows} $\overrightarrow{OP}$, where $O \neq P$. The origin of the arrow is the point $O$, and the arrow \emph{points} in the direction $P$. By defining this type, we obtain abstraction and representation functions:
+\begin{align*}
+  \code{mk\_arrow}\ &:\ (\code{point},\code{point})\rightarrow\code{arrow}.\\
+  \code{dest\_arrow}\ &:\ \code{arrow}\rightarrow(\code{point},\code{point}).
+  \end{align*}
+These are similar to $\code{mk\_ind}$ and $\code{dest\_ind}$ from the last chapter. They map back-and-forth between pairs of points and the arrows they represent.
 
 The relation ``same side of'' can now be reinterpreted on these arrows. Our relation will effectively ask whether two arrows have the same position and direction. With some abuse of HOL~Light notation (we pretend that we can extract the two endpoints of an arrow with a \emph{pattern match}), we have:
 \begin{equation}\label{eq:EquivArrowDef}
@@ -80,13 +85,12 @@ we introduce a new type \code{ray} into the theory, together with their abstract
 
 The great thing about HOL~Light's quotienting facilities is that we do not need to deal with these particular abstraction and representation functions directly. When we lift theorems the functions are used automatically. 
 
-However, HOL~Light will not automatically plumb theorems about the endpoints of arrows through our intermediate type and lift them to our type of rays. Consider the relation which says that a given point lies on a given ray. If rays were an equivalence class on the space of all points, this relation would be lifted directly from the partially applied equivalence relation. Here, we must instead build an arrow, using the abstraction function for arrows, namely $\code{mk\_arrow}\ :\ (\code{point},\code{point})\rightarrow\code{arrow}$.
+However, HOL~Light will not automatically plumb theorems about the endpoints of arrows through our intermediate type and lift them to our type of rays. Consider the relation which says that a given point lies on a given ray. If rays were an equivalence class on the space of all points, this relation would be lifted directly from the partially applied equivalence relation. Here, we must instead build an arrow, using the abstraction function for arrows, namely $\code{mk\_arrow}$.
 \begin{gather*}
-  \vdash_{def}\code{arrow\_origin}\ \overrightarrow{OP} = O.\\
   \begin{split}
-    &\vdash_{def}\code{on\_ray\_of\_arrow}\ P\ \code{a}\\
-    &\qquad\iff P \neq \code{arrow\_origin}\ a\\
-    &\qquad\qquad\quad\wedge \code{equiv\_arrow}\ a\ (\code{mk\_arrow}\ (\code{arrow\_origin}\ a, P)).
+    &\vdash_{def}\;\code{on\_ray\_of\_arrow}\ P\ \overrightarrow{OQ}\\
+    &\qquad\iff P \neq O\\
+    &\qquad\qquad\quad\wedge \code{equiv\_arrow}\ \overrightarrow{OQ}\ (\code{mk\_arrow}\ (Q, P)).
   \end{split}
 \end{gather*}
 
@@ -156,7 +160,7 @@ In the proof in Figure~\ref{fig:PaschColCase}, we have pared down the assumption
 
 To fix this, we add back the assumption that $C$ is not on the line $a$. Notice that we then have to explicitly add a step showing that $C \neq P$, since the linear reasoning tactic will not infer this automatically: it only rewrites equalities, inequalities and betweenness claims, so we must feed it the necessary facts explicitly.
 
-This pattern of using the linear reasoning tactic with very few assumptions and lemmas, and then adding more in until the goal is solved, was our typical use-case of the tactic. We benefit from the fact that the tactic is a decision procedure, and the problems we throw at it are normally sufficiently constrained that a yes/no answer is delivered promptly. As such, the tactic can be used to explore ideas as well as verify steps that are known in advance to be valid.
+This pattern of using the linear reasoning tactic with very few assumptions and lemmas, and then adding more in until the goal is solved, was our typical use-case of the tactic. We benefit from the fact that the tactic is a decision procedure, and the problems we throw at it are normally sufficiently constrained that a yes/no answer is delivered promptly. As such, the tactic can be used to explore ideas as well as verify steps that are known in advance to be valid (see \S\ref{sec:RayCasting} for further discussion).
 
 \subsection{Covering}
 Our next theorem shows that there are at most two half-planes to each plane. This theorem is lifted from an analogous theorem on our intermediate type, but the basic details are again a strengthening of Pasch's axiom.
@@ -173,16 +177,16 @@ Bernays thought the mere claim of a proof's existence was insufficient. In Suppl
 It behooves one to deduce the proof by means of THEOREM~4. It can be carried out as follows: If the line $a$ met the segments $BC$, $CA$, $AB$ at the points $D$, $E$, $F$ then these points would be distinct. By THEOREM~4 one of these points would lie between the other two.
 
 If, say, $D$ lay between $E$ and $F$, then an application of Axiom~II,~4 to the triangle $AEF$ and the line $BC$ would show that this line would have to pass through a point of the segment $AE$ or $AF$. In both cases a contradiction of Axiom~II,~3 or Axiom~I,~2 would result.
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 200)}
+\flushright{\cite[p. 200]{FoundationsOfGeometry}}
 \end{quotation}
+
+This is an indirect proof, effectively based on an impossible diagram. The key inference is in the second paragraph; that is, if $A$, $C$ and $E$ are collinear, then we can use Pasch's Axiom to conclude that $C$ must lie between $A$ and $E$, contradicting our assumptions. The diagram shows the situation in Figure~\ref{fig:SupplementI}, and shows how this step corresponds precisely to a use of the outer version of the Pasch axiom~\eqref{eq:OuterPasch}.
 
 \begin{figure}
   \centering\includegraphics{halfPlanes/SupplementI}
   \caption{Supplement~I}
   \label{fig:SupplementI}
 \end{figure}
-
-This is an indirect proof, effectively based on an impossible diagram. The key inference is in the second paragraph; that is, if $A$, $C$ and $E$ are collinear, then we can use Pasch's Axiom to conclude that $C$ must lie between $A$ and $E$, contradicting our assumptions. The diagram shows the situation in Figure~\ref{fig:SupplementI}, and shows how this step corresponds precisely to a use of the outer version of the Pasch axiom~\eqref{eq:OuterPasch}.
 
 The verification is shown in Figure~\ref{fig:SupplementIProof}. Our incidence discoverer from Chapter~\ref{chapter:Automation} helps keep the proof steps almost one to one with the prose. We start by concluding as Bernays does that the points $D$, $E$ and $F$ are distinct and then apply THEOREM~4 to show that one of the points lies between the other two.
 
@@ -250,7 +254,7 @@ and not
 We can understand why this is necessary by considering exactly what we would have to say is well-defined to obtain this relation. It is a set of points which are incident with a given representative of half-planes from our intermediate type. Now as predicates, point-sets are functions of type $\code{point} \rightarrow \code{bool}$, and it is a function of this form which we must verify as well-defined. We obtain the predicate by partial application of an intermediate incidence relation $\code{half\_plane\_intermediate\_contains}$:
 \begin{multline*}
 \vdash\code{equiv\_intermediate\_half\_plane}\ x\ y \\
-\implies \code{half\_plane\_intermediate\_contains}\ x =\\ \code{on\_half\_plane\_intermediate\_contains}\ y.
+\implies \code{half\_plane\_intermediate\_contains}\ x\\ =\code{on\_half\_plane\_intermediate\_contains}\ y.
 \end{multline*}
 
 Consequently, the type $\code{point}$ must appear last in the type of our half-plane incidence relation.
@@ -311,7 +315,7 @@ All preliminaries needed for the Polygonal Jordan Curve Theorem have now been de
 
 We just note that one direction in which this axiom is weakened  was singled out by Bernays as needing an explicit proof. We feel the same way about Theorem~\ref{eq:PlaneThree}, which is also needed to prove THEOREM~8. Both supplementary proofs were unnecessary in the first edition, when the results were asserted axiomatically. But now that they have been factored out, one should be careful to derive them.
 
-This omission is barely a glimmer compared to the next. Hilbert gives no indication how to prove THEOREM~9. A discussion of this theorem and its verification take up the next four chapters.
+This omission is barely a chink compared to the chasm which follows. Hilbert gives no indication how to prove THEOREM~9. A discussion of this theorem and its verification take up the next four chapters.
 %%% Local Variables: 
 %%% mode: latex
 %%% TeX-master: "../thesis"

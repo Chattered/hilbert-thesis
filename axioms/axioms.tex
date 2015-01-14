@@ -65,7 +65,7 @@ We now give Hilbert's incidence axioms as they appear in the second edition of t
 \item[I, 7] \emph{If two planes $\alpha$, $\beta$ have a point $A$ in common then they have at least one more point $B$ in common.}
 \item[I, 8] \emph{There exist at least four points which do not lie in a plane.}
 \end{enumerate}
-\flushright(page 4)
+\flushright(p. 4)
 \end{quotation}
 
 These axioms have undergone substantial revision since the first edition, being reordered, with some combined, some split and redundancies deleted. The fact that there are redundancies in the first place goes to show that Hilbert's later claim that his axioms are independent was never \emph{fully} investigated in the \emph{Grundlagen der Geometrie}. In fact, only a few interdependencies were ever considered.
@@ -165,7 +165,7 @@ Hilbert highlights two results for his first group.
   THEOREM~1. Two lines in a plane either have one point in common or none at all. Two planes have no point in common, or have one line and otherwise no other point in common. A plane and a line that does not lie in it either have one point in common or none at all.~\footnote{We need classical logic already here. The very first clause of THEOREM~1 assumes that point equality is decidable. See Dehlinger et al~\cite{DehlingerFOG}.}
 
   THEOREM 2. Through a line and a point that does not lie on it, as well as through two distinct lines with one point in common, there always exists one and only one plane.
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 4)}
+  \flushright{\cite[p. 4]{FoundationsOfGeometry}}
 \end{quotation}
 
 The proofs are straightforward. In fact, the first and last clauses in THEOREM~1 are barely rewordings of Axiom~\ref{eq:g12} and Axiom~\ref{eq:g16}, and so we did not bother to formalise them.
@@ -190,7 +190,7 @@ THEOREM~2, split into two separate propositions, is easily verified. The verific
 Note that the symbol $\exists!$ is another defined quantifier in HOL~Light. It asserts of its argument --- a predicate --- that it is satisfied \emph{uniquely}, and it can be defined thus:
 
 \begin{displaymath}
-  \vdash_{def}(\exists! P) = (\exists P) \wedge (\forall x.\;\forall y.\; P\ x \wedge P\ y \implies x = y)
+  \vdash_{def}\;(\exists! P) = (\exists P) \wedge (\forall x.\;\forall y.\; P\ x \wedge P\ y \implies x = y)
 \end{displaymath}
 
 \begin{boxedfigure}
@@ -218,17 +218,17 @@ We will not reproduce the verifications here, since our later verifications have
 The only other theorem we need is one we use when developing our formal theory of half-planes in Chapter~\ref{chapter:HalfPlanes}. It verifies that every plane contains a non-collinear triple, an axiom of the first edition but a result that now needs to be proven. We regard it as an oversight of Hilbert's that he neglected to mention the result, let alone give its proof. It is not entirely trivial, having us consider a configuration of six points and three planes. We give a prose proof now.
 
 \label{sec:PlaneThree}
-\begin{proposition}\label{eq:PlaneThree}
+\begin{proposition}
 Every plane $\alpha$ contains at least three non-collinear points.
 \end{proposition}
 \begin{proof}
 By Axiom~\ref{eq:g14b} and Axiom~\ref{eq:g18}, we can take a point $A$ on $\alpha$ and a point $B$ not on $\alpha$. We connect these two points by a line $a$. By Axiom~\ref{eq:g13b}, we can take a third point $C$ off the line $a$. The three points $A$, $B$ and $C$ must determine a plane $\beta$ by Axiom~\ref{eq:g14a}.
 
 Since the planes $\alpha$ and $\beta$ intersect at the point $A$, we can choose another intersection point $D$ by Axiom~\ref{eq:g17}, and by Axiom~\ref{eq:g18}, we can find a fifth point $E$ off the plane $\beta$. Now $A$, $B$ and $E$ must be non-collinear, and so they determine a plane $\gamma$. If this plane is $\alpha$, then $A$, $B$ and $E$ are our three points and we are done. Otherwise, we have two distinct planes intersecting at $A$ and so we can take another intersection point $F$ by Axiom~\ref{eq:g17}. This gives us three non-collinear points in $\alpha$, namely $A$, $D$ and $F$. See Figure~\ref{fig:PlaneThree}.
-\begin{multline*}
+\begin{multline}\label{eq:PlaneThree}
 \vdash\exists A.\;\exists B.\;\exists C.\; \code{on\_plane}\ A\ \alpha \wedge \code{on\_plane}\ B\ \alpha \wedge \code{on\_plane}\ C\ \alpha\\
 \wedge\Triangle{a}{A}{B}{C}.
-\end{multline*}
+\end{multline}
 \end{proof}
 \begin{figure}
 \centering\includegraphics[scale=0.8]{axioms/PlaneThree}
@@ -331,7 +331,7 @@ Luckily, when we reflected on our manual verifications, we realised that Theorem
 
 We can then continue to view Hilbert's proofs as \emph{model proofs} and argue that, with our automation handling the tedium of combining point sets, our verifications will be good substitutes for their missing prose counterparts. They will be more trustworthy whilst being close to what a working mathematician would produce.
 
-We finish by remarking that Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} were verified in a procedural rather than declarative style in HOL~Light. These theorems will become the implementation details of an incidence reasoning algorithm, rather than theorems of general geometric interest. It therefore made sense to take full advantage of HOL~Light's tactics and its simplifier, which are particularly effective when working with finite sets.
+We finish by remarking that Theorems~\ref{rule:colltwo}--\ref{rule:collcollplane} were verified in a procedural rather than declarative style in HOL~Light. These theorems became the implementation details of an incidence reasoning algorithm, rather than theorems of general geometric interest. It therefore made sense to take full advantage of HOL~Light's tactics and its simplifier, which are particularly effective when working with finite sets.
 
 \section{Group~II}
 With Hilbert's second group of axioms, we have our ordered geometry, which delimits the scope for the present work. We only have a few geometrical notions to hand, and things might seem quite restrictive, but we have enough to verify our main result: the Polygonal Jordan Curve Theorem.
@@ -347,7 +347,7 @@ Hilbert's second group supplies a single new primitive, namely \emph{betweenness
 \begin{enumerate}
 \item[II, 1] \emph{If a point $B$ lies between a point $A$ and a point $C$ then the points $A$, $B$, $C$ are three distinct points of a line, and $B$ then also lies between $C$ and $A$.}
 \end{enumerate}
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 5)}
+\flushright{\cite[p. 5]{FoundationsOfGeometry}}
 \end{quotation}
 The fact that Hilbert needs to axiomatically assert the irrelevance of the order of $A$ and $C$ tells us that we are formally working with a three place relation:
 \begin{displaymath}
@@ -373,7 +373,7 @@ We now give the remaining axioms.
   \item[II, 3] \emph{Of any three points on a line there exists no more than one that lies between the other two.}
   \item[II, 4] \emph{Let $A$, $B$, $C$ be three points that do not lie on a line and let $a$ be a line in the plane $ABC$ which does not meet any of the points $A$, $B$, $C$. If the line $a$ passes through a point of the segment $AB$, it also passes through a point of the segment $AC$, or through a point of the segment $BC$.}
 \end{enumerate}
-\flushright{\emph{Foundations of Geometry}~\cite{FoundationsOfGeometry} (page 5)}
+\flushright{\cite[p. 5]{FoundationsOfGeometry}}
 \end{quotation}
 
 Axiom~II, 2 can be compared to Euclid's second postulate: ``To produce a finite straight line continuously in a straight line.'' Here, Hilbert is telling us that we can extend the segment $AC$ to a point $B$ in the direction $\overrightarrow{AC}$. This axiom is absolutely key in building up geometrical figures.
@@ -439,7 +439,7 @@ Our preconditions can now be expressed in terms of non-collinear and planar sets
 \end{aligned}
 \end{equation}
 
-Looking at this theorem, it is hopefully clearer how the theorems from \S\ref{sec:PointSets} are needed when reasoning about incidence in Hilbert's proofs. Most of his results in Group~II require reasoning about order in the plane by applying Pasch's Axiom. Each time the axiom is applied, we must verify the preconditions of the axiom, which according to our formalised Theorem~\ref{eq:PaschPointSet}, means we must find three triangles and a planar set.
+Looking at this theorem, it is hopefully clearer how the theorems from Figure~\ref{fig:PointSets} are needed when reasoning about incidence in Hilbert's proofs. Most of his results in Group~II require reasoning about order in the plane by applying Pasch's Axiom. Each time the axiom is applied, we must verify the preconditions of the axiom, which according to our formalised Theorem~\ref{eq:PaschPointSet}, means we must find three triangles and a planar set.
 
 This is not all. Typically, we must also eliminate one of the disjuncts in the conclusion of the axiom, and this requires further incidence reasoning. Usually, we show how, in one branch, all points considered end up collapsing to just a single line. This will contradict our assumptions that we have at least one triangle.
 

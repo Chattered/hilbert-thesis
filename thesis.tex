@@ -16,6 +16,7 @@
 
 \definecolor{gray}{rgb}{0.9,0.9,0.9}
 
+\allowdisplaybreaks
 \floatstyle{boxed}
 \newfloat{boxedfigure}{H}{lobf}
 \floatname{boxedfigure}{Figure}
@@ -32,8 +33,6 @@
 \newtheorem*{proposition}{Proposition}
 \newtheorem*{lemma}{Lemma}
 
-\usepackage{changebar}
-\newcommand{\commentedout}{}
 \newcommand{\bind}{\vartriangleright}
 \newcommand{\code}{\texttt}
 \newcommand{\adjoin}[2]{\{#1\}\,\cup\,#2}
@@ -76,7 +75,7 @@ Along the way, we describe and implement a general-purpose algebraic language fo
 
 %% Acknowledgements
 \begin{acknowledgements}
-Many thanks go to my supervisor for his support and encouragement. Thanks to Laura Meikle for spotting a simplification of one of my theorems, and especially to Steven Obua for helping me with a proof.
+Many thanks go to my supervisor Jacques Fleuriot for his support and encouragement. Thanks to Laura Meikle for spotting a simplification of Theorem~\ref{eq:PaschPointSet}, and especially to Steven Obua for helping me prove transitivity of polygonal rotations described in \S\ref{sec:PolygonRotation}.
 \end{acknowledgements}
 
 %% Next we need to have the declaration.

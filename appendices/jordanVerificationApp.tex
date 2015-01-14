@@ -5,62 +5,62 @@ Function specifications marked with $\dag$ have been contributed.
 \begin{align*}
   & \code{head}\,:\,[\alpha] \rightarrow \alpha &\qquad
   & \code{tail}\,:\,[\alpha] \rightarrow [\alpha]\dag\\
-  & \vdash_{def}\code{head}\ (\cons{x}{xs}) = x &\qquad
-  & \vdash_{def}\code{tail}\ [] = []\\
-  &&&\vdash_{def}\code{tail}\ (\cons{x}{xs}) = xs &\qquad
+  & \vdash_{def}\;\code{head}\ (\cons{x}{xs}) = x &\qquad
+  & \vdash_{def}\;\code{tail}\ [] = []\\
+  &&&\vdash_{def}\;\code{tail}\ (\cons{x}{xs}) = xs &\qquad
 \end{align*}
 \begin{align*}
   & \code{length}\ [\alpha]\rightarrow \mathbb{N}\\
-  & \vdash_{def}\code{length}\ [] = 0\\
-  & \vdash_{def}\code{length}\ (\cons{x}{xs}) = \code{length}\ xs + 1
+  & \vdash_{def}\;\code{length}\ [] = 0\\
+  & \vdash_{def}\;\code{length}\ (\cons{x}{xs}) = \code{length}\ xs + 1
 \end{align*}
 \begin{align*}
   &\code{butlast}\,:\,[\alpha] \rightarrow [\alpha]\\
-  &\vdash_{def}\code{butlast}\ [] = []\\
-  &\vdash_{def}\code{butlast}\ (\cons{x}{xs}) = \code{if}\ xs=[]\ \code{then}\ []\ \code{else}\ \cons{x}{(\code{butlast}\ xs)}
+  &\vdash_{def}\;\code{butlast}\ [] = []\\
+  &\vdash_{def}\;\code{butlast}\ (\cons{x}{xs}) = \code{if}\ xs=[]\ \code{then}\ []\ \code{else}\ \cons{x}{(\code{butlast}\ xs)}
 \end{align*}
 \begin{align*}
   &\code{el}\,:\,\code{int} \rightarrow [\alpha] \rightarrow \alpha\\
-  &\vdash_{def}\code{el}\ 0\ xs = \code{head}\ xs\\
-  &\vdash_{def}\code{el}\ (\code{suc}\ n)\ xs = \code{el}\ n\ (\code{tail}\ xs)
+  &\vdash_{def}\;\code{el}\ 0\ xs = \code{head}\ xs\\
+  &\vdash_{def}\;\code{el}\ (\code{suc}\ n)\ xs = \code{el}\ n\ (\code{tail}\ xs)
 \end{align*}
 \begin{align*}
   & \code{mem}\,:\,\alpha \rightarrow [\alpha] \rightarrow \code{bool} &\qquad
   & \code{all}\,:\,(\alpha\rightarrow\code{bool}) \rightarrow [\alpha] \rightarrow \code{bool}\\
-  & \vdash_{def}\code{mem}\ x\ [] = \bot &\qquad
-  & \vdash_{def}\code{all}\ p\ [] = \bot\\
-  & \vdash_{def}\code{mem}\ x\ (\cons{y}{ys}) = x = y \vee \code{mem}\ x\ ys &\qquad
-  & \vdash_{def}\code{all}\ p\ (\cons{x}{xs}) = p\ x \wedge \code{all}\ p\ xs   
+  & \vdash_{def}\;\code{mem}\ x\ [] = \bot &\qquad
+  & \vdash_{def}\;\code{all}\ p\ [] = \bot\\
+  & \vdash_{def}\;\code{mem}\ x\ (\cons{y}{ys}) = x = y \vee \code{mem}\ x\ ys &\qquad
+  & \vdash_{def}\;\code{all}\ p\ (\cons{x}{xs}) = p\ x \wedge \code{all}\ p\ xs   
 \end{align*}
 \begin{align*}
   & \code{pairwise}\,:\,(\alpha \rightarrow \alpha \rightarrow \code{bool}) \rightarrow [\alpha] \rightarrow \code{bool}\\
-  & \vdash_{def}\code{pairwise}\ R\ [] = \top\\
-  & \vdash_{def}\code{pairwise}\ R\ (\cons{x}{xs}) = \code{all}\ (R x)\ xs \wedge \code{pairwise}\ R\ xs
+  & \vdash_{def}\;\code{pairwise}\ R\ [] = \top\\
+  & \vdash_{def}\;\code{pairwise}\ R\ (\cons{x}{xs}) = \code{all}\ (R x)\ xs \wedge \code{pairwise}\ R\ xs
 \end{align*}
 \begin{align*}
   & \code{zip}\,:\,[\alpha]\rightarrow[\beta]\rightarrow[(\alpha,\beta)]\\
-  & \vdash_{def}\code{zip}\,[]\,[] = []\\
-  & \vdash_{def}\code{zip}\,(\cons{x}{xs})(\cons{y}{ys}) = \cons{(x,y)}{\code{zip}\ xs\ ys}
+  & \vdash_{def}\;\code{zip}\,[]\,[] = []\\
+  & \vdash_{def}\;\code{zip}\,(\cons{x}{xs})(\cons{y}{ys}) = \cons{(x,y)}{\code{zip}\ xs\ ys}
 \end{align*}
 \begin{align*}
   & \code{adjacent}\,:\,[\alpha]\rightarrow[(\alpha,\alpha)]\dag\\
-  & \vdash_{def}\code{adjacent}\,xs = \code{zip}\ (\code{butlast}\ xs)\ (\code{tail}\ xs)
+  & \vdash_{def}\;\code{adjacent}\,xs = \code{zip}\ (\code{butlast}\ xs)\ (\code{tail}\ xs)
 \end{align*}
 \begin{align*}
   & \code{disjoint}\,:\,(\alpha\rightarrow\code{bool})\rightarrow(\alpha\rightarrow\code{bool})\rightarrow\code{bool}\\
-  & \vdash_{def}\code{disjoint}\ S\ T = S \cap T = \emptyset
+  & \vdash_{def}\;\code{disjoint}\ S\ T = S \cap T = \emptyset
 \end{align*}
 
 \section{Polygon Definitions}
 \begin{align*}
   &\code{on\_polypath}\,:\,[\code{point}] \rightarrow \code{point} \rightarrow \code{bool}\\
-  &\vdash_{def}\code{on\_polypath}\ Ps\ P \iff\\
+  &\vdash_{def}\;\code{on\_polypath}\ Ps\ P \iff\\
   &\quad\code{mem}\ P\ Ps\vee\,\exists x.\;\exists y.\; \code{mem}\ (x,y)\ (\code{adjacent}\ Ps) \wedge \between{x}{P}{y}.
 \end{align*}
 
 \begin{align*}
   &\code{polypath\_connected}\,:\,\code{plane}\rightarrow(\code{point} \rightarrow \code{bool}) \rightarrow \code{point} \rightarrow \code{point} \rightarrow \code{bool}\\
-  &\vdash_{def}\code{polypath\_connected}\ \alpha\ figure\ P\ Q \iff\\
+  &\vdash_{def}\;\code{polypath\_connected}\ \alpha\ figure\ P\ Q \iff\\
   &\quad\exists path.\; path \neq []\\
   &\qquad\wedge\,(\forall R.\;\code{mem}\ R\ path \implies \onplane{R}{\alpha})\\
   &\qquad\wedge\,\code{head}\ path = P \wedge \code{last}\ path = Q\\
@@ -69,7 +69,7 @@ Function specifications marked with $\dag$ have been contributed.
 
 \begin{align*}
   &\code{simple\_polygon}\,:\,\code{plane} \rightarrow [\code{point}] \rightarrow \code{bool}\\
-  &\vdash_{def}\code{simple\_polygon}\ \alpha\ Ps \iff \\
+  &\vdash_{def}\;\code{simple\_polygon}\ \alpha\ Ps \iff \\
   &\qquad 3 \leq \code{length}\ Ps\\
   &\qquad\wedge \code{head}\ ps = \code{last}\ Ps\\
   &\qquad\wedge (\forall P.\;\code{mem}\ P\ Ps \implies \code{on\_plane}\ P\ \alpha)\\

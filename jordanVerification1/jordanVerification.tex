@@ -157,9 +157,9 @@ Our first function computes the crossings at an edge of a triangle based on a co
 
 The first argument gives the three points defining the triangle we are interested in as a triple. We arbitrarily declare the first two components of this triple to be the edge of the triangle against which we want to compute crossings. The next argument is the context value $\Gamma$. The final two arguments are the endpoints of the polygonal path's edge against which we compute crossings.
 
-Thus, to express the number of crossings for the edges $AC$ and $BC$, we just use the terms $\code{crossing}\ (A,C,B)$ and $\code{crossing}\ (B,A,C)$, and to express the total crossings of the segment $P_iP_{i+1}$ on the triangle, we use the term
+Thus, to express the number of crossings for the edges $AC$ and $BC$, we just use the terms $\code{crossing}\ (A,C,B)$ and $\code{crossing}\ (B,C,A)$ respectively, and to express the total crossings of the segment $P_iP_{i+1}$ on the triangle, we use the term
 \begin{multline*}
-\code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} + \code{crossing}\ (A,C,B)\ \Gamma\ P_i\ P_{i+1}\\ + \code{crossing}\ (B,A,C)\ \Gamma\ P_i\ P_{i+1}.
+\code{crossing}\ (A,B,C)\ \Gamma\ P_i\ P_{i+1} + \code{crossing}\ (A,C,B)\ \Gamma\ P_i\ P_{i+1}\\ + \code{crossing}\ (B,C,A)\ \Gamma\ P_i\ P_{i+1}.
 \end{multline*}
 
 Our next function computes the context value for a segment $P_iP_{i+1}$ based on the last context. The arguments are the same, but here, the output does not depend on any particular ordering of the triple $(A,B,C)$.
@@ -204,7 +204,7 @@ Finally, we define the function which will compute the total number of crossings
 % One way or another, our verification reduces to the base case in triangles. Our proof from \S\label{sec:JordanCurveFirstProof} defines the interior and exterior of a polygon by adding and subtracting triangles until the desired figure is obtained. Veblen's Proof considers triples of vertices going around the polygon, and applies the polygonal Jordan Curve Theorem to the resulting triangles (which appears as Corollary~2 of Theorem~27 in his 1904 thesis~\cite{Veblenphd}.) Our revision, on the other hand, does not appeal directly to the base case of the theorem, but instead counts ``crossings'' along a triangle's edge. As we shall see, the theoretical details of crossings ultimately exploit the base-case of the Polygonal Jordan Curve Theorem. It is therefore worth having a look at this base case, especially because it makes non-trivial use of our ordering tactic and the theory of half-planes.
 
 % \section{Triangle Interiors}\label{sec:TriangleInteriorDefinition}
-The above formulations and formalisation assume that we know how to express the interior, exterior and boundary of a triangle (respectively $\code{in\_triangle}$, $\code{on\_triangle}$ and $\code{out\_triangle}$). This we can do directly. Veblen, for instance, in his 1903 thesis~\cite{Veblenphd}, defined the interior of the triangle $ABC$ as the set of points $P$ such that there is a point $X$ on the segment $AB$ and a point $Y$ on $AC$ with $X$ between $Y$ and $Z$ (see Figure~\ref{fig:triangleDefs}). Here is another definition: the interior of $\triangle ABC$ is the set of all points on the same side of $AB$ as $C$, on the same side of $AC$ as $B$ and on the same side of $BC$ as $A$. In other words, the interior of a triangle is the intersection of three half-planes. The two formulations can be formalised as:
+The above formulations and formalisation assume that we know how to express the interior, exterior and boundary of a triangle (respectively $\code{in\_triangle}$, $\code{on\_triangle}$ and $\code{out\_triangle}$). This we can do directly. Veblen, for instance, in his 1903 thesis~\cite{Veblenphd}, defined the interior of the triangle $ABC$ as the set of points $P$ such that there is a point $X$ on the segment $AB$ and a point $Y$ on $AC$ with $P$ between $X$ and $Y$ (see Figure~\ref{fig:triangleDefs}). Here is another definition: the interior of $\triangle ABC$ is the set of all points on the same side of $AB$ as $C$, on the same side of $AC$ as $B$ and on the same side of $BC$ as $A$. In other words, the interior of a triangle is the intersection of three half-planes. The two formulations can be formalised as:
 \begin{equation*}
 \begin{split}
   &\code{in\_triangle\_veblen}\ (A,B,C)\ P \iff\\
@@ -253,7 +253,7 @@ We end this subsection by considering the formalisation of a triangle's boundary
 
 In fact, it is useful to reuse \code{on\_polypath} in this way in other places. For instance, we can refer to the set of points of a segment $AB$ with $\code{on\_polypath}\ [A,B]$, and given a triangle $ABC$, we can write $\code{on\_polypath}\ [A,B,C]$ to refer to the points on just two sides of the boundary. Such formulas will prove convenient later on in our verification.
 
-Finally, the exterior of a triangle can be defined simply as the set of points not on the triangle and not on the boundary. This definition classifies all points which are not on the plane as part of the exterior, but since we shall be relativising all of our theorems against a single plane, this does not matter.
+Finally, the exterior of a triangle can be defined simply as the set of points not on the triangle and not on the boundary. This definition classifies all points which are not on the plane as part of the exterior, but since we relativise all of our theorems against a single plane, this does not matter.
 \begin{multline*}
   \vdash_{def}\;\code{out\_triangle}\ (A,B,C)\ P\\
   \iff \neg\code{in\_triangle}\ (A,B,C)\ P\wedge\neg\code{on\_triangle}\ (A,B,C)\ P.
@@ -337,7 +337,7 @@ The rest of the proof is shown in Figure~\ref{fig:tricut12}. In contrast to the 
 %      /\ (between P Q R \/ between P R Q) ==> on_half_plane hp R
 \tag{\ref{eq:betOnHalfPlane1}}
   \begin{split}
-    \vdash\;&\code{on\_line}\ P\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{on\_half\_plane}\ hp\ Q\\
+    \vdash&\code{on\_line}\ P\ (\code{line\_of\_half\_plane}\ hp) \wedge \code{on\_half\_plane}\ hp\ Q\\
     &\implies \between{P}{Q}{R} \vee \between{P}{R}{Q} \implies \code{on\_half\_plane}\ hp
   \end{split}
 \end{equation*}
@@ -345,7 +345,7 @@ The rest of the proof is shown in Figure~\ref{fig:tricut12}. In contrast to the 
 \begin{split}
   % "!P Q R hp. on_half_plane hp P /\ on_half_plane hp R /\ between P Q R 
   % ==> on_half_plane hp Q"
-    \vdash\;&\code{on\_half\_plane}\ hp\ P \wedge \code{on\_half\_plane}\ hp\ R\\
+    \vdash&\code{on\_half\_plane}\ hp\ P \wedge \code{on\_half\_plane}\ hp\ R\\
     &\implies \between{P}{Q}{R} \implies \code{on\_half\_plane}\ hp\ Q
   \end{split}
 \end{equation*}
@@ -386,6 +386,8 @@ The verification captures the \emph{structure} of this line of argument almost e
   $\code{on\_half\_plane}\ hp$ & becomes & on the same side of $AB$ as $C$ and $P$;\\
   $\code{on\_half\_plane}\ hq$ & becomes & on the same side of $AC$ as $B$ and $P$;\\
   $\code{on\_half\_plane}\ hr$ & becomes & on the same side of $BC$ as $A$ and $P$;\\
+\end{tabular}{ccc}\linebreak
+\begin{tabular}{ccc}
   $\code{line\_of\_half\_plane}\ hp$ & becomes & the line $AB$; \\
   $\code{line\_of\_half\_plane}\ hq$ & becomes & the line $AC$; \\ 
   $\code{line\_of\_half\_plane}\ hr$ & becomes & the line $BC$. \\
@@ -407,14 +409,8 @@ We have made a without-loss-of-generality assumption in this argument, namely in
 Instead, we formalised the above argument as a lemma, and then wrote an \emph{ad hoc} procedural script to manually apply the symmetries. In ordered geometry, we only need to consider six symmetries and so the procedural boilerplate is hardly a bottle-neck compared to our use of MESON in declarative proofs, but this is still somewhat inelegant compared to doing proper without-loss-of-generality reasoning.
 
 \subsection{Additional Theorems}\label{sec:AdditionalTheorems}
-\begin{figure}
-\centering
-\includegraphics{jordanVerification1/triCutHalfPlane}
-\caption{Another point introduction theorem}
-\label{fig:triCutHalfPlane}
-\end{figure}
-
 We have one more theorem to introduce points. Here, we suppose that we have a point $P$ on the edge $AB$ of a triangle $ABC$ and a point $Q$ outside the triangle but on the same side of $AB$ as $C$. In this case, the segment $PQ$ must intersect the polygonal path $[A,B,C]$ at a point $X$ (see Figure~\ref{fig:triCutHalfPlane}). The half-plane $hp$ in this theorem is used to signify the side of $AB$ on which the point $C$ lies.
+
 \begin{equation}\label{eq:triCutHalfPlane}
 \begin{split}
 \vdash&\between{A}{P}{B}\\
@@ -424,6 +420,17 @@ We have one more theorem to introduce points. Here, we suppose that we have a po
 \end{split}
 \end{equation}
 
+The remaining four theorems assume we have a configuration of points in relation to a triangle, and conclude that one of the points is interior or exterior. These theorems are used routinely throughout the first half of our main verification, particularly when we come to counting how many times a polygonal path crosses the sides of a triangle (see \S\ref{sec:CrossingVerification}). Their proofs are similar to the one given in the previous section, and always reduce to reasoning about the interaction between rays and half planes.
+
+\begin{figure}
+\centering
+\includegraphics{jordanVerification1/triCutHalfPlane}
+\caption{Another point introduction theorem}
+\label{fig:triCutHalfPlane}
+\end{figure}
+
+We give diagrams and a short description for each theorem in Figures~\ref{fig:inTriangleTheorems} and~\ref{fig:outTriangleTheorems}. These theorems all have reasonably clear synthetic verifications, and together require 82 verification steps. Roughly two fifths of these steps are assisted by our incidence discoverer via the \code{obviously} and \code{clearly} primitives.
+
 \begin{figure}
 \centering
 \subfigure[Points between the sides of a triangle are interior \eqref{eq:inTriangle1}]{\includegraphics[scale=1.2]{jordanVerification1/inTriangle1}}
@@ -432,12 +439,6 @@ We have one more theorem to introduce points. Here, we suppose that we have a po
 \label{fig:inTriangleTheorems}
 \end{figure}
 
-The remaining four theorems assume we have a configuration of points in relation to a triangle, and conclude that one of the points is interior or exterior. These theorems are used routinely throughout the first half of our main verification, particularly when we come to counting how many times a polygonal path crosses the sides of a triangle (see \S\ref{sec:CrossingVerification}). Their proofs are similar to the one given in the previous section, and always reduce to reasoning about the interaction between rays and half planes.
-
-We give diagrams and a short description for each theorem in Figures~\ref{fig:inTriangleTheorems} and~\ref{fig:outTriangleTheorems}. These theorems all have reasonably clear synthetic verifications, and together require 82 verification steps. Roughly two fifths of these steps are assisted by our incidence discoverer via the \code{obviously} and \code{clearly} primitives.
-
-Note that Theorem~\ref{eq:inTriangle1} is one direction of the equivalence between our definition of triangles and Veblen's (see \S\ref{sec:TriangleInteriorDefinition}).
-
 \begin{figure}
 \centering\subfigure[A ray through an opposite side leaves the triangle \eqref{eq:outTriangle1}]{\includegraphics[scale=1.2]{jordanVerification1/outTriangle1}}
 \qquad\subfigure[A ray from inside the triangle to a side emerges outside the triangle \eqref{eq:outTriangle2}]{\includegraphics[scale=1.2]{jordanVerification1/outTriangle2}}
@@ -445,13 +446,15 @@ Note that Theorem~\ref{eq:inTriangle1} is one direction of the equivalence betwe
 \label{fig:outTriangleTheorems}
 \end{figure}
 
+Note that Theorem~\ref{eq:inTriangle1} is one direction of the equivalence between our definition of triangles and Veblen's (see \S\ref{sec:TriangleInteriorDefinition}).
+
 \begin{equation}\label{eq:inTriangle1}
   % "!A B C X Y P.
   %    ~(?a. on_line A a /\ on_line B a /\ on_line C a)
   %    /\ between A X B /\ between A Y C /\ between X P Y
   %    ==> in_triangle (A,B,C) P"
   \begin{split}
-    \vdash\;&\Triangle{a}{A}{B}{C}\\
+    \vdash&\Triangle{a}{A}{B}{C}\\
     &\wedge \between{A}{X}{B} \wedge (\between{A}{Y}{C} \vee C = Y)\\
     &\implies \between{X}{P}{Y} \implies \code{in\_triangle}\ (A,B,C)\ P.
   \end{split}
@@ -669,6 +672,10 @@ Now the definition of a crossing makes use of a triangle's interior, and differe
 
 There is key case-split here, shown in Figure~\ref{fig:CrossingWellDefined}. If $C$ and $C'$ are on the same side of $AB$ as in case (a), then the triangle interiors will overlap. Here, as we cross the edge $AB$, we enter or leave the interiors of both triangles together, a fact we verify as Theorem~\ref{eq:crossChangeLemma1} in Figure~\ref{fig:crossChangeLemma1}. On the other hand, if $C$ and $C'$ are on opposite sides of $AB$ as in (b), then the interiors of the two triangles are disjoint. In this case, as we move from the interior of $ABC$ across the edge $AB$ to the exterior, we simultaneously move from the exterior of $ABC'$ to the interior, a fact we verify as Theorem~\ref{eq:crossChangeLemma2} in Figure~\ref{fig:crossChangeLemma2}.
 
+These two theorems are proven by reasoning about half-planes and, in both cases, applying Theorem~\ref{eq:triCutHalfPlane}. The assumptions on half-planes in Theorem~\ref{eq:crossChangeLemma1} require that the points $C$ and $C'$ lie on the same side of $AB$. In Theorem~\ref{eq:crossChangeLemma2}, they require that $C$ and $C'$ lie on opposite sides. Theorem~\ref{eq:crossChangeLemma2} needs some extra assumptions since the negations make for very weak claims. For instance, the fact that $C'$ does not lie on $hp$ might just mean that it lies on the line $AB$, so we have to add in a condition that the points $A$, $B$ and $C'$ are non-collinear.
+
+The important assumption to note in both theorems is $\between{A}{P_i}{B}$. This reflects the fact that the case-split is only pertinent when we come to update and make use of the context variable $\Gamma$, which happens when the edge $P_iP_{i+1}$ has exactly one endpoint on the segment $AB$. So when the edge \emph{lands} on $AB$, the context variable must be correctly updated to say that we were last inside or outside the triangle. When it \emph{emerges} from $AB$, the context variable must be correctly utilised to say whether the edge $P_iP_{i+1}$ counts as a crossing. These matters can be formally clarified by the corollaries in Figures~\ref{fig:CrossChange1} and~\ref{fig:CrossChange2} (we do not reproduce the assumptions in full).
+
 \begin{figure}
 \begin{multline}\label{eq:crossChangeLemma1}
   \begin{aligned}
@@ -702,10 +709,6 @@ There is key case-split here, shown in Figure~\ref{fig:CrossingWellDefined}. If 
 \caption{Moving across $AB$ when $C$ and $C'$ are on opposite sides.}
 \label{fig:crossChangeLemma2}
 \end{figure}
-
-These two theorems are proven by reasoning about half-planes and, in both cases, applying Theorem~\ref{eq:triCutHalfPlane}. The assumptions on half-planes in Theorem~\ref{eq:crossChangeLemma1} require that the points $C$ and $C'$ lie on the same side of $AB$. In Theorem~\ref{eq:crossChangeLemma2}, they require that $C$ and $C'$ lie on opposite sides. Theorem~\ref{eq:crossChangeLemma2} needs some extra assumptions since the negations make for very weak claims. For instance, the fact that $C'$ does not lie on $hp$ might just mean that it lies on the line $AB$, so we have to add in a condition that the points $A$, $B$ and $C'$ are non-collinear.
-
-The important assumption to note in both theorems is $\between{A}{P_i}{B}$. This reflects the fact that the case-split is only pertinent when we come to update and make use of the context variable $\Gamma$, which happens when the edge $P_iP_{i+1}$ has exactly one endpoint on the segment $AB$. So when the edge \emph{lands} on $AB$, the context variable must be correctly updated to say that we were last inside or outside the triangle. When it \emph{emerges} from $AB$, the context variable must be correctly utilised to say whether the edge $P_iP_{i+1}$ counts as a crossing. These matters can be formally clarified by the corollaries in Figures~\ref{fig:CrossChange1} and~\ref{fig:CrossChange2} (we do not reproduce the assumptions in full).
 
 \begin{figure}
   \begin{gather*}
@@ -898,7 +901,9 @@ In this section, we shall review our verification of the parity proof that we sk
 \subsection{The Induction Proof}\label{sec:InductionProof}
 The parity proof assumes that we have two polygons $Ps$ and $Qs$ intersecting at an edge. Based on this, we consider a sequence of triangles formed from the vertices of the polygon $Ps$, and repeat a parity argument over the number of crossings.
 
-This argument readily formalises as a proof by induction, which gives us a nice reinterpretation. Rather than considering triangles with vertices drawn from $Ps$, we continually reduce the problem to smaller polygons. This inductive proof yields the (somewhat ugly) lemma:
+This argument readily formalises as a proof by induction, which gives us a nice reinterpretation. Rather than considering triangles with vertices drawn from $Ps$, we continually reduce the problem to smaller polygons. This inductive proof yields the (somewhat ugly) lemma given in Figure~\ref{fig:oddCrossClosedPolypath}.
+
+\begin{figure}
 \begin{equation}\label{eq:oddCrossClosedPolypath}
   % "!Ps Qs A B.
   %    LENGTH Qs >= 2
@@ -924,6 +929,9 @@ This argument readily formalises as a proof by induction, which gives us a nice 
     &\implies\exists X.\; \code{on\_polypath}\ (\append{[P_2]}{\append{Ps}{[P_1]}})\ X \wedge \code{on\_polypath}\ Qs\ X.
   \end{aligned}
 \end{equation}
+\caption{Parity Lemma}
+\label{fig:oddCrossClosedPolypath}
+\end{figure}
 
 Here, we assume two polygons of length at least two, namely $\append{[P_1,P_2]}{\append{Ps}{[P_1]}}$ and $Qs$. The polygon $Qs$ is assumed to cross the edge $P_1P_2$ an odd number of times. We then conclude that $Qs$ intersects the tail of $\append{[P_1,P_2]}{\append{Ps}{[P_1]}}$, exactly as we require in the sketch proof.
 
@@ -964,7 +972,7 @@ We now have an idea of how the quantifiers in this formula are to be used. We ne
 By applying Theorems~\ref{eq:crossNZIntersect} and~\ref{eq:polypathCrossingsEven}, we can then conclude that there must be an odd number of crossings at $P_1P_3$ \emph{with respect to the triangle $P_1P_2P_3$}. All we need now to complete the inductive step is to generalise this claim by quantifying over the variable $P_2$. For this final step, we just use our well-definedness theorem~\eqref{eq:changeTriangle}.
 
 \subsection{A Theorem of Polygonal Paths}\label{sec:PathTheorem}
-Theorem~\ref{eq:oddCrossClosedPolypath} is all we need to show that a simple polygon divides the plane into two regions. It is interesting to note, however, that we have not mentioned path connectedness in this theorem, nor have we supposed that the polygons concerned are simple. This suggests there is a more general corollary to be had, one whose formalisation does not mention \emph{crossings} at all. Indeed, this ugly concept serves only as the crucial scaffolding of the verification. It appears absent when presenting the final theorem.
+Theorem~\ref{eq:oddCrossClosedPolypath} is all we need to show that a simple polygon divides the plane into two regions. It is interesting to note, however, that we have not mentioned path connectedness in this theorem, nor have we supposed that the polygons concerned are simple. This suggests there is a more general corollary to be had, one whose formalisation does not mention \emph{crossings} at all. Indeed, this ugly concept serves only as the crucial scaffolding of the verification. It is absent in the statement of the final theorem.
 
 In a fairly short verification (42 steps), we apply Theorem~\ref{eq:oddCrossClosedPolypath} to obtain a beautifully symmetric theorem concerning arbitrary intersecting polygons:
 \begin{equation}\label{eq:intersectPolypathClosed}

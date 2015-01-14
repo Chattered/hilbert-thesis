@@ -11,9 +11,9 @@ So far as fully automated theorem proving goes, the oldest successes are probabl
 \subsection{Wu's Method}
 When considering general automation in Hilbert's \emph{Grundlagen der Geometrie}, there is probably no work more relevant than Wu's method~\cite{WuMechanicalTheoremProving}. Wu credited the \emph{Grundlagen} for the metatheoretical insights that led to his mechanisation procedure for the whole of geometry.
 
-One of those insights was that the method of proof in a synthetic geometry system such as Hilbert's often falls short of absolute rigour because degenerate cases are routinely missed. Typically, when we state axioms and properties of some geometric figure, we have in mind a ``genericity'' of that figure which is hard to capture formally. Moreover, our statements may admit some generalisation to what we would regard as degenerate cases, even if this is not immediately clear at the time. We have already seen that some of Hilbert's axioms, such as Axiom~\ref{eq:g11}, when combined with other axioms, generalise to degenerate cases, and we shall see this again with Axiom~\ref{eq:g24}, which we shall strengthen in Chapter~\ref{chapter:HalfPlanes}.
+One of those insights was that the method of proof in a synthetic geometry system such as Hilbert's often falls short of absolute rigour because degenerate cases are routinely missed. Typically, when we state axioms and properties of some geometric figure, we have in mind a ``genericity'' of that figure which is hard to capture formally. Our statements may admit some generalisation to what we would regard as degenerate cases, even if this is not immediately clear at the time. We have already seen that some of Hilbert's axioms, such as Axiom~\ref{eq:g11}, when combined with other axioms, generalise to degenerate cases, and we shall see this again with Axiom~\ref{eq:g24}, which we shall strengthen in Chapter~\ref{chapter:HalfPlanes}.
 
-But it is not always clear how the conditions in our statements can be relaxed. Moreover, when trying to rule out certain degenerate cases, there are plenty that are easily missed. When we formalise, we cannot simply neglect them unless we have proof tools that can do it for us. Filling in all the gaps requires enormous effort and complication of the verification, so it would seem that Wu is correct: we cannot be truly rigorous unless we can systematically deal with degenerate conditions. This provides an alternative way to diagnose the gaps in Hilbert's proofs spotted by Meikle and Fleuriot~~\cite{MeikleFleuriotFormalizingHilbert}: they were gaps concerning degeneracy conditions about point incidence.
+But it is not always clear how the conditions in our statements can be relaxed. Moreover, when trying to rule out certain degenerate cases, there are plenty that are easily missed. When we formalise, we cannot simply neglect them unless we have proof tools that can do it for us. Filling in all the gaps requires enormous effort and complication of the verification, so it would seem that Wu is correct: we cannot be truly rigorous unless we can systematically deal with degenerate cases. This provides an alternative way to diagnose the gaps in Hilbert's proofs spotted by Meikle and Fleuriot~~\cite{MeikleFleuriotFormalizingHilbert}: they were gaps concerning degenerate cases of point incidence.
 
 Wu's highly celebrated method automatically inserts non-degeneracy conditions as it carries out proofs, and if possible, it automatically deletes redundant conditions to keep results generic. The method has been used to automatically prove an enormous number of non-trivial results in unordered geometry \cite{MechanicalGeometryTheoremProving}.
 
@@ -116,8 +116,8 @@ In this narrow domain, it was easy to imagine simple programs which could do the
 Our domain of incidence reasoning is naturally partitioned into data of five kinds. We aimed for an implementation which respected this partitioning, thereby greatly reducing the number of combinations of data we need to try with each rule from \S\ref{list:Procedures}. These rules become the plumbing connecting the data. The data-flow model implied is given in Figure~\ref{fig:DataFlow}.
 
 \begin{figure}
-\centering\includegraphics[scale=0.5]{automation/DataFlow}
-\caption{Data-flow for incidence reasoning. The five boxes represent our five lists of data, while triangles represent inference rules}
+\centering\includegraphics[scale=0.28]{automation/DataFlow}
+\caption{Data-flow for incidence reasoning. The five boxes represent our five lists of data, while triangles represent inference rules.}
 \label{fig:DataFlow}
 \end{figure}
 
@@ -504,7 +504,7 @@ Finally, Ocaml's lazy list library has some unexpected implementation choices. F
 Besides these issues, the syntax for lazy lists in Ocaml is cumbersome. Primitive list functions have to explicitly force lazy lists, while recursive lazy lists must be wrapped with a \code{lazy} keyword. One benefit, however, of Ocaml's lazy list implementation is that it detects when a recursive definition requires forcing a vicious circularity. Such a scenario arises when the computation of the first element of $xs$ requires computing the first element of $ys$, and \emph{vice versa}. Such situtations occur easily when writing discoverers in our algebra, and are fixed with choice uses of the $\code{delay}$ function.
 
 \section{Applicative Functors}\label{sec:Applicative}
-An idiom or applicative functor $F$~\cite{Applicative} is a generalisation of the monad, which could be thought of as providing at least the ability to lift values with a function $pure\;:\;\alpha \rightarrow F\ \alpha$ and to lift a two argument function as we do with 
+An \emph{idiom} or \emph{applicative functor} $F$~\cite{Applicative} is a generalisation of the monad, which could be thought of as providing at least the ability to lift values with a function $pure\;:\;\alpha \rightarrow F\ \alpha$ and to lift a two argument function as we do with 
 \begin{displaymath}
 \code{fmap2}\;:\;(\alpha\rightarrow\beta\rightarrow\gamma)\rightarrow F\ \alpha \rightarrow F\ \beta \rightarrow F\ \gamma.
 \end{displaymath}

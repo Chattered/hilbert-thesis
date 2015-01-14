@@ -385,6 +385,8 @@ Direct deduction, or \emph{modus ponens}, is the basis of forward-chaining and w
 We first have to deal with \emph{exceptions}. In HOL~Light, the \emph{modus ponens} inference rule will throw an exception if its arguments are of incorrect form, so we first redefine \code{fmap} to filter thrown exceptions out of the discovery. It is generally undesirable to let exceptions propagate upwards, since this would lead to an entire discoverer being halted. 
 
 With \code{fmap} redefined as \code{fmap'}, we can define functions $\code{fmap2}'$ and $\code{fmap3}'$ which lift two and three-argument functions up to the level of discoverers, also filtering for exceptions.
+\begingroup
+\allowdisplaybreaks
 \begin{align*}
 \code{fmap}'\;f\;xs &= xs \bind (\lambda x.\;\code{try}\; \code{return}\;(f\;x)  \code{ with \_ } \rightarrow 0)\;xs\\
 \code{fmap2}'\;f\;xs\;ys &= \code{fmap}\;f\;xs \bind (\lambda f.\;\code{fmap}'\;f\;ys)\\
@@ -398,6 +400,7 @@ With these, we can define the following forward-deduction functions:
 \code{chain}\;imps\;xs &= imps \bind (\lambda imp.\;\code{if is\_imp } imp\\ &\code{then } \code{chain}\;(\code{fmap}\;(\code{MATCH\_MP}\;imp)\;thms)\;thms\\
 &\code{else } \code{return}\; imp).
 \end{align*}
+\endgroup
 
 The function \code{is\_imp} is a standard HOL~Light function which returns \code{true} if the right hand side of its sequent argument is an implication, while $\code{MATCH\_MP}$ is the matching \emph{modus ponens} derived inference rule
 \begin{displaymath}\infer[\code{MATCH\_MP}]{\Gamma\cup\Delta \vdash Q'}{\Gamma \vdash P \implies Q&\Delta \vdash P'}

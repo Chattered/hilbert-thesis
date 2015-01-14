@@ -1,9 +1,9 @@
 \chapter{Elementary Consequences in Group~II}\label{chapter:Group2Eval}
-We now come to verify some theorems of Group~II, the only theorems in the first two groups which have prose proofs in the tenth edition of \emph{Grundlagen der Geometry}. Each proof uses Axiom~\ref{eq:g24}, which, as we explained in Chapter~\ref{chapter:Axiomatics}, carries several incidence preconditions. Establishing these preconditions made up the bulk of the effort in our manual verifications~\cite{ScottMScThesis} and in the verifications of Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}.
+We now come to verify some theorems of Group~II, the only theorems in the first two groups which have prose proofs in the tenth edition of the \emph{Grundlagen der Geometrie}. Each proof uses Axiom~\ref{eq:g24}, which, as we explained in Chapter~\ref{chapter:Axiomatics}, carries several incidence preconditions. Establishing these preconditions made up the bulk of the effort in our manual verifications~\cite{ScottMScThesis} and in the verifications of Meikle and Fleuriot~\cite{MeikleFleuriotFormalizingHilbert}.
 
 In the last chapter, we described some automation to handle the incidence reasoning.
 An aim of the present chapter is to see how much this automation can help us shorten
-our verifications, make it easier to develop them and to find alternative proofs. Our ideal is for the verification steps to match the steps of an ideal prose proof, here modelled by Hilbert’s own arguments, which focus on defining and exhibiting the diagram needed to establish a result, rather than discharging tedious incidence preconditions.
+our verifications, make it easier to develop them and make it possible to find alternative proofs. Our ideal is for the verification steps to match the steps of an ideal prose proof, here modelled by Hilbert’s own arguments, which focus on defining and exhibiting the diagram needed to establish a result, rather than discharging tedious incidence preconditions.
 
 When writing our verifications, we tried our best to follow the specific steps in Hilbert's prose, and in this chapter, we shall directly compare our verifications with the originals. As we shall see, this allows us to comment on the prose in great detail.
 
@@ -90,7 +90,7 @@ It can now be seen that the diagram obtained in Hilbert's proof of THEOREM~3 is 
 \label{fig:VeblenHilbert}
 \end{figure}
 
-Veblen's diagram replaces the Inner Pasch Axiom with the Outer Pasch Axiom, but is otherwise very similar. If we take a relabelling $B \mapsto C$, $C \mapsto F$, $D \mapsto G$ and $F \mapsto D$, then we see that Veblen's second use of Axiom~\ref{eq:g22} (the line extension axiom) differs from Hilbert's by finding the point $G$ on the other side of the segment $CF$ (see Figure~\ref{fig:VeblenHilbert}). Where Hilbert uses the Inner Pasch Axiom, Veblen sets himself up to use the Outer Pasch Axiom:
+Veblen's diagram replaces the Inner Pasch Axiom with the Outer Pasch Axiom, but is otherwise very similar. If we take a relabelling $B \mapsto C$, $C \mapsto F$, $D \mapsto G$ and $F \mapsto D$, then we see that Veblen's second use of Axiom~\ref{eq:g22} (the line extension axiom) differs from Hilbert's by finding the point $G$ on the other side of the segment $CF$ (see Figure~\ref{fig:VeblenHilbert}). Where Hilbert sets himself up to use the Inner Pasch Axiom, Veblen sets himself up to use the Outer Pasch Axiom:
 
 \begin{quotation}\label{sec:VeblenThree}
 [...]. Between every two distinct points there is a third point.
@@ -129,6 +129,8 @@ We cannot define a new discoverer which finds possible applications of Axiom~\re
 Instead, we defined a new discoverer \code{by\_pasch} with a combination of ML and monad library functions. We filter for betweenness sequents from an existing discoverer and use these to discharge one of the preconditions of Axiom~\ref{eq:g24}. We then reuse the discoverer \code{by\_ncols} to discharge the triangle preconditions, manually handling the ordering of the free variables each time a precondition is eliminated. 
 
 The \code{by\_pasch} discoverer therefore outputs sequents which are the conclusions of Axiom~\ref{eq:g24}, telling us where the axiom can be applied. At the point in Hilbert's proof where the axiom is first used, the discoverer finds only one other possibility. Hilbert uses one after the other.
+\begingroup
+\allowdisplaybreaks
 \begin{gather*}
 \begin{split}
 &\exists F.\; (\exists a.\; \code{on\ line}\ C\ a \wedge \code{on\ line}\ D\ a \wedge \code{on\ line}\ F\ a)\\
@@ -139,6 +141,7 @@ The \code{by\_pasch} discoverer therefore outputs sequents which are the conclus
 &\qquad \wedge (\between{B}{F}{C} \vee \between{C}{F}{G}).
 \end{split}
 \end{gather*}
+\endgroup
 
 After Hilbert applies the first of these, another three possibilities arise, depicted in Figure~\ref{fig:FourPossibilities}.
 \begin{gather*}

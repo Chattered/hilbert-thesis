@@ -9,7 +9,7 @@ We ended the last chapter by discussing two of the three parts of Hilbert's proo
   \flushright{\cite[pp. 7-8]{FoundationsOfGeometry}}
 \end{quotation}
 
-It strikes us that a \emph{labelling} of points is a syntactic device, a reference to symbols used to mention points rather than points themselves. Thinking more formally, we could identify a labelling with an assignment of values to variables. The existence of a labelling is then the existence of these assignments. With this in mind, a first pass at trying to faithfully formalise THEOREM~6 could view it as a \emph{schema}, asserting that, given some points on a line $A'$, $B'$, $C'$, $D'$, $\ldots$, $K'$, there exists an appropriate assignment to the points $A$, $B$, $C$, $D$, $\ldots$, $K$:
+It strikes us that a \emph{labelling} of points is a syntactic device, a reference to the symbols used to mention points rather than a reference to the points themselves. Thinking more formally, we could identify a labelling with an assignment of values to variables. The existence of a labelling is then the existence of these assignments. With this in mind, a first pass at trying to faithfully formalise THEOREM~6 could view it as a \emph{schema}, asserting that, given some points on a line $A'$, $B'$, $C'$, $D'$, $\ldots$, $K'$, there exists an appropriate assignment to the points $A$, $B$, $C$, $D$, $\ldots$, $K$:
 \begin{equation*}
   \begin{split}
     &\exists a.\;\code{on\_line}\ A'\ a\wedge\code{on\_line}\ B'\ a\wedge\code{on\_line}\ C'\ a\wedge\code{on\_line}\ D'\ a\\
@@ -78,7 +78,7 @@ We can then represent total orders as conjunctions ordering adjacent points. So,
 \wedge\between{A}{E}{F}\wedge\between{A}{F}{G}\wedge\between{A}{G}{H}.
 \end{multline}
 
-We want to retrieve all other betweenness relations implied by this sequent quickly. Before we describe how we do this, we will separate THEOREM~5, whose verification we considered in the last chapter, into two separate theorems. The first theorem \eqref{eq:five2a} will ``move the origin'' from $A$ to $B$ in our representation. The second theorem \eqref{eq:five2b}, understanding the $\code{between}$ relation as a binary relation whose first argument is the origin parameter, gives us transitivity.
+We want to retrieve all other betweenness relations implied by this sequent quickly. Before we describe how we do this, we will separate THEOREM~5, whose verification we considered in the last chapter, into two separate theorems. The first theorem \eqref{eq:five2a} will ``move the origin'' from $A$ to $B$ in our representation. The second theorem \eqref{eq:five2b}, when we understand the $\code{between}$ relation as a binary relation whose first argument is the origin parameter, gives us transitivity.
 \begin{gather}
 \label{eq:five2a}\vdash \between{A}{B}{C} \wedge \between{A}{C}{D} \implies \between{B}{C}{D}.\\
 \label{eq:five2b}\vdash \between{A}{B}{C} \wedge \between{A}{C}{D} \implies \between{A}{B}{D}.
@@ -284,15 +284,19 @@ Informally, and for the purposes of explaining our formalisation, we identify a 
 
 Thus, the successor of $0$ is the diagram obtained by replacing $0$ with $1$, the intersection of $CD$ and $A0$. To obtain the next successor, we first find the intersection of $1B$ and $AC$, namely the point $C_1$. We then replace $1$ with the intersection of $C_1D$ and $A0$. 
 
-In general, the successor of a diagram is obtained by finding $C'$, the intersection of $BN$ and $AC$, and then finding the intersection of $C'D$ and $A0$. Formally\label{sec:UseOfIota}:
+In general, the successor of a diagram is obtained by finding $C'$, the intersection of $BN$ and $AC$, and then finding the intersection of $C'D$ and $A0$. The definition is formalised in Figure~\ref{fig:sucDefinition}.\label{sec:UseOfIota}
+\begin{figure}
 \begin{align*}
-\vdash \code{ind\_suc}\, n =& \code{let } (A,B,C,D,0,N) = \code{dest\_ind}\ n \code{ in}\\
+\vdash_{def}\; \code{ind\_suc}\, n =& \code{let } (A,B,C,D,0,N) = \code{dest\_ind}\ n \code{ in}\\
 &\quad \code{mk\_ind} (A,B,C,D,0,\iota S.\\
 &\quad\qquad \exists C'.\; (\exists a.\;\online{B}{a} \wedge \online{C'}{a} \wedge \online{N}{a})\\
 &\qquad\qquad \wedge (\exists a.\;\online{C'}{a} \wedge \online{D}{a} \wedge \online{S}{a})\\
 &\qquad\qquad \wedge (\exists a.\;\online{A}{a} \wedge \online{C}{a} \wedge \online{C'}{a})\\
 &\qquad\qquad \wedge \between{A}{S}{0} \wedge \between{A}{S}{N}).
 \end{align*}
+\caption{Definition of \code{ind\_suc}}
+\label{fig:sucDefinition}
+\end{figure}
 
 We have used the $\iota$ operator in this definition. This is the ``definite description'' operator, which is a weaker version of the $\epsilon$ ``indefinite description operator''. The $\epsilon$ operator is specified by one of the three classical axioms of higher-order logic, and is equivalent to the full axiom of choice.
 \begin{displaymath}
@@ -311,7 +315,8 @@ The price comes in the complexity of the $\code{ind}$ representatives. We cannot
 \subsection{Lemmas}
 Our successor function above destructs an abstract diagram into its six points, chooses the unique point $S$, and finally rebuilds the diagram. 
 
-We now need some lemmas concerning $\code{dest\_ind}$. Importantly, we need to show that the reconstructed diagram represents an abstract diagram, and thus show that the image of $\code{mk\_ind}$ in our definition is well-defined. Formally:
+We now need some lemmas concerning $\code{dest\_ind}$. Importantly, we need to show that the reconstructed diagram represents an abstract diagram, and thus show that the image of $\code{mk\_ind}$ in our definition is well-defined. The formal theorem is given in Figure~\ref{fig:sucWellDefined}.
+\begin{figure}
 \begin{align*}
 \vdash \code{dest\_ind}\ &(\code{ind\_suc}\ n) =  \code{let } (A,B,C,D,0,N) = \code{dest\_ind}\ n \code{ in}\\
 &\quad (A,B,C,D,0,\iota S.\\
@@ -319,7 +324,10 @@ We now need some lemmas concerning $\code{dest\_ind}$. Importantly, we need to s
 &\qquad\quad \wedge (\exists a.\;\online{C'}{a} \wedge \online{D}{a} \wedge \online{S}{a})\\
 &\qquad\quad \wedge (\exists a.\;\online{A}{a} \wedge \online{C'}{a} \wedge \online{D}{a})\\
 &\qquad\quad \wedge \between{A}{S}{0} \wedge \between{A}{S}{N}).
-\end{align*} 
+\end{align*}
+\caption{Images of \code{ind\_suc} are are well-defined}
+\label{fig:sucWellDefined}
+\end{figure}
 
 The key step needed to verify this theorem comes from realising that the diagrams involving the points $A,B,C,0,D$ and $A,B,C',N,D$ satisfy the same constraints. So in each case, we can apply Pasch's axiom \eqref{eq:g24} to $\triangle AB0$ and the line $C'D$ to obtain a point $S$ between $A$ and $0$. For our initial diagram, where $C' = C$, we can apply this argument directly. For the other diagrams, we just need to find the point $C'$.
 
@@ -335,7 +343,7 @@ Putting the two facts together, we verify:
 \vdash\code{one\_one}\ \code{ind\_suc} \wedge \neg\code{onto}\ \code{ind\_suc}.
 \end{equation*}
 
-This tells us that the abstract type $\code{ind}$ has an infinite domain. However, the domain is not the natural numbers. Since we are allowed to take the successor of any diagram where the point $N$ is any point lying between $A$ and $0$, or is the point $0$ itself, it is clear that most of the images of $\code{ind\_suc}$ are \emph{not} in the sequence
+This tells us that the abstract type $\code{ind}$ has an infinite domain. However, the domain is \emph{not} isomorphic to the natural numbers. It consists at least of the diagrams where the point $N$ is any point lying between $A$ and $0$, and infinitely many of these are \emph{not} in the sequence
 \begin{displaymath}
 0, \code{ind\_suc } 0, \code{ind\_suc }(\code{ind\_suc } 0), \code{ind\_suc }(\code{ind\_suc }(\code{ind\_suc } 0)),  \ldots.
 \end{displaymath}
@@ -383,7 +391,7 @@ $S$ \text{ lies between } $P$ \text{ and } $R$,
 Hilbert says the case-analysis arises from applications of \ref{eq:four}, which tells us that of three points, one lies between the other two. When we generalise from four points to $n+1$ points, we apply induction, and two of the applications of \ref{eq:four} become applications of our inductive hypothesis to $n$ points. We give the generalised proof now together with some verified lemmas. We follow the original proof closely to show how the inferences become generalised.
 
 \begin{proposition}
-Given any finite number of points on a line it is always possible to label them it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc.
+Given any finite number of points on a line it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc.
 \end{proposition}
 \begin{proof}
 The case for $1$ and $2$ points is trivial. The case for three points is covered by THEOREM~4. Assume, for induction, that the theorem holds for $n$ points.
@@ -396,24 +404,20 @@ Now let $n+1$ points on a line be given. Take $n$ of the points and label $P$, $
 \noindent or $S$ lies between $P$ and $R$.
 \vspace{0.5cm}
 
-In the last case, we apply our inductive hypothesis to the points $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $S$. For any of the positions of $S$, we can apply Theorem~\ref{eq:OrderExtend} to label all the points in order.
-\end{proof}
-Thus, we verify:
+In the last case, we apply our inductive hypothesis to the points $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $S$. For any of the positions of $S$, we can apply the following theorem \eqref{eq:OrderExtend} to label all the points in order:
 \begin{gather}
   \begin{aligned}  \label{eq:OrderExtend}
     &\vdash\code{finite}\ X \wedge \code{ordering}\ f\ X \wedge \between{(f 0)}{(f (|X| - 1))}{x}\\
     &\qquad \implies \exists g.\; \code{ordering}\ g\ (\{x\} \cup X)
   \end{aligned}\\
-\end{gather}
-
-We have replaced Hilbert's reference to his earlier parts of \ref{eq:five} with a reference to its generalisation in Theorem~\ref{eq:OrderExtend}. We actually need a few other lemmas to verify this. Consider that after our final application of the inductive hypothesis, we will have two orderings $f$ and $g$. The ordering $f$ runs $P,$ $Q_1$, $Q_2$, $\ldots$, $Q_{n-2},$ $R$, and the ordering $g$ runs $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $S$. But this is a notational shortcut, as we gloss over the implicit assumption that we have chosen the orders such that $f(0) = g(0) = P$. In our verification, we can make this reasoning explicit with Theorem~\ref{eq:ChooseOrder}, which uses the auxiliary concept of \code{bounds}.
-\begin{gather}
   \vdash_{def}\; \code{bounds}\ P\ Q\ X \iff P,Q \in X \wedge \forall R.\; R \in X - \{P,Q\} \implies \between{P}{R}{Q}\notag\\
   \begin{aligned}  \label{eq:ChooseOrder}
     &\vdash x \in X \wedge \code{finite}\ X \wedge \code{ordering}\ f\ X \wedge \code{bounds}\ P\ Q\ X\\
     &\qquad\implies\exists f'.\; \code{ordering}\ f'\ X \wedge f'\,0 = P \wedge f'\,(|X| - 1) = Q.
   \end{aligned}
 \end{gather}
+\end{proof}
+We have replaced Hilbert's reference to his earlier parts of \ref{eq:five} with a reference to its generalisation in Theorem~\ref{eq:OrderExtend}. We actually need a few other theorems. Consider that after our final application of the inductive hypothesis, we will have two orderings $f$ and $g$. The ordering $f$ runs $P,$ $Q_1$, $Q_2$, $\ldots$, $Q_{n-2},$ $R$, and the ordering $g$ runs $P$, $Q_1$, $Q_2$, $\ldots$, $Q_{n-2}$, $S$. But this is a notational shortcut, as we gloss over the implicit assumption that we have chosen the orders such that $f(0) = g(0) = P$. In our verification, we can make this reasoning explicit with Theorem~\ref{eq:ChooseOrder}, which uses the auxiliary concept of \code{bounds}.
 
 Our generalised proof handles its case-analyses by one application of THEOREM~4, and two applications of the inductive hypothesis. This means we must apply well-founded induction rather than normal structural induction, since we must instantiate our inductive hypothesis in two different ways. 
 

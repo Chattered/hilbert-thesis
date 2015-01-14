@@ -179,12 +179,15 @@ The proof that we have an equivalence relation boils down entirely to properties
 With these, we can verify three theorems showing that polygonal path-connectedness defines an equivalence relation. The domain of the relation is the set of points in the plane which are not points of the figure. The constraint appears as an assumption on reflexivity. 
 
 Obviously, we will need the three theorems \emph{somewhere} in our later verification, though it turns out that they are not used very often. They can be seen, at least, as a sanity check on our notion of polygonal path-connectedness.
+\begingroup
+\allowdisplaybreaks
 \begin{align*}
   \vdash&\code{on\_plane}\ P\ \alpha \wedge \neg figure\ P \implies \code{polypath\_connected}\ \alpha\ figure\ P\ P.\\
   \vdash&\code{polypath\_connected}\ \alpha\ figure\ P\ Q \implies \code{polypath\_connected}\ \alpha\ figure\ Q\ P.\\
   \vdash&\code{polypath\_connected}\ \alpha\ figure\ P\ Q \wedge \code{polypath\_connected}\ \alpha\ figure\ Q\ R\\
   &\qquad\implies \code{polypath\_connected}\ \alpha\ figure\ P\ R.
 \end{align*}
+\endgroup
 
 \subsection{Polygons}\label{sec:polygonFormalisation}
 Hilbert continues his definitions as follows:
@@ -226,12 +229,15 @@ The definition would still be rather unwieldy. First, we have a ``magic'' number
 Given the unwieldiness of this formalisation, we must be wary of subtle mistakes. These could lead either to some figures being classed as simple polygons when they should not be, or some figures not being classed as simple polygons when they should. The first sort of error must show up in the verification. The second sort of error is more insidious, since it will only cause our verification to become all too easy. In the worst case, the definition will be unsatisfiable and all theorems of simple polygons will become trivial. This might happen if, say, we had removed the use of \code{butlast} above.
 
 Of particular concern is the behaviour of the function $\code{pairwise}$. One might think that $\code{pairwise}\ R$ would check whether the relation $R$ holds across all pairs of elements drawn from its argument list, which would be the case if $\code{pairwise}$ were equivalent to $\code{all} \circ \code{fmap2}\ R$ for the usual list monad. If this were the case, the definition would be unsatisfiable, since it is always possible to draw some pair $(P,P)$ from a non-empty list, and this pair cannot satisfy $(\neq)$. But in fact, \code{pairwise} only checks half the pairs, and so can be satisfied even when the supplied relation is irreflexive (such as $(\neq)$ above). It even holds for anti-symmetric relations. Consider $\code{pairwise}\ (<)\ [1,2,3,4]$:
+\begingroup
+\allowdisplaybreaks
 \begin{align*}
   \vdash\code{pairwise}\ (<)\ [1,2,3,4] &= 1 < 2 < 3 < 4 \\
   &\quad\wedge\; 2 < 3 < 4 \\
   &\quad\wedge\; 3 < 4\\
   & = \top.
 \end{align*}
+\endgroup
 
 For now, inspection is the best way to inspire confidence in the definition, but there are two other small reassurances. Firstly, the definition does not appear until the final hurdles of our formal verification. Our verification of Veblen's lemma, for instance, makes no reference to simple polygons. Thus, there is plenty of verified theory which can be understood independently of the above definition. Secondly, we have the following simple sanity check, verifying that a triangle is a simple polygon.
 \begin{equation*}

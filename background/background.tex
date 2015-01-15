@@ -10,7 +10,7 @@ In \S\ref{sec:DeclarativeProof}, we introduce the idea of a declarative verifica
 We direct the reader's attention to \S\ref{sec:Conventions}, in which we explain a few conventions on how we will use the words \emph{theorem}, \emph{formal theory}, \emph{verification} and \emph{formalisation} throughout the rest of the thesis.
 
 \section{Object Logic}\label{sec:ObjectLogic}
-The logic of our proof assistant is Church's Simple Theory of Types~\cite{ChurchTheoryOfTypes} or the simply-typed lambda calculus. This calculus is typically associated with the foundations of programming languages, but it was originally conceived as a foundation for logic~\cite{UntypedTheoryLambdaCalculus}, one which avoided the paradoxes of the na\"{i}ve set theories in a way that was less ``artificial'' than both ZF set theory and Russell's Ramified Type Theory~\cite{RussellTheoryOfTypes}.
+The logic of our proof assistant is Church's Simple Theory of Types~\cite{ChurchTheoryOfTypes} or the simply-typed lambda calculus. This calculus is typically associated with the foundations of programming languages, but it was originally conceived as a foundation for logic~\cite{UntypedTheoryLambdaCalculus}, one which avoided the paradoxes of the na\"{i}ve set theories in a way that was, according to Church, less ``artificial''~\cite[p. 347]{UntypedTheoryLambdaCalculus} than both ZF set theory and Russell's Ramified Type Theory~\cite{RussellTheoryOfTypes}.
 
 The original lambda calculus turns out to be inconsistent (all terms are provably\linebreak equal~\cite{InconsistencyLambdaCalculus}), and ironically, Church fixed the problem in essentially the same way as Russell, though by the time he did so, Russell's ramified types had been simplified; hence, the \emph{simple theory of types}.
 
@@ -177,7 +177,7 @@ We end this subsection by introducing a final piece of core syntax. The axiom of
 \end{equation*}
 
 \subsection{Axiom of Infinity}\label{sec:InfinityDescription}
-The final axiom in HOL~Light is the axiom of infinity. We will discuss this axiom in some detail in Chapter~\ref{chapter:LinearOrder}. For now, we will only say in advance that it is provably redundant when we have Hilbert's first two groups of axioms. We have therefore deleted it, an act we are tempted to believe would appease a later sceptical Hilbert, who would come to reject infinite sets as a foundational element of mathematics~\cite{OnInfinite}: ``[the infinite] neither exists in nature nor provides a legitimate basis for rational thought.''
+The final axiom in HOL~Light is the axiom of infinity. We will discuss this axiom in some detail in Chapter~\ref{chapter:LinearOrder}. For now, we will only say in advance that it is provably redundant when we have Hilbert's first two groups of axioms. We have therefore deleted it, hoping we might thereby appease the later sceptical Hilbert, who would come to reject infinite sets as a foundational element of mathematics: ``[the infinite] neither exists in nature nor provides a legitimate basis for rational thought''~\cite[p.~201]{OnInfinite}.
 
 \section{Verification Tools}\label{sec:UserTools}
 Outside of the relatively tiny HOL~Light kernel is a huge collection of verification tools written in user code. In many cases, we do not care how these tools work, or whether they even contain bugs, since bugs cannot penetrate the boundary of the kernel. We only care that the tools generate the sequent we want.

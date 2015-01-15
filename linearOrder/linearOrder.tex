@@ -343,7 +343,7 @@ Putting the two facts together, we verify:
 \vdash\code{one\_one}\ \code{ind\_suc} \wedge \neg\code{onto}\ \code{ind\_suc}.
 \end{equation*}
 
-This tells us that the abstract type $\code{ind}$ has an infinite domain. However, the domain is \emph{not} isomorphic to the natural numbers. It consists at least of the diagrams where the point $N$ is any point lying between $A$ and $0$, and infinitely many of these are \emph{not} in the sequence
+This tells us that the abstract type $\code{ind}$ has an infinite domain. However, the domain is \emph{not} isomorphic to the natural numbers. It consists at least of the diagrams where the point $N$ is any point lying between $A$ and $0$, and infinitely many of these are not in the sequence
 \begin{displaymath}
 0, \code{ind\_suc } 0, \code{ind\_suc }(\code{ind\_suc } 0), \code{ind\_suc }(\code{ind\_suc }(\code{ind\_suc } 0)),  \ldots.
 \end{displaymath}
@@ -390,7 +390,7 @@ $S$ \text{ lies between } $P$ \text{ and } $R$,
 
 Hilbert says the case-analysis arises from applications of \ref{eq:four}, which tells us that of three points, one lies between the other two. When we generalise from four points to $n+1$ points, we apply induction, and two of the applications of \ref{eq:four} become applications of our inductive hypothesis to $n$ points. We give the generalised proof now together with some verified lemmas. We follow the original proof closely to show how the inferences become generalised.
 
-\begin{proposition}
+\begin{proposition}[THEOREM~6]
 Given any finite number of points on a line it is always possible to label them $A$, $B$, $C$, $D, \ldots, K$ in such a way that the point labelled $B$ lies between $A$, and $C$, $D$, $E, \ldots, K$, the point labelled $C$ lies between $A$, $B$ and $D$, $E,\ldots K,$ $D$ lies between $A$, $B$, $C$ and $E, \ldots,$ etc.
 \end{proposition}
 \begin{proof}

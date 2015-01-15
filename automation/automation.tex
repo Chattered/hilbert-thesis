@@ -507,7 +507,7 @@ Finally, Ocaml's lazy list library has some unexpected implementation choices. F
 Besides these issues, the syntax for lazy lists in Ocaml is cumbersome. Primitive list functions have to explicitly force lazy lists, while recursive lazy lists must be wrapped with a \code{lazy} keyword. One benefit, however, of Ocaml's lazy list implementation is that it detects when a recursive definition requires forcing a vicious circularity. Such a scenario arises when the computation of the first element of $xs$ requires computing the first element of $ys$, and \emph{vice versa}. Such situtations occur easily when writing discoverers in our algebra, and are fixed with choice uses of the $\code{delay}$ function.
 
 \section{Applicative Functors}\label{sec:Applicative}
-An \emph{idiom} or \emph{applicative functor} $F$~\cite{Applicative} is a generalisation of the monad, which could be thought of as providing at least the ability to lift values with a function $pure\;:\;\alpha \rightarrow F\ \alpha$ and to lift a two argument function as we do with 
+An \emph{idiom} $F$ or \emph{applicative functor}~\cite{Applicative} is a generalisation of a monad, which could be thought of as providing at least the ability to lift values with a function $pure\;:\;\alpha \rightarrow F\ \alpha$ and to lift a two argument function as we do with 
 \begin{displaymath}
 \code{fmap2}\;:\;(\alpha\rightarrow\beta\rightarrow\gamma)\rightarrow F\ \alpha \rightarrow F\ \beta \rightarrow F\ \gamma.
 \end{displaymath}

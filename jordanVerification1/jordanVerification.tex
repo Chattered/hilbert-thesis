@@ -379,19 +379,21 @@ The basic strategy of the verification is to note that because $A$ and $Q$ lie o
 
 To do this, we note that $P$ and $X$ lie on a ray emerging from the point $Q$ on the line $AB$, and so they must be on the same side of this line. Thus $P$, $C$ and $X$ must all lie on the same side of $AB$ which means that the point $B$ cannot possibly lie between any of them. Similar considerations apply if we look at the line $AC$. We can thus conclude that $X$ can only lie between $B$ and $C$.
 
-The verification captures the \emph{structure} of this line of argument almost exactly. However, the terms are almost completely different. To begin with, we do not introduce anonymous rays. This would only add extra $\code{consider}$ steps, which is unnecessary when we can talk directly in terms of betweenness. We also avoid talking in terms of sides of a line by talking instead in terms of half-planes. We effectively have the translation
+The verification captures the \emph{structure} of this line of argument almost exactly. However, the terms are almost completely different. To begin with, we do not introduce anonymous rays. This would only add extra $\code{consider}$ steps, which is unnecessary when we can talk directly in terms of betweenness. We also avoid talking in terms of sides of a line by talking instead in terms of half-planes. We effectively have the translations given in Figure~\ref{fig:halfPlanesInterpret}.
 
+\begin{figure}
 \label{sec:HalfPlaneTranslations}
 \begin{tabular}{ccc}
-  $\code{on\_half\_plane}\ hp$ & becomes & on the same side of $AB$ as $C$ and $P$;\\
-  $\code{on\_half\_plane}\ hq$ & becomes & on the same side of $AC$ as $B$ and $P$;\\
-  $\code{on\_half\_plane}\ hr$ & becomes & on the same side of $BC$ as $A$ and $P$;\\
-\end{tabular}{ccc}\linebreak
-\begin{tabular}{ccc}
-  $\code{line\_of\_half\_plane}\ hp$ & becomes & the line $AB$; \\
-  $\code{line\_of\_half\_plane}\ hq$ & becomes & the line $AC$; \\ 
-  $\code{line\_of\_half\_plane}\ hr$ & becomes & the line $BC$. \\
-\end{tabular}\linebreak
+  $\code{on\_half\_plane}\ hp$ & $\iff$ & on the same side of $AB$ as $C$ and $P$;\\
+  $\code{on\_half\_plane}\ hq$ & $\iff$ & on the same side of $AC$ as $B$ and $P$;\\
+  $\code{on\_half\_plane}\ hr$ & $\iff$ & on the same side of $BC$ as $A$ and $P$;\\
+  $\code{line\_of\_half\_plane}\ hp$ & $\iff$ & the line $AB$; \\
+  $\code{line\_of\_half\_plane}\ hq$ & $\iff$ & the line $AC$; \\ 
+  $\code{line\_of\_half\_plane}\ hr$ & $\iff$ & the line $BC$. \\
+\end{tabular}
+\caption{Interpretation of half-planes}
+\label{fig:halfPlanesInterpret}
+\end{figure}
 
 With these translations in mind, we hope the reader is convinced that the informal argument and a model synthetic proof can be recovered systematically from the verification. We can try to excuse the translation by drawing an analogy between synthetic proofs and their accompanying diagrams. The diagram is strictly unnecessary, but can  easily be recovered by carefully following the prose, and it is often helpful to reconstruct it. Similarly, our informal argument can be easily recovered from our formal verification, substituting intuitive phrases such as ``a ray emerging from the line'' so that it is easier to follow, even if such phrases do not point to interesting abstractions that would help the theorem prover.
 
@@ -615,7 +617,7 @@ First off, the incidence discoverer tells us that $C \neq R$. Next, from \eqref{
 
 Case (c) is more involved, but the most interesting part is probably that which establishes that neither $A$ nor $B$ lie on the line of $P_iP_{i+1}$. Here, we proceed by contradiction, once for $A$ and once for $B$. We can solve the goal in one step with the linear reasoning tactic, provided we again obtain the necessary information for it to do its work.
 
-For instance, assuming that $A$, $P_i$ and $P_{i+1}$ lie on a line, the linear reasoning tactic will first infer that $A$, $B$, $P_i$, $P_{i+1}$ and $R$ are all collinear. If it knew further than $P_{i}$ does not lie on the segment $AB$, it would conclude that one of $A$ or $B$ lies on the segment $P_iP_{i+1}$, which \emph{we} know to be impossible. This suggests that we should seed the tactic with the following facts, with which it solves the goal by reasoning about the ordering of $A$, $B$, $P_i$, $P_{i+1}$ and $R$.
+For instance, assuming that $A$, $P_i$ and $P_{i+1}$ lie on a line, the linear reasoning tactic will first infer that $A$, $B$, $P_i$, $P_{i+1}$ and $R$ are all collinear. If it knew further than $P_{i}$ does not lie on the segment $AB$, it would conclude that one of $A$ or $B$ lies on the segment $P_iP_{i+1}$, which \emph{we} know to be impossible. This suggests that we should seed the tactic with the following facts, with which it solves the goal by reasoning about the ordering of $A$, $B$, $P_i$, $P_{i+1}$ and $R$:
 \begin{multline*}
 A \neq P_i \wedge A \neq P_{i+1} \wedge B \neq P_i \wedge B \neq P_{i+1}\\ \wedge \neg\between{P_i}{A}{P_{i+1}} \wedge \neg\between{P_i}{B}{P_{i+1}} \wedge \neg\between{A}{P_i}{B}.
 \end{multline*}
@@ -686,7 +688,7 @@ The important assumption to note in both theorems is $\between{A}{P_i}{B}$. This
   \implies\left(\begin{aligned} 
       &(\exists R.\; \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C)\ R)\\
       & \iff (\exists R.\; \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C')\ R)
-  \end{aligned}\right).
+  \end{aligned}\right)
 \end{multline}
 \caption{Moving across $AB$ when $C$ and $C'$ are on the same side.}
 \label{fig:crossChangeLemma1}
@@ -704,7 +706,7 @@ The important assumption to note in both theorems is $\between{A}{P_i}{B}$. This
   \implies\left(\begin{aligned}
       &(\exists R.\; \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C)\ R)\\
       &\iff\neg \exists R.\; \between{P_i}{R}{P_{i+1}} \wedge \code{in\_triangle}\ (A,B,C')\ R
-  \end{aligned}\right).
+  \end{aligned}\right)
 \end{multline}
 \caption{Moving across $AB$ when $C$ and $C'$ are on opposite sides.}
 \label{fig:crossChangeLemma2}

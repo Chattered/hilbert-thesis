@@ -202,8 +202,6 @@ The term ``side'' is ambiguous between the segments of a polygon and the half-pl
   \flushright{\cite[p. 9]{FoundationsOfGeometry}}
 \end{quote}
 
-Combining this with the definition of polygon gives us the formalisation in Figure~\ref{fig:SimplePolygonDef}.
-
 \begin{figure}
 \begin{equation}\label{eq:SimplePolygonDef}
   \begin{split}
@@ -222,7 +220,7 @@ Combining this with the definition of polygon gives us the formalisation in Figu
 \label{fig:SimplePolygonDef}
 \end{figure}
 
-In this definition, we have introduced the polygon's plane as a parameter, but we are aware that this could be refactored. Any simple polygon uniquely determines the plane on which it lies, and so it might have been more elegant to hide the plane witness by an existential in the body of the definition. A function could then be defined to extract the unique witness from the list $Ps$ when $Ps$ is known to be a simple polygon. 
+Combining this with the definition of polygon gives us the formalisation in Figure~\ref{fig:SimplePolygonDef}. In this definition, we have introduced the polygon's plane as a parameter, but we are aware that this could be refactored. Any simple polygon uniquely determines the plane on which it lies, and so it might have been more elegant to hide the plane witness by an existential in the body of the definition. A function could then be defined to extract the unique witness from the list $Ps$ when $Ps$ is known to be a simple polygon. 
 
 The definition would still be rather unwieldy. First, we have a ``magic'' number 3,\footnote{The number $4$ would do just as well!} which is needed to rule out the degenerate case of a point polygon $[P,P]$ which slips past Hilbert's constraints. But the real complexity is in the last three clauses which define the polygon as \emph{simple}. 
 
